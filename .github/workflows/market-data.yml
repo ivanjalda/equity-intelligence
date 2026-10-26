@@ -1,0 +1,107 @@
+
+name: Actualizar datos de mercado
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 21 * * 1-5"
+
+permissions:
+  contents: write
+
+jobs:
+  update-market-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Consultar Polygon
+        env:
+          POLYGON_KEY: ${{ secrets.POLYGON_KEY }}
+        run: |
+          mkdir -p data
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+          import urllib.parse
+          from datetime import datetime, timezone
+
+          tickers = ["MSFT", "AAPL", "NVDA", "AMZN", "KO", "JNJ"]
+          key = os.environ.get("POLYGON_KEY", "")
+          results = {
+              "source": "Polygon.io",
+              "updated_at": datetime.now(timezone.utc).isoformat(),
+              "status": "ok",
+              "assets": {}
+          }
+
+          if not key:
+              raise SystemExit("Falta configurar POLYGON_KEY.")
+
+          for ticker in tickers:
+              params = urllib.parse.urlencode({"apiKey": key})
+              url = (
+                  "https://api.polygon.io/v2/aggs/ticker/"
+                  + ticker
+                  + "/prev?"
+                  + params
+              )
+              request = urllib.request.Request(
+                  url, headers={"User-Agent": "EquityIntelligence/1.0"}
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=20) as response:
+                      data = json.loads(response.read().decode("utf-8"))
+
+                  if data.get("status") == "OK" and data.get("results"):
+                      bar = data["results"][0]
+                      results["assets"][ticker] = {
+                          "close": bar.get("c"),
+                          "open": bar.get("o"),
+                          "high": bar.get("h"),
+                          "low": bar.get("l"),
+                          "volume": bar.get("v"),
+                          "timestamp": bar.get("t"),
+                          "status": "ok"
+                      }
+                  else:
+                      results["assets"][ticker] = {
+                          "status": "unavailable",
+                          "message": data.get("message", data.get("status", "Sin datos"))
+                      }
+              except Exception as exc:
+                  results["assets"][ticker] = {
+                      "status": "error",
+                      "message": str(exc)[:200]
+                  }
+
+          if not any(a.get("status") == "ok" for a in results["assets"].values()):
+              raise SystemExit(
+                  "Polygon no devolvió datos utilizables. "
+                  "Revisa el plan y los permisos de la API."
+              )
+
+          with open("data/market-data.json", "w", encoding="utf-8") as file:
+              json.dump(results, file, indent=2, ensure_ascii=False)
+
+          print("Archivo de datos generado. No se imprime la clave API.")
+          print("Activos con datos:", sum(
+              a.get("status") == "ok" for a in results["assets"].values()
+          ))
+          PY
+
+      - name: Guardar datos en el repositorio
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market-data.json
+          git diff --cached --quiet || git commit -m "Actualizar datos de mercado"
+          git push
