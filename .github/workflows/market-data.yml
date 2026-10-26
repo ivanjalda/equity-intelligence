@@ -4,7 +4,7 @@ name: Actualizar datos de mercado
 'on':
   workflow_dispatch:
   schedule:
-    - cron: "30 22 * * 1-5"
+    - cron: '30 22 * * 1-5'
 
 permissions:
   contents: write
@@ -20,170 +20,31 @@ jobs:
       - name: Preparar Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
-      - name: Consultar Polygon
+      - name: Comprobar archivos
+        run: |
+          echo "Comprobando estructura del proyecto..."
+          test -f scripts/update_market_data.py
+          mkdir -p data
+
+      - name: Consultar datos de mercado
         env:
           POLYGON_KEY: ${{ secrets.POLYGON_KEY }}
+        run: python scripts/update_market_data.py
+
+      - name: Validar archivo JSON
+        run: python -m json.tool data/market-data.json > /dev/null
+
+      - name: Guardar cambios
         run: |
-          python - <<'PY'
-          import json
-          import os
-          import urllib.request
-          import urllib.error
-          from datetime import datetime, timedelta, timezone
-          from pathlib import Path
-
-          api_key = os.environ.get("POLYGON_KEY", "").strip()
-
-          if not api_key:
-              raise SystemExit(
-                  "Falta el secreto POLYGON_KEY en GitHub Actions."
-              )
-
-          tickers = ["MSFT", "AAPL", "NVDA", "AMZN", "KO", "JNJ"]
-
-          end_date = datetime.now(timezone.utc).date()
-          start_date = end_date - timedelta(days=10)
-
-          results = {
-              "provider": "Polygon",
-              "updated_at": datetime.now(timezone.utc).isoformat(),
-              "status": "ok",
-              "assets": {}
-          }
-
-          for ticker in tickers:
-              url = (
-                  "https://api.polygon.io/v2/aggs/ticker/"
-                  f"{ticker}/range/1/day/{start_date}/{end_date}"
-                  f"?adjusted=true&sort=desc&limit=1&apiKey={api_key}"
-              )
-
-              request = urllib.request.Request(
-                  url,
-                  headers={"User-Agent": "EquityIntelligence/1.0"}
-              )
-
-              try:
-                  with urllib.request.urlopen(request, timeout=20) as response:
-                      data = json.loads(response.read().decode("utf-8"))
-
-                  bars = data.get("results") or []
-
-                  if bars:
-                      bar = bars[0]
-                      results["assets"][ticker] = {
-                          "status": "ok",
-                          "price": bar.get("c"),
-                          "open": bar.get("o"),
-                          "high": bar.get("h"),
-                          "low": bar.get("l"),
-                          "volume": bar.get("v"),
-                          "timestamp": bar.get("t"),
-                          "date_from": start_date.isoformat(),
-                          "date_to": end_date.isoformat()
-                      }
-
-                      print(
-                          f"{ticker}: datos recibidos; "
-                          f"precio de cierre={bar.get('c')}"
-                      )
-
-                  else:
-                      results["assets"][ticker] = {
-                          "status": "unavailable",
-                          "http_status": data.get("status", "Sin estado"),
-                          "message": data.get(
-                              "error",
-                              data.get("message", "La API no devolvió barras.")
-                          )
-                      }
-
-                      print(
-                          f"{ticker}: Polygon no devolvió barras. "
-                          f"status={data.get('status')} | "
-                          f"error={data.get('error', data.get('message', 'Sin detalles'))}"
-                      )
-
-              except urllib.error.HTTPError as exc:
-                  error_body = exc.read().decode(
-                      "utf-8", errors="replace"
-                  )
-
-                  try:
-                      error_data = json.loads(error_body)
-                      error_message = error_data.get(
-                          "error",
-                          error_data.get("message", error_body[:300])
-                      )
-                  except json.JSONDecodeError:
-                      error_message = error_body[:300]
-
-                  results["assets"][ticker] = {
-                      "status": "error",
-                      "http_status": exc.code,
-                      "message": str(error_message)[:300]
-                  }
-
-                  print(
-                      f"{ticker}: ERROR HTTP {exc.code}: "
-                      f"{str(error_message)[:300]}"
-                  )
-
-              except Exception as exc:
-                  results["assets"][ticker] = {
-                      "status": "error",
-                      "message": f"{type(exc).__name__}: {str(exc)[:250]}"
-                  }
-
-                  print(
-                      f"{ticker}: {type(exc).__name__}: "
-                      f"{str(exc)[:250]}"
-                  )
-
-          successful = [
-              ticker
-              for ticker, item in results["assets"].items()
-              if item.get("status") == "ok"
-              and item.get("price") is not None
-          ]
-
-          if not successful:
-              results["status"] = "error"
-              print(
-                  "ERROR: ningún activo devolvió datos utilizables. "
-                  "Consulta los errores anteriores para conocer la causa."
-              )
-
-          Path("data").mkdir(parents=True, exist_ok=True)
-
-          with open("data/market-data.json", "w", encoding="utf-8") as file:
-              json.dump(results, file, indent=2, ensure_ascii=False)
-
-          print(
-              f"Resultado: {len(successful)} de "
-              f"{len(tickers)} activos con datos."
-          )
-
-          if not successful:
-              raise SystemExit(1)
-          PY
-
-      - name: Guardar datos actualizados
-        if: always()
-        run: |
-          if [ -f data/market-data.json ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add data/market-data.json
-            if ! git diff --cached --quiet; then
-              git commit -m "Actualizar datos de mercado"
-              git push
-            else
-              echo "No hay cambios que guardar."
-            fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market-data.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Actualizar datos de mercado"
+            git push
           else
-            echo "No se generó market-data.json."
+            echo "No hay cambios nuevos."
           fi
 ```
