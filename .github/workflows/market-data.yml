@@ -1,50 +1,36 @@
-```yaml
 name: Actualizar datos de mercado
 
-'on':
+on:
   workflow_dispatch:
   schedule:
-    - cron: '30 22 * * 1-5'
-
-permissions:
-  contents: write
+    - cron: '0 0 * * *' # Se ejecuta todos los días a medianoche
 
 jobs:
-  update-market-data:
+  update-data:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Descargar repositorio
+      - name: Clonar repositorio
         uses: actions/checkout@v4
 
-      - name: Preparar Python
+      - name: Configurar Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.10'
 
-      - name: Comprobar archivos
+      - name: Instalar dependencias
         run: |
-          echo "Comprobando estructura del proyecto..."
-          test -f scripts/update_market_data.py
-          mkdir -p data
+          python -m pip install --upgrade pip
+          pip install requests
 
-      - name: Consultar datos de mercado
+      - name: Ejecutar script de actualización
         env:
           POLYGON_KEY: ${{ secrets.POLYGON_KEY }}
         run: python scripts/update_market_data.py
 
-      - name: Validar archivo JSON
-        run: python -m json.tool data/market-data.json > /dev/null
-
-      - name: Guardar cambios
+      - name: Guardar y subir cambios al repositorio
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.io"
           git add data/market-data.json
-          if ! git diff --cached --quiet; then
-            git commit -m "Actualizar datos de mercado"
-            git push
-          else
-            echo "No hay cambios nuevos."
-          fi
-```
+          git commit -m "Actualización automática de datos de mercado [skip ci]" || exit 0
+          git push
