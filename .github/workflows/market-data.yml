@@ -1,7 +1,7 @@
 ```yaml
 name: Actualizar datos de mercado
 
-on:
+'on':
   workflow_dispatch:
   schedule:
     - cron: "30 22 * * 1-5"
