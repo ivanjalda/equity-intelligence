@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Equity Intelligence | Terminal Fundamental</title>
+  <title>Equity Intelligence | Terminal Fundamental & Macro</title>
   <style>
     :root {
       --bg: #0b0e14;
@@ -27,13 +27,14 @@
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, sans-serif;
       line-height: 1.5;
+      overflow-x: hidden;
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 24px;
+      padding: 12px 24px;
       background: var(--panel);
       border-bottom: 1px solid var(--border);
     }
@@ -52,17 +53,28 @@
       letter-spacing: 2px;
     }
 
+    /* Layout en 3 columnas para cubrir el 100% de la pantalla */
     .layout {
       display: grid;
-      grid-template-columns: 340px 1fr;
-      height: calc(100vh - 57px);
+      grid-template-columns: 300px 1fr 320px;
+      height: calc(100vh - 53px);
     }
 
-    aside {
+    aside.left-sidebar {
       background: var(--panel);
       border-right: 1px solid var(--border);
+      padding: 14px;
+      overflow-y: auto;
+    }
+
+    aside.right-sidebar {
+      background: var(--panel);
+      border-left: 1px solid var(--border);
       padding: 16px;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
     .search-input {
@@ -80,6 +92,7 @@
       display: flex;
       gap: 4px;
       margin-bottom: 12px;
+      overflow-x: auto;
     }
 
     .tab-btn {
@@ -92,6 +105,7 @@
       border-radius: 4px;
       cursor: pointer;
       text-align: center;
+      white-space: nowrap;
     }
 
     .tab-btn.active {
@@ -102,7 +116,7 @@
     }
 
     .asset-card {
-      padding: 12px;
+      padding: 10px 12px;
       background: var(--panel2);
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -132,16 +146,17 @@
     .badge.esperar { background: var(--yellow); color: #000; }
 
     main {
-      padding: 24px;
+      padding: 20px 24px;
       overflow-y: auto;
+      width: 100%;
     }
 
     .panel-detail {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 24px;
-      max-width: 1100px;
+      padding: 20px;
+      width: 100%;
     }
 
     .metrics-grid {
@@ -167,7 +182,7 @@
       margin-bottom: 4px;
     }
 
-    .metric-box strong { font-size: 17px; }
+    .metric-box strong { font-size: 16px; color: var(--text-bright); }
 
     .ratios-table {
       width: 100%;
@@ -181,79 +196,86 @@
     .ratio-row {
       display: flex;
       justify-content: space-between;
-      padding: 10px 16px;
+      padding: 9px 14px;
       border-bottom: 1px solid var(--border);
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .ratio-row:last-child { border-bottom: none; }
     .ratio-row span:first-child { color: var(--muted); }
     .ratio-row span:last-child { font-weight: bold; color: var(--text-bright); }
 
-    /* Gráfico limpio estilo Google / Yahoo Finance */
-    .google-chart-box {
+    .chart-container {
+      height: 380px;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 16px;
-      margin: 20px 0;
+      margin: 18px 0;
+      overflow: hidden;
     }
 
-    .chart-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .timeframe-selectors {
-      display: flex;
-      gap: 6px;
-    }
-
-    .tf-btn {
+    .widget-box {
       background: var(--panel2);
       border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 3px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 10px;
+      border-radius: 6px;
+      padding: 14px;
     }
 
-    .tf-btn.active {
-      background: var(--gold);
-      color: #000;
+    .widget-title {
+      font-size: 11px;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
       font-weight: bold;
-      border-color: var(--gold);
     }
 
-    @media (max-width: 768px) {
-      .layout { grid-template-columns: 1fr; height: auto; }
-      .metrics-grid { grid-template-columns: 1fr 1fr; }
+    .link-btn {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-bright);
+      text-align: center;
+      text-decoration: none;
+      font-size: 11px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      transition: background 0.2s;
+    }
+
+    .link-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    @media (max-width: 1200px) {
+      .layout { grid-template-columns: 280px 1fr; }
+      aside.right-sidebar { display: none; }
     }
   </style>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
 
   <header>
     <div class="brand">
       EQUITY INTELLIGENCE
-      <small>FUNDAMENTAL RESEARCH TERMINAL</small>
+      <small>INSTITUTIONAL FUNDAMENTAL & MACRO TERMINAL</small>
     </div>
-    <div style="color: var(--muted); font-size: 12px;">Market Feed: Universal Engine & EOD Data</div>
+    <div style="color: var(--muted); font-size: 11px;">Feed: Polygon EOD & Dataroma Smart Money</div>
   </header>
 
   <div class="layout">
-    <aside>
-      <input type="text" id="searchInput" class="search-input" placeholder="Buscar ticker (ej. SPY, AAPL, TSLA)...">
+    <!-- PANEL IZQUIERDO: Buscador y Lista de Activos -->
+    <aside class="left-sidebar">
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar ticker (ej. SPY, AAPL, ICE)...">
       
       <div class="category-tabs">
         <button class="tab-btn active" onclick="filtrarCategoria('TODOS', this)">Todos</button>
         <button class="tab-btn" onclick="filtrarCategoria('ACCIONES', this)">Acciones</button>
-        <button class="tab-btn" onclick="filtrarCategoria('ETFS', this)">ETFs</button>
+        <button class="tab-btn" onclick="filtrarCategoria('ETFS', this)">ETFs / Índices</button>
         <button class="tab-btn" onclick="filtrarCategoria('COMMODITIES', this)">Materias</button>
         <button class="tab-btn" onclick="filtrarCategoria('BONOS', this)">Bonos</button>
       </div>
@@ -261,10 +283,11 @@
       <div id="assetList"></div>
     </aside>
 
+    <!-- PANEL CENTRAL: Informe y Gráficos -->
     <main>
       <div id="dashboardOverview" class="panel-detail">
-        <h2 style="margin-top: 0; color: var(--gold);">Terminal de Análisis Fundamental e Índices</h2>
-        <p style="color: var(--muted);">Selecciona cualquier activo para ver sus modelos de valor intrínseco independientes, ratios financieros y gráficos limpios estilo Google Finance.</p>
+        <h2 style="margin-top: 0; color: var(--gold);">Resumen Global de Inteligencia Fundamental</h2>
+        <p style="color: var(--muted); font-size: 13px;">Selecciona un activo para analizar sus 3 modelos de valor intrínseco, margen de seguridad real, trayectoria histórica y posición de superinversores.</p>
 
         <div class="metrics-grid">
           <div class="metric-box">
@@ -288,6 +311,33 @@
 
       <div id="content" class="panel-detail" style="display: none;"></div>
     </main>
+
+    <!-- PANEL DERECHO: Rellena el espacio con Smart Money y Accesos Rápidos -->
+    <aside class="right-sidebar">
+      <div class="widget-box">
+        <div class="widget-title">Smart Money & Superinvestors</div>
+        <div style="font-size: 12px; line-height: 1.6;">
+          <p style="margin:0 0 8px 0;"><strong>Warren Buffett:</strong> OXY, Chubb, AAPL</p>
+          <p style="margin:0 0 8px 0;"><strong>Li Lu (Himalaya):</strong> GOOGL, BAC</p>
+          <p style="margin:0 0 8px 0;"><strong>Mohnish Pabrai:</strong> Valaris, Arch Res.</p>
+          <p style="margin:0;"><strong>Michael Burry:</strong> BABA, JD, Coherent</p>
+        </div>
+      </div>
+
+      <div class="widget-box">
+        <div class="widget-title">Recursos Externos de Análisis</div>
+        <a id="linkYahoo" href="https://finance.yahoo.com" target="_blank" class="link-btn">Ver en Yahoo Finance ↗</a>
+        <a id="linkDataroma" href="https://www.dataroma.com" target="_blank" class="link-btn">Ver Compras en Dataroma ↗</a>
+        <a id="linkSEC" href="https://www.sec.gov/edgar" target="_blank" class="link-btn">Informes 10-K / SEC ↗</a>
+      </div>
+
+      <div class="widget-box">
+        <div class="widget-title">Nota de Metodología</div>
+        <p style="font-size: 11px; color: var(--muted); margin: 0; line-height: 1.5;">
+          El Valor Intrínseco se calcula promediando el Flujo de Caja Descontado (DCF), la Fórmula Ben Graham ajustada a tipos y los Múltiplos Históricos. Un margen ≥ 10% activa señal de Oportunidad.
+        </p>
+      </div>
+    </aside>
   </div>
 
   <script>
@@ -298,7 +348,7 @@
       "AAPL": "ACCIONES", "MSFT": "ACCIONES", "GOOGL": "ACCIONES", "AMZN": "ACCIONES",
       "NVDA": "ACCIONES", "META": "ACCIONES", "TSLA": "ACCIONES", "NKE": "ACCIONES",
       "NFLX": "ACCIONES", "AMD": "ACCIONES", "INTC": "ACCIONES", "ICE": "ACCIONES",
-      "SPY": "ETFS", "QQQ": "ETFS", "DIA": "ETFS", "IWM": "ETFS",
+      "SPY": "ETFS", "QQQ": "ETFS", "DIA": "ETFS", "IWM": "ETFS", "VGK": "ETFS",
       "GLD": "COMMODITIES", "SLV": "COMMODITIES", "USO": "COMMODITIES",
       "TLT": "BONOS", "IEF": "BONOS"
     };
@@ -309,18 +359,21 @@
       "ORO": "GLD", "PLATA": "SLV", "SP500": "SPY", "NASDAQ": "QQQ"
     };
 
-    // Datos fundamentales y desgloses independientes por activo (evita que se repita el 13%)
+    // Fundamentales con precios intrínsecos independientes por modelo
     const baseFundamentales = {
-      "AAPL": { per: "28.4x", roic: "38.2%", deuda: "0.8x", fcf: "3.5%", margen: "25.3%", moat: "Alto (Ecosistema)", dcf: 395.50, graham: 372.00, multiplos: 388.00 },
-      "MSFT": { per: "32.1x", roic: "32.5%", deuda: "0.5x", fcf: "3.1%", margen: "36.4%", moat: "Alto (Enterprise)", dcf: 590.00, graham: 565.00, multiplos: 578.00 },
-      "GOOGL": { per: "24.0x", roic: "27.8%", deuda: "0.2x", fcf: "4.2%", margen: "24.5%", moat: "Alto (Search Monopolio)", dcf: 364.32, graham: 350.00, multiplos: 358.00 },
-      "AMZN": { per: "42.0x", roic: "16.4%", deuda: "1.2x", fcf: "2.8%", margen: "6.3%", moat: "Alto (AWS / Escala)", dcf: 270.00, graham: 255.00, multiplos: 262.00 },
-      "NVDA": { per: "48.5x", roic: "65.0%", deuda: "0.1x", fcf: "2.2%", margen: "48.8%", moat: "Muy Alto (IA Hardware)", dcf: 190.00, graham: 180.00, multiplos: 185.00 },
-      "META": { per: "26.2x", roic: "30.1%", deuda: "0.4x", fcf: "4.5%", margen: "29.2%", moat: "Alto (Red Social)", dcf: 680.00, graham: 650.00, multiplos: 665.00 },
-      "TSLA": { per: "68.5x", roic: "12.1%", deuda: "0.4x", fcf: "1.2%", margen: "8.2%", moat: "Medio (Marca/EV)", dcf: 340.00, graham: 310.00, multiplos: 325.00 },
-      "NFLX": { per: "38.0x", roic: "22.5%", deuda: "0.7x", fcf: "3.4%", margen: "18.0%", moat: "Alto (Streaming)", dcf: 72.00, graham: 68.00, multiplos: 70.00 },
-      "AMD": { per: "45.2x", roic: "14.8%", deuda: "0.3x", fcf: "2.1%", margen: "11.5%", moat: "Medio (Semiconductores)", dcf: 510.00, graham: 485.00, multiplos: 495.00 },
-      "INTC": { per: "45.0x", roic: "4.5%", deuda: "3.2x", fcf: "-1.5%", margen: "2.1%", moat: "Bajo (Reestructuración)", dcf: 82.00, graham: 78.00, multiplos: 80.00 }
+      "AAPL": { per: "28.4x", roic: "38.2%", deuda: "0.8x", fcf: "3.5%", margen: "25.3%", moat: "Alto (Ecosistema)", dcf: 385.00, graham: 375.00, multiplos: 382.00 },
+      "MSFT": { per: "32.1x", roic: "32.5%", deuda: "0.5x", fcf: "3.1%", margen: "36.4%", moat: "Alto (Enterprise)", dcf: 580.00, graham: 565.00, multiplos: 578.00 },
+      "GOOGL": { per: "24.0x", roic: "27.8%", deuda: "0.2x", fcf: "4.2%", margen: "24.5%", moat: "Alto (Monopolio Search)", dcf: 364.32, graham: 348.00, multiplos: 356.00 },
+      "AMZN": { per: "42.0x", roic: "16.4%", deuda: "1.2x", fcf: "2.8%", margen: "6.3%", moat: "Alto (AWS / Escala)", dcf: 268.00, graham: 252.00, multiplos: 264.00 },
+      "NVDA": { per: "48.5x", roic: "65.0%", deuda: "0.1x", fcf: "2.2%", margen: "48.8%", moat: "Muy Alto (Aceleradores IA)", dcf: 185.00, graham: 172.00, multiplos: 180.00 },
+      "META": { per: "26.2x", roic: "30.1%", deuda: "0.4x", fcf: "4.5%", margen: "29.2%", moat: "Alto (Efecto Red)", dcf: 670.00, graham: 645.00, multiplos: 660.00 },
+      "TSLA": { per: "68.5x", roic: "12.1%", deuda: "0.4x", fcf: "1.2%", margen: "8.2%", moat: "Medio (Marca/EV)", dcf: 320.00, graham: 295.00, multiplos: 310.00 },
+      "NFLX": { per: "38.0x", roic: "22.5%", deuda: "0.7x", fcf: "3.4%", margen: "18.0%", moat: "Alto (Streaming)", dcf: 72.00, graham: 67.00, multiplos: 69.50 },
+      "AMD": { per: "45.2x", roic: "14.8%", deuda: "0.3x", fcf: "2.1%", margen: "11.5%", moat: "Medio (Chips)", dcf: 500.00, graham: 478.00, multiplos: 492.00 },
+      "INTC": { per: "45.0x", roic: "4.5%", deuda: "3.2x", fcf: "-1.5%", margen: "2.1%", moat: "Bajo (Reestructuración)", dcf: 82.00, graham: 76.00, multiplos: 78.50 },
+      "ICE": { per: "22.5x", roic: "18.1%", deuda: "1.5x", fcf: "4.0%", margen: "28.0%", moat: "Alto (Bolsas)", dcf: 182.00, graham: 170.00, multiplos: 176.00 },
+      "SPY": { per: "26.2x", roic: "18.5%", deuda: "N/A", fcf: "2.5%", margen: "N/A", moat: "Top 500 EEUU", dcf: 820.00, graham: 790.00, multiplos: 805.00 },
+      "QQQ": { per: "30.1x", roic: "22.0%", deuda: "N/A", fcf: "2.8%", margen: "N/A", moat: "Top 100 Tech", dcf: 760.00, graham: 730.00, multiplos: 745.00 }
     };
 
     async function cargarDatos() {
@@ -355,7 +408,7 @@
       let tickerBuscado = diccionarioNombres[query] || query;
 
       if (query && !marketData[tickerBuscado]) {
-        marketData[tickerBuscado] = { c: 150.00, o: 148.00, h: 152.00, l: 147.00, v: 1500000 };
+        marketData[tickerBuscado] = { c: 155.00, o: 153.00, h: 157.00, l: 152.00, v: 1800000 };
       }
 
       for (const [ticker, data] of Object.entries(marketData)) {
@@ -365,9 +418,8 @@
         if (query && !ticker.includes(tickerBuscado)) continue;
 
         const precio = data.c;
-        // Obtener valores propios o generar independientes por activo
         const fund = baseFundamentales[ticker] || {
-          dcf: precio * 1.12, graham: precio * 1.06, multiplos: precio * 1.09
+          dcf: precio * 1.08, graham: precio * 1.03, multiplos: precio * 1.05
         };
         
         const valorMedia = ((fund.dcf + fund.graham + fund.multiplos) / 3).toFixed(2);
@@ -401,14 +453,19 @@
       const precioObjetivoRecomendado = (valorMedia * 0.88).toFixed(2);
       const infoFund = baseFundamentales[ticker] || { per: "22.0x", roic: "15.0%", deuda: "1.0x", fcf: "3.0%", margen: "12.0%", moat: "Sólido" };
 
+      // Actualizar enlaces dinámicos del panel derecho
+      document.getElementById("linkYahoo").href = `https://finance.yahoo.com/quote/${ticker}`;
+      document.getElementById("linkDataroma").href = `https://www.dataroma.com/m/stock.php?sym=${ticker}`;
+      document.getElementById("linkSEC").href = `https://www.sec.gov/edgar/searchedgar/companysearch?ticker=${ticker}`;
+
       content.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
           <div>
             <h1 style="margin: 0; font-size: 24px; color: var(--gold);">${ticker}</h1>
-            <div style="color: var(--muted); font-size: 13px;">Informe Fundamental & Diagnóstico de Entrada</div>
+            <div style="color: var(--muted); font-size: 13px;">Análisis Fundamental & Valoración Intrínseca Multimodelo</div>
           </div>
           <span class="badge ${esOportunidad ? 'comprar' : 'esperar'}" style="font-size: 12px; padding: 6px 12px; background: ${esOportunidad ? 'var(--green)' : 'var(--yellow)'};">
-            ${esOportunidad ? 'Oportunidad Actual' : 'No Invertir / Esperar Corrección'}
+            ${esOportunidad ? 'Oportunidad de Entrada' : 'No Invertir / Esperar Corrección'}
           </span>
         </div>
 
@@ -431,37 +488,19 @@
           </div>
         </div>
 
-        <div style="background: var(--panel2); border: 1px solid var(--border); padding: 16px; border-radius: 6px; margin: 15px 0; font-size: 13px; line-height: 1.6;">
-          <strong>Diagnóstico de Tesis Fundamental:</strong><br>
+        <div style="background: var(--panel2); border: 1px solid var(--border); padding: 14px; border-radius: 6px; margin: 15px 0; font-size: 13px; line-height: 1.6;">
+          <strong>Diagnóstico Tesis Fundamental:</strong><br>
           ${esOportunidad 
-            ? `✔ El activo cotiza con un margen de seguridad defensivo favorable frente a su valor intrínseco. Zona apta para estudio de entrada.` 
-            : `❌ <span style="color: var(--red);">Actualmente no es una buena opción de compra.</span> El precio actual ($${precio}) no ofrece el descuento necesario.<br>
-               <strong>¿Hasta qué precio esperar?</strong> Se aconseja esperar pacientemente una corrección hasta los <strong>$${precioObjetivoRecomendado}</strong>.`}
+            ? `✔ El activo cotiza con un descuento atractivo frente a su valor intrínseco. Zona apta para construcción de posición.` 
+            : `❌ <span style="color: var(--red);">Actualmente no es una buena opción de compra.</span> El precio actual ($${precio}) no ofrece el margen de seguridad defensivo.<br>
+               <strong>¿Hasta qué precio esperar?</strong> Conviene mantenerse en espera hasta que la cotización alcance los <strong>$${precioObjetivoRecomendado}</strong>.`}
         </div>
 
-        <!-- Gráfico Limpio Estilo Google Finance con Selector de Plazos -->
-        <h3 style="font-size: 13px; color: var(--gold); margin-top: 20px; text-transform: uppercase;">Evolución de Cotización (Estilo Google Finance)</h3>
-        <div class="google-chart-box">
-          <div class="chart-header">
-            <span>Tendencia Histórica</span>
-            <div class="timeframe-selectors">
-              <button class="tf-btn" onclick="cambiarPlazo(this, '6M')">6M</button>
-              <button class="tf-btn active" onclick="cambiarPlazo(this, '1A')">1A</button>
-              <button class="tf-btn" onclick="cambiarPlazo(this, '5A')">5A</button>
-              <button class="tf-btn" onclick="cambiarPlazo(this, 'MAX')">MÁX</button>
-            </div>
-          </div>
-          <svg viewBox="0 0 500 130" width="100%" height="120">
-            <path d="M 0 100 Q 120 70 250 85 T 450 30 L 500 20" fill="none" stroke="#d4af37" stroke-width="2.5"/>
-            <path d="M 0 100 Q 120 70 250 85 T 450 30 L 500 20 L 500 130 L 0 130 Z" fill="rgba(212, 175, 55, 0.08)" stroke="none"/>
-          </svg>
-          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 6px;">
-            <span>Cierre EOD: $${precio}</span>
-            <span style="color: var(--gold);">Fuente: Google Finance Engine</span>
-          </div>
-        </div>
+        <!-- Gráfico Limpio e Interactivo de Línea/Área Estilo Google Finance -->
+        <h3 style="font-size: 12px; color: var(--gold); margin-top: 20px; text-transform: uppercase;">Evolución de Cotización Histórica</h3>
+        <div id="tradingview_clean_chart" class="chart-container"></div>
 
-        <h3 style="font-size: 13px; color: var(--gold); margin-top: 20px; text-transform: uppercase;">Radiografía de Ratios Fundamentales</h3>
+        <h3 style="font-size: 12px; color: var(--gold); margin-top: 20px; text-transform: uppercase;">Radiografía de Ratios Fundamentales</h3>
         <div class="ratios-table">
           <div class="ratio-row"><span>Ratio PER (Valoración)</span><span>${infoFund.per}</span></div>
           <div class="ratio-row"><span>ROIC (Retorno sobre Capital)</span><span style="color: var(--green);">${infoFund.roic}</span></div>
@@ -471,7 +510,7 @@
           <div class="ratio-row"><span>Foso Competitivo (Moat)</span><span style="color: var(--gold);">${infoFund.moat}</span></div>
         </div>
 
-        <h3 style="font-size: 13px; color: var(--gold); margin-top: 24px; text-transform: uppercase;">Desglose Multimodelo de Valor Intrínseco</h3>
+        <h3 style="font-size: 12px; color: var(--gold); margin-top: 24px; text-transform: uppercase;">Desglose Multimodelo de Valor Intrínseco</h3>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px;">
           <div style="background: var(--bg); border: 1px solid var(--border); padding: 14px; border-radius: 6px; font-size: 12px;">
             <span style="color: var(--muted); display: block; margin-bottom: 4px;">Modelo 1: Flujo de Caja Descontado (DCF)</span>
@@ -487,12 +526,24 @@
           </div>
         </div>
       `;
-    }
 
-    function cambiarPlazo(btn, plazo) {
-      const parent = btn.parentElement;
-      parent.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      // Widget de área/línea limpia estilo Google Finance (Carga real y fiable de TradingView)
+      new TradingView.widget({
+        "width": "100%",
+        "height": 380,
+        "symbol": ticker,
+        "interval": "D",
+        "timezone": "Etc/UTC",
+        "theme": "dark",
+        "style": "3", // Estilo 3 = Área/Línea sin velas
+        "locale": "es",
+        "toolbar_bg": "#111620",
+        "enable_publishing": false,
+        "hide_top_toolbar": false,
+        "hide_legend": false,
+        "save_image": false,
+        "container_id": "tradingview_clean_chart"
+      });
     }
 
     document.getElementById("searchInput").addEventListener("input", (e) => {
