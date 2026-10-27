@@ -1,311 +1,18 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Equity Intelligence | Análisis bursátil</title>
-  <meta name="description" content="Plataforma independiente de análisis fundamental, valoración intrínseca y estudio de oportunidades bursátiles.">
-  <style>
-    :root {
-      --bg: #0b0e12;
-      --panel: #131922;
-      --panel2: #18212b;
-      --gold: #c9aa70;
-      --text: #f1f3f5;
-      --muted: #9ba6b4;
-      --border: #293341;
-      --green: #76c9a0;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Arial, Helvetica, sans-serif;
-      line-height: 1.6;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-      padding: 22px 7%;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .brand {
-      color: var(--gold);
-      font-size: 17px;
-      font-weight: 800;
-      letter-spacing: 2px;
-    }
-
-    .brand small {
-      display: block;
-      color: var(--muted);
-      font-size: 9px;
-      letter-spacing: 3px;
-      font-weight: 400;
-    }
-
-    .status {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    main {
-      width: min(1120px, 88%);
-      margin: 0 auto;
-    }
-
-    .hero { padding: 76px 0 42px; }
-
-    .eyebrow {
-      color: var(--gold);
-      text-transform: uppercase;
-      letter-spacing: 3px;
-      font-size: 11px;
-      font-weight: bold;
-    }
-
-    h1 {
-      max-width: 760px;
-      font-size: clamp(36px, 6vw, 64px);
-      line-height: 1.08;
-      letter-spacing: -2px;
-      margin: 18px 0;
-    }
-
-    h1 span { color: var(--gold); }
-
-    .intro {
-      max-width: 680px;
-      color: var(--muted);
-      font-size: 17px;
-    }
-
-    .search {
-      display: flex;
-      gap: 10px;
-      max-width: 600px;
-      margin-top: 30px;
-    }
-
-    input, button {
-      padding: 14px 16px;
-      border-radius: 7px;
-      font: inherit;
-    }
-
-    input {
-      min-width: 0;
-      flex: 1;
-      color: var(--text);
-      background: var(--panel);
-      border: 1px solid var(--border);
-    }
-
-    button {
-      cursor: pointer;
-      background: var(--gold);
-      color: #111318;
-      border: 1px solid var(--gold);
-      font-weight: bold;
-    }
-
-    button:hover { filter: brightness(1.1); }
-
-    #result {
-      display: none;
-      max-width: 600px;
-      margin-top: 15px;
-      padding: 16px;
-      background: var(--panel2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--muted);
-    }
-
-    section { padding: 34px 0; }
-
-    .section-heading { margin-bottom: 20px; }
-
-    h2 { font-size: 23px; margin-bottom: 6px; }
-
-    .section-heading p, .card p {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 23px;
-    }
-
-    .number {
-      color: var(--gold);
-      font-size: 12px;
-      letter-spacing: 2px;
-    }
-
-    .card h3 { margin-bottom: 8px; }
-
-    .horizon { border-top: 2px solid var(--gold); }
-
-    .notice {
-      padding: 18px 20px;
-      background: #191810;
-      border: 1px solid #51452d;
-      border-radius: 8px;
-      color: #d8c79f;
-      font-size: 12px;
-      margin: 35px 0;
-    }
-
-    footer {
-      margin-top: 35px;
-      padding: 26px 7%;
-      border-top: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 12px;
-      text-align: center;
-    }
-
-    @media (max-width: 700px) {
-      header { padding: 18px 6%; }
-      .status { display: none; }
-      main { width: 88%; }
-      .hero { padding-top: 50px; }
-      .grid { grid-template-columns: 1fr; }
-      .search { flex-direction: column; }
-      .search button { width: 100%; }
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="brand">
-      EQUITY INTELLIGENCE
-      <small>INDEPENDENT MARKET RESEARCH</small>
-    </div>
-    <div class="status">PLATAFORMA EN DESARROLLO · FASE 01</div>
-  </header>
-
-  <main>
-    <div class="hero">
-      <div class="eyebrow">Análisis bursátil independiente</div>
-      <h1>El precio es un dato.<br><span>El valor es un análisis.</span></h1>
-      <p class="intro">
-        Investiga empresas, comprende sus fundamentales y compara el precio
-        de mercado con diferentes estimaciones de valor intrínseco.
-        Decisiones basadas en datos, supuestos explícitos y control del riesgo.
-      </p>
-
-      <form class="search" id="searchForm">
-        <input id="ticker" placeholder="Introduce un ticker: MSFT, AAPL..." aria-label="Ticker bursátil" required>
-        <button type="submit">Analizar empresa</button>
-      </form>
-
-      <div id="result" role="status" aria-live="polite"></div>
-    </div>
-
-    <section>
-      <div class="section-heading">
-        <div class="eyebrow">01 / Motor de análisis</div>
-        <h2>Entender antes de invertir</h2>
-        <p>Cuatro pilares para construir un análisis que se pueda comprobar.</p>
-      </div>
-
-      <div class="grid">
-        <article class="card">
-          <div class="number">MÓDULO 01</div>
-          <h3>Análisis fundamental</h3>
-          <p>Ingresos, márgenes, deuda, flujo de caja, rentabilidad y ventajas competitivas.</p>
-        </article>
-        <article class="card">
-          <div class="number">MÓDULO 02</div>
-          <h3>Valor intrínseco</h3>
-          <p>Flujos de caja descontados, múltiplos comparables y escenarios de valoración.</p>
-        </article>
-        <article class="card">
-          <div class="number">MÓDULO 03</div>
-          <h3>Margen de seguridad</h3>
-          <p>Estudiar la diferencia entre precio y valor estimado teniendo en cuenta la incertidumbre.</p>
-        </article>
-      </div>
-    </section>
-
-    <section>
-      <div class="section-heading">
-        <div class="eyebrow">02 / Horizonte temporal</div>
-        <h2>Tres formas de estudiar una oportunidad</h2>
-      </div>
-
-      <div class="grid">
-        <article class="card horizon">
-          <h3>Corto plazo</h3>
-          <p>Tendencia, volatilidad, volumen, calendario de resultados y posibles catalizadores.</p>
-        </article>
-        <article class="card horizon">
-          <h3>Medio plazo</h3>
-          <p>Evolución de beneficios, revisiones de expectativas, valoración y cambios de tendencia.</p>
-        </article>
-        <article class="card horizon">
-          <h3>Largo plazo</h3>
-          <p>Calidad del negocio, generación de caja, reinversión, deuda y crecimiento sostenible.</p>
-        </article>
-      </div>
-    </section>
-
-    <section>
-      <div class="section-heading">
-        <div class="eyebrow">03 / Método</div>
-        <h2>Sin datos inventados. Sin certezas artificiales.</h2>
-      </div>
-      <div class="card">
-        <p>
-          El sistema se construirá para diferenciar los datos publicados,
-          las estimaciones del modelo y las hipótesis del analista.
-          Cada valoración deberá explicar sus fuentes, fecha de actualización,
-          supuestos y riesgos principales.
-        </p>
-        <p>
-          Las oportunidades se ordenarán cuando exista información suficiente
-          y verificable, no solo porque una fórmula produzca un resultado atractivo.
-        </p>
-      </div>
-    </section>
-
-    <div class="notice">
-      <strong>VERSIÓN INICIAL.</strong> Esta web muestra cotizaciones oficiales de cierre diario (End of Day) conectadas mediante automatizaciones gratuitas. Las valoraciones avanzadas de valor intrínseco se integrarán en las siguientes fases del desarrollo.
-    </div>
-  </main>
-
-  <footer>
-    EQUITY INTELLIGENCE · Proyecto independiente · Fase inicial gratuita<br>
-    Herramienta de investigación en desarrollo. No constituye asesoramiento financiero.
-  </footer>
-
-  <script>
+<script>
     let datosMercadoGlobal = {};
+
+    // Diccionario de equivalencias para buscar por nombre o ticker
+    const diccionarioActivos = {
+      "APPLE": "AAPL", "MICROSOFT": "MSFT", "GOOGL": "GOOGL", "GOOGLE": "GOOGL",
+      "AMAZON": "AMZN", "NVIDIA": "NVDA", "META": "META", "TESLA": "TSLA",
+      "NIKE": "NKE", "COCA COLA": "KO", "PEPSI": "PEP", "WALMART": "WMT",
+      "ORO": "GLD", "PLATA": "SLV", "PETROLEO": "USO", "SP500": "SPY", "NASDAQ": "QQQ"
+    };
 
     async function cargarDatosMercado() {
       try {
         const response = await fetch('data/market-data.json');
-        if (!response.ok) {
-          throw new Error(`Error HTTP: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         datosMercadoGlobal = await response.json();
         console.log('Datos de mercado cargados correctamente:', datosMercadoGlobal);
       } catch (error) {
@@ -321,18 +28,23 @@
 
     form.addEventListener("submit", function(event) {
       event.preventDefault();
-      const ticker = input.value.trim().toUpperCase();
+      let consulta = input.value.trim().toUpperCase();
 
-      if (!ticker) return;
+      if (!consulta) return;
+
+      // Si el usuario escribió el nombre completo, lo traducimos al ticker
+      if (diccionarioActivos[consulta]) {
+        consulta = diccionarioActivos[consulta];
+      }
 
       result.style.display = "block";
 
-      if (datosMercadoGlobal && datosMercadoGlobal[ticker]) {
-        const data = datosMercadoGlobal[ticker];
+      if (datosMercadoGlobal && datosMercadoGlobal[consulta]) {
+        const data = datosMercadoGlobal[consulta];
         
         result.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <strong style="font-size: 1.1em;">${ticker} — Análisis de Mercado</strong>
+            <strong style="font-size: 1.1em;">${consulta} — Análisis de Mercado</strong>
             <span style="font-size: 0.8em; opacity: 0.7;">Cierre oficial (EOD)</span>
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
@@ -346,11 +58,9 @@
         `;
       } else {
         result.innerHTML = `
-          <strong>Activo solicitado: ${ticker}</strong><br>
-          No se encuentran datos diarios en el archivo actual. Revisa si el ticker está incluido en la lista de descarga.
+          <strong>Activo solicitado: ${input.value}</strong><br>
+          No se encuentran datos recientes para este activo en el archivo actual. Ampliaremos el catálogo global de mercados internacionales.
         `;
       }
     });
   </script>
-</body>
-</html>
