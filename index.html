@@ -321,5 +321,25 @@
         "cuando incorporemos fuentes de datos verificables.";
     });
   </script>
+
+<script>
+  let datosMercadoGlobal = {};
+
+  async function cargarDatosMercado() {
+    try {
+      const response = await fetch('data/market-data.json');
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      datosMercadoGlobal = await response.json();
+      console.log('Datos de mercado cargados correctamente:', datosMercadoGlobal);
+    } catch (error) {
+      console.error('No se pudieron cargar los datos de mercado:', error);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', cargarDatosMercado);
+</script>
+
 </body>
 </html>
