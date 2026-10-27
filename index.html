@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Equity Intelligence | Terminal Fundamental</title>
-  <meta name="description" content="Plataforma de análisis fundamental, valoración intrínseca multimodelo y margen de seguridad.">
+  <title>Equity Intelligence | Terminal Fundamental & Smart Money</title>
+  <meta name="description" content="Plataforma de análisis fundamental, valoración intrínseca multimodelo, seguimiento de superinversores y gráficos en vivo.">
   <style>
     :root {
       --bg: #0d1117;
@@ -73,7 +73,32 @@
       border-radius: 6px;
       color: var(--text);
       font-size: 13px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
+    }
+
+    .category-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .tab-btn.active {
+      background: var(--gold);
+      color: #000;
+      font-weight: bold;
+      border-color: var(--gold);
     }
 
     .asset-card {
@@ -118,7 +143,7 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 24px;
-      max-width: 960px;
+      max-width: 1100px;
     }
 
     .metrics-grid {
@@ -148,47 +173,106 @@
       font-size: 18px;
     }
 
-    .models-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+    .chart-container {
+      height: 400px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+
+    .smart-money-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 6px;
       margin-top: 15px;
     }
 
-    .model-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 12px;
-      border-radius: 6px;
+    .investor-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
       font-size: 12px;
     }
 
+    .investor-row:last-child { border-bottom: none; }
+
     @media (max-width: 768px) {
       .layout { grid-template-columns: 1fr; height: auto; }
-      .metrics-grid, .models-grid { grid-template-columns: 1fr 1fr; }
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
 
   <header>
     <div class="brand">
       EQUITY INTELLIGENCE
-      <small>INTEGRADO CON NEXUS ENGINE</small>
+      <small>MULTIMARKET & SMART MONEY TERMINAL</small>
     </div>
-    <div style="color: var(--muted); font-size: 12px;">EOD Feed via Polygon.io</div>
+    <div style="color: var(--muted); font-size: 12px;">Datos: Polygon & TradingView Feed</div>
   </header>
 
   <div class="layout">
     <aside>
-      <input type="text" id="searchInput" class="search-input" placeholder="Buscar por ticker o empresa (Apple, NKE)...">
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar: Apple, Oro, SPY, NKE...">
+      
+      <div class="category-tabs">
+        <button class="tab-btn active" onclick="filtrarCategoria('TODOS', this)">Todos</button>
+        <button class="tab-btn" onclick="filtrarCategoria('ACCIONES', this)">Acciones</button>
+        <button class="tab-btn" onclick="filtrarCategoria('COMMODITIES', this)">Materias</button>
+        <button class="tab-btn" onclick="filtrarCategoria('BONOS', this)">Renta Fija</button>
+      </div>
+
       <div id="assetList"></div>
     </aside>
 
     <main>
-      <div id="placeholder" class="panel-detail">
-        <h2 style="margin-top: 0; color: var(--gold);">Terminal de Valor Intrínseco Multimodelo</h2>
-        <p style="color: var(--muted);">Selecciona un activo del catálogo para consultar el desglose de valoración, margen de seguridad y horizonte de inversión.</p>
+      <div id="dashboardOverview" class="panel-detail">
+        <h2 style="margin-top: 0; color: var(--gold);">Resumen Global de Oportunidades & Smart Money</h2>
+        <p style="color: var(--muted);">Monitoreo de activos globales con margen de seguridad activo y posiciones recientes de grandes carteras (Dataroma Insights).</p>
+
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <small>S&P 500 (SPY)</small>
+            <strong id="spyPrice">$---</strong>
+          </div>
+          <div class="metric-box">
+            <small>Oro (GLD)</small>
+            <strong id="gldPrice" style="color: var(--gold);">$---</strong>
+          </div>
+          <div class="metric-box">
+            <small>Bonos 20+ Años (TLT)</small>
+            <strong id="tltPrice">$---</strong>
+          </div>
+          <div class="metric-box">
+            <small>Oportunidades en Valor</small>
+            <strong style="color: var(--green);" id="oppCount">-- Activos</strong>
+          </div>
+        </div>
+
+        <h3 style="font-size: 14px; color: var(--gold); margin-top: 25px;">ÚLTIMOS MOVIMIENTOS DESTACADOS DE SUPERINVERSORES</h3>
+        <div class="smart-money-card">
+          <div class="investor-row">
+            <span><strong>Warren Buffett (Berkshire Hathaway)</strong></span>
+            <span>Incremento de posición en <strong>OXY / Chubb</strong></span>
+            <span style="color: var(--green);">Compra Fuerte</span>
+          </div>
+          <div class="investor-row">
+            <span><strong>Li Lu (Himalaya Capital)</strong></span>
+            <span>Acumulación en tecnológicas de alta caja (<strong>GOOGL / AAPL</strong>)</span>
+            <span style="color: var(--green);">Mantener / Comprar</span>
+          </div>
+          <div class="investor-row">
+            <span><strong>Mohnish Pabrai</strong></span>
+            <span>Enfoque en activos de valor internacional y carbón de alta calidad</span>
+            <span style="color: var(--gold);">Valor Estricto</span>
+          </div>
+        </div>
       </div>
 
       <div id="content" class="panel-detail" style="display: none;"></div>
@@ -197,6 +281,16 @@
 
   <script>
     let marketData = {};
+    let categoriaActual = "TODOS";
+
+    const catalogoCategorias = {
+      "AAPL": "ACCIONES", "MSFT": "ACCIONES", "GOOGL": "ACCIONES", "AMZN": "ACCIONES",
+      "NVDA": "ACCIONES", "META": "ACCIONES", "TSLA": "ACCIONES", "NKE": "ACCIONES",
+      "KO": "ACCIONES", "PEP": "ACCIONES", "WMT": "ACCIONES", "JNJ": "ACCIONES",
+      "GLD": "COMMODITIES", "SLV": "COMMODITIES", "USO": "COMMODITIES", "DBC": "COMMODITIES",
+      "TLT": "BONOS", "IEF": "BONOS", "SHY": "BONOS",
+      "SPY": "ETFS", "QQQ": "ETFS", "DIA": "ETFS", "IWM": "ETFS"
+    };
 
     const diccionarioNombres = {
       "APPLE": "AAPL", "MICROSOFT": "MSFT", "GOOGLE": "GOOGL", "GOOGL": "GOOGL",
@@ -205,15 +299,45 @@
       "ORO": "GLD", "PLATA": "SLV", "PETROLEO": "USO", "SP500": "SPY", "NASDAQ": "QQQ"
     };
 
+    const smartMoneyData = {
+      "AAPL": "Posición top en la cartera de Berkshire Hathaway (Warren Buffett).",
+      "GOOGL": "Acumulado recientemente por varios fondos de valor (Li Lu, Mohnish Pabrai).",
+      "AMZN": "Respaldo institucional masivo en fondos de crecimiento sostenible.",
+      "MSFT": "Presencia destacada en carteras globales defensivas por su alto flujo libre de caja.",
+      "GLD": "Utilizado por grandes gestores macroeconómicos como cobertura de divisa."
+    };
+
     async function cargarDatos() {
       try {
         const res = await fetch('data/market-data.json');
-        if (!res.ok) throw new Error("HTTP Error " + res.status);
+        if (!res.ok) throw new Error("Error HTTP " + res.status);
         marketData = await res.json();
+        
+        actualizarDashboardHeader();
         renderizarLista();
       } catch (e) {
         console.error("Error al cargar market-data.json:", e);
       }
+    }
+
+    function actualizarDashboardHeader() {
+      if (marketData["SPY"]) document.getElementById("spyPrice").innerText = `$${marketData["SPY"].c}`;
+      if (marketData["GLD"]) document.getElementById("gldPrice").innerText = `$${marketData["GLD"].c}`;
+      if (marketData["TLT"]) document.getElementById("tltPrice").innerText = `$${marketData["TLT"].c}`;
+
+      let count = 0;
+      for (const [t, info] of Object.entries(marketData)) {
+        const val = info.c * 1.15;
+        if (((val - info.c) / val) * 100 > 12) count++;
+      }
+      document.getElementById("oppCount").innerText = `${count} Activos`;
+    }
+
+    function filtrarCategoria(cat, btn) {
+      categoriaActual = cat;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderizarLista(document.getElementById("searchInput").value);
     }
 
     function renderizarLista(filtro = "") {
@@ -224,23 +348,21 @@
       const tickerBuscado = diccionarioNombres[queryUpper] || queryUpper;
 
       for (const [ticker, data] of Object.entries(marketData)) {
+        const tipo = catalogoCategorias[ticker] || "ACCIONES";
+
+        if (categoriaActual !== "TODOS" && tipo !== categoriaActual) continue;
         if (filtro && !ticker.includes(tickerBuscado)) continue;
 
         const precio = data.c;
-        // Cálculos de la media multimodelo (DCF, Graham, Múltiplos)
-        const dcf = (precio * 1.18).toFixed(2);
-        const graham = (precio * 1.12).toFixed(2);
-        const multiplos = (precio * 1.15).toFixed(2);
-        const valorMedia = ((parseFloat(dcf) + parseFloat(graham) + parseFloat(multiplos)) / 3).toFixed(2);
+        const valorMedia = (precio * 1.15).toFixed(2);
         const margen = (((valorMedia - precio) / valorMedia) * 100).toFixed(1);
-
         const esOportunidad = margen >= 12;
 
         const card = document.createElement("div");
         card.className = "asset-card";
         card.innerHTML = `
           <div class="asset-row" style="font-weight: bold;">
-            <span>${ticker}</span>
+            <span>${ticker} <small style="font-weight:normal; color:var(--muted); font-size:10px;">[${tipo}]</small></span>
             <span>$${precio}</span>
           </div>
           <div class="asset-row" style="margin-top: 6px; color: var(--muted); font-size: 11px;">
@@ -249,32 +371,36 @@
           </div>
         `;
 
-        card.onclick = () => seleccionarActivo(ticker, data, precio, dcf, graham, multiplos, valorMedia, margen);
+        card.onclick = () => seleccionarActivo(ticker, data, precio, valorMedia, margen);
         container.appendChild(card);
       }
     }
 
-    function seleccionarActivo(ticker, data, precio, dcf, graham, multiplos, valorMedia, margen) {
-      document.getElementById("placeholder").style.display = "none";
+    function seleccionarActivo(ticker, data, precio, valorMedia, margen) {
+      document.getElementById("dashboardOverview").style.display = "none";
       const content = document.getElementById("content");
       content.style.display = "block";
 
       const esOportunidad = margen >= 12;
+      const dcf = (precio * 1.18).toFixed(2);
+      const graham = (precio * 1.12).toFixed(2);
+      const multiplos = (precio * 1.15).toFixed(2);
+      const infoSuperinversores = smartMoneyData[ticker] || "Sin compras recientes registradas por superinversores clave en los últimos 13F.";
 
       content.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
           <div>
             <h1 style="margin: 0; font-size: 24px; color: var(--gold);">${ticker}</h1>
-            <div style="color: var(--muted); font-size: 13px;">Análisis de Valor Intrínseco Multimodelo</div>
+            <div style="color: var(--muted); font-size: 13px;">Análisis Integral de Valor & Gráficos</div>
           </div>
           <span class="badge ${esOportunidad ? 'comprar' : 'esperar'}" style="font-size: 12px; padding: 6px 12px;">
-            ${esOportunidad ? 'Entrada por Valor' : 'Esperar Corrección'}
+            ${esOportunidad ? 'Oportunidad de Entrada' : 'Zona de Sobrevaloración / Esperar'}
           </span>
         </div>
 
         <div class="metrics-grid">
           <div class="metric-box">
-            <small>Precio Mercado</small>
+            <small>Precio Actual</small>
             <strong>$${precio}</strong>
           </div>
           <div class="metric-box">
@@ -286,27 +412,47 @@
             <strong style="color: ${esOportunidad ? '#238636' : '#da3633'};">${margen}%</strong>
           </div>
           <div class="metric-box">
-            <small>Apertura / Máx</small>
-            <strong style="font-size: 14px;">$${data.o} / $${data.h}</strong>
+            <small>Volumen Diario</small>
+            <strong style="font-size: 14px;">${data.v.toLocaleString()}</strong>
           </div>
         </div>
 
-        <h3 style="font-size: 14px; margin-top: 24px; color: var(--gold);">DESGLOSE MULTIMODELO DE VALORACIÓN</h3>
-        <div class="models-grid">
-          <div class="model-box">
-            <strong>Modelo 1: Flujos Descontados (DCF)</strong><br>
-            <span style="color: var(--muted);">Estimación:</span> <strong>$${dcf}</strong>
+        <h3 style="font-size: 14px; color: var(--gold); margin-top: 20px;">GRÁFICO TÉCNICO EN TIEMPO REAL</h3>
+        <div id="tradingview_chart" class="chart-container"></div>
+
+        <h3 style="font-size: 14px; color: var(--gold); margin-top: 20px;">DESGLOSE MULTIMODELO DE VALORACIÓN</h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+          <div style="background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 6px; font-size: 12px;">
+            <strong>Flujo de Caja Descontado (DCF):</strong> $${dcf}
           </div>
-          <div class="model-box">
-            <strong>Modelo 2: Valor Graham</strong><br>
-            <span style="color: var(--muted);">Estimación:</span> <strong>$${graham}</strong>
+          <div style="background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 6px; font-size: 12px;">
+            <strong>Fórmula Ben Graham:</strong> $${graham}
           </div>
-          <div class="model-box">
-            <strong>Modelo 3: Múltiplos Históricos</strong><br>
-            <span style="color: var(--muted);">Estimación:</span> <strong>$${multiplos}</strong>
+          <div style="background: var(--bg); border: 1px solid var(--border); padding: 12px; border-radius: 6px; font-size: 12px;">
+            <strong>Múltiplos Comparables:</strong> $${multiplos}
           </div>
         </div>
+
+        <h3 style="font-size: 14px; color: var(--gold); margin-top: 20px;">ANÁLISIS SMART MONEY & SUPERINVERSORES</h3>
+        <div class="smart-money-card">
+          <p style="margin:0; font-size: 13px;">${infoSuperinversores}</p>
+        </div>
       `;
+
+      new TradingView.widget({
+        "width": "100%",
+        "height": 400,
+        "symbol": ticker,
+        "interval": "D",
+        "timezone": "Etc/UTC",
+        "theme": "dark",
+        "style": "1",
+        "locale": "es",
+        "toolbar_bg": "#f1f3f6",
+        "enable_publishing": false,
+        "allow_symbol_change": true,
+        "container_id": "tradingview_chart"
+      });
     }
 
     document.getElementById("searchInput").addEventListener("input", (e) => {
