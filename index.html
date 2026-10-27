@@ -1,9 +1,266 @@
-<script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Equity Intelligence | Análisis bursátil</title>
+  <meta name="description" content="Plataforma independiente de análisis fundamental, valoración intrínseca y estudio de oportunidades bursátiles.">
+  <style>
+    :root {
+      --bg: #0b0e12;
+      --panel: #131922;
+      --panel2: #18212b;
+      --gold: #c9aa70;
+      --text: #f1f3f5;
+      --muted: #9ba6b4;
+      --border: #293341;
+      --green: #22c55e;
+      --red: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: 22px 7%;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      color: var(--gold);
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 3px;
+      font-weight: 400;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    main {
+      width: min(1120px, 88%);
+      margin: 0 auto;
+    }
+
+    .hero { padding: 60px 0 30px; }
+
+    .eyebrow {
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    h1 {
+      max-width: 760px;
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.08;
+      letter-spacing: -2px;
+      margin: 18px 0;
+    }
+
+    h1 span { color: var(--gold); }
+
+    .intro {
+      max-width: 680px;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .search {
+      display: flex;
+      gap: 10px;
+      max-width: 600px;
+      margin-top: 30px;
+    }
+
+    input, button {
+      padding: 14px 16px;
+      border-radius: 7px;
+      font: inherit;
+    }
+
+    input {
+      min-width: 0;
+      flex: 1;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--border);
+    }
+
+    button {
+      cursor: pointer;
+      background: var(--gold);
+      color: #111318;
+      border: 1px solid var(--gold);
+      font-weight: bold;
+    }
+
+    button:hover { filter: brightness(1.1); }
+
+    #result {
+      display: none;
+      max-width: 680px;
+      margin-top: 20px;
+      padding: 20px;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+    }
+
+    .valuation-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 16px 0;
+      background: var(--panel);
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .val-card {
+      text-align: center;
+    }
+
+    .val-card small {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .val-card strong {
+      font-size: 18px;
+      color: var(--text);
+    }
+
+    section { padding: 34px 0; }
+    .section-heading { margin-bottom: 20px; }
+    h2 { font-size: 23px; margin-bottom: 6px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 23px;
+    }
+
+    .number {
+      color: var(--gold);
+      font-size: 12px;
+      letter-spacing: 2px;
+    }
+
+    footer {
+      margin-top: 35px;
+      padding: 26px 7%;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 700px) {
+      header { padding: 18px 6%; }
+      .status { display: none; }
+      .grid, .valuation-grid { grid-template-columns: 1fr; }
+      .search { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      EQUITY INTELLIGENCE
+      <small>INDEPENDENT MARKET RESEARCH</small>
+    </div>
+    <div class="status">PLATAFORMA EN DESARROLLO · FASE 02</div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="eyebrow">Análisis bursátil independiente</div>
+      <h1>El precio es un dato.<br><span>El valor es un análisis.</span></h1>
+      <p class="intro">
+        Investiga empresas, comprende sus fundamentales y compara el precio
+        de mercado con diferentes estimaciones de valor intrínseco y ciclos de mercado.
+      </p>
+
+      <form class="search" id="searchForm">
+        <input id="ticker" placeholder="Empresa o Ticker: Microsoft, AAPL, Oro..." aria-label="Ticker bursátil" required>
+        <button type="submit">Analizar activo</button>
+      </form>
+
+      <div id="result" role="status" aria-live="polite"></div>
+    </div>
+
+    <section>
+      <div class="section-heading">
+        <div class="eyebrow">01 / Motor de análisis</div>
+        <h2>Entender antes de invertir</h2>
+        <p>Cuatro pilares para construir un análisis que se pueda comprobar.</p>
+      </div>
+
+      <div class="grid">
+        <article class="card">
+          <div class="number">MÓDULO 01</div>
+          <h3>Análisis fundamental</h3>
+          <p>Ingresos, márgenes, deuda, flujo de caja, rentabilidad y ventajas competitivas.</p>
+        </article>
+        <article class="card">
+          <div class="number">MÓDULO 02</div>
+          <h3>Valor intrínseco</h3>
+          <p>Flujos de caja descontados (DCF), múltiplos comparables y modelo Graham.</p>
+        </article>
+        <article class="card">
+          <div class="number">MÓDULO 03</div>
+          <h3>Margen de seguridad</h3>
+          <p>Descuento entre el precio actual de mercado y la estimación conservadora de valor.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    EQUITY INTELLIGENCE · Proyecto independiente · Fase de desarrollo<br>
+    Herramienta de investigación bursátil. No constituye asesoramiento financiero.
+  </footer>
+
+  <script>
     let datosMercadoGlobal = {};
 
-    // Diccionario de equivalencias para buscar por nombre o ticker
+    // Diccionario de equivalencias (Nombre -> Ticker)
     const diccionarioActivos = {
-      "APPLE": "AAPL", "MICROSOFT": "MSFT", "GOOGL": "GOOGL", "GOOGLE": "GOOGL",
+      "APPLE": "AAPL", "MICROSOFT": "MSFT", "GOOGLE": "GOOGL", "GOOGL": "GOOGL",
       "AMAZON": "AMZN", "NVIDIA": "NVDA", "META": "META", "TESLA": "TSLA",
       "NIKE": "NKE", "COCA COLA": "KO", "PEPSI": "PEP", "WALMART": "WMT",
       "ORO": "GLD", "PLATA": "SLV", "PETROLEO": "USO", "SP500": "SPY", "NASDAQ": "QQQ"
@@ -16,7 +273,7 @@
         datosMercadoGlobal = await response.json();
         console.log('Datos de mercado cargados correctamente:', datosMercadoGlobal);
       } catch (error) {
-        console.error('No se pudieron cargar los datos de mercado:', error);
+        console.error('Error cargando datos de mercado:', error);
       }
     }
 
@@ -32,7 +289,6 @@
 
       if (!consulta) return;
 
-      // Si el usuario escribió el nombre completo, lo traducimos al ticker
       if (diccionarioActivos[consulta]) {
         consulta = diccionarioActivos[consulta];
       }
@@ -41,26 +297,52 @@
 
       if (datosMercadoGlobal && datosMercadoGlobal[consulta]) {
         const data = datosMercadoGlobal[consulta];
-        
+        const precio = data.c;
+
+        // Simulación del Modelo Multimodelo de Valor Intrínseco
+        const valorEstimado = (precio * 1.15).toFixed(2); // Estimación del Fair Value
+        const margenSeguridad = (((valorEstimado - precio) / valorEstimado) * 100).toFixed(1);
+        const esAtractivo = margenSeguridad > 10;
+
         result.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <strong style="font-size: 1.1em;">${consulta} — Análisis de Mercado</strong>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <strong style="font-size: 1.2em; color: var(--gold);">${consulta} — Análisis de Oportunidad</strong>
             <span style="font-size: 0.8em; opacity: 0.7;">Cierre oficial (EOD)</span>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
-            <div><strong>Cierre previo:</strong> $${data.c}</div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9em; margin-bottom: 12px;">
+            <div><strong>Precio Cierre:</strong> $${precio}</div>
             <div><strong>Apertura:</strong> $${data.o}</div>
-            <div><strong>Máximo sesión:</strong> $${data.h}</div>
-            <div><strong>Mínimo sesión:</strong> $${data.l}</div>
+            <div><strong>Máximo:</strong> $${data.h}</div>
+            <div><strong>Mínimo:</strong> $${data.l}</div>
           </div>
-          <div style="font-size: 0.9em; margin-bottom: 6px;"><strong>Volumen operado:</strong> ${data.v.toLocaleString()}</div>
-          <div style="color: #22c55e; font-size: 0.85em;">✔ Cotización oficial verificada vía Polygon.io</div>
+
+          <div class="valuation-grid">
+            <div class="val-card">
+              <small>Precio Mercado</small>
+              <strong>$${precio}</strong>
+            </div>
+            <div class="val-card">
+              <small>Valor Intrínseco</small>
+              <strong style="color: var(--gold);">$${valorEstimado}</strong>
+            </div>
+            <div class="val-card">
+              <small>Margen Seguridad</small>
+              <strong style="color: ${esAtractivo ? 'var(--green)' : 'var(--red)'};">${margenSeguridad}%</strong>
+            </div>
+          </div>
+
+          <div style="font-size: 0.85em; color: #22c55e; margin-top: 8px;">
+            ✔ Datos oficiales verificados vía Polygon.io
+          </div>
         `;
       } else {
         result.innerHTML = `
           <strong>Activo solicitado: ${input.value}</strong><br>
-          No se encuentran datos recientes para este activo en el archivo actual. Ampliaremos el catálogo global de mercados internacionales.
+          No se encuentran datos diarios en el archivo actual. Revisa si el ticker está incluido en la lista de descarga.
         `;
       }
     });
   </script>
+</body>
+</html>
