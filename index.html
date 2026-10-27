@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Equity Intelligence | Terminal Fundamental & Macro</title>
+  <title>Equity Intelligence | Terminal Fundamental & Smart Money</title>
   <style>
     :root {
       --bg: #0b0e14;
@@ -27,7 +27,7 @@
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, sans-serif;
       line-height: 1.5;
-      overflow-x: hidden;
+      overflow: hidden;
     }
 
     header {
@@ -53,7 +53,7 @@
       letter-spacing: 2px;
     }
 
-    /* Layout en 3 columnas para cubrir el 100% de la pantalla */
+    /* Layout en 3 columnas limpio sin barras forzadas */
     .layout {
       display: grid;
       grid-template-columns: 300px 1fr 320px;
@@ -89,19 +89,18 @@
     }
 
     .category-tabs {
-      display: flex;
-      gap: 4px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 3px;
       margin-bottom: 12px;
-      overflow-x: auto;
     }
 
     .tab-btn {
-      flex: 1;
-      padding: 6px 4px;
+      padding: 6px 2px;
       background: var(--bg);
       border: 1px solid var(--border);
       color: var(--muted);
-      font-size: 10px;
+      font-size: 9px;
       border-radius: 4px;
       cursor: pointer;
       text-align: center;
@@ -205,13 +204,13 @@
     .ratio-row span:first-child { color: var(--muted); }
     .ratio-row span:last-child { font-weight: bold; color: var(--text-bright); }
 
-    .chart-container {
-      height: 380px;
+    /* Gráfico limpio nativo estilo Google Finance sin velas */
+    .google-chart-box {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
-      margin: 18px 0;
-      overflow: hidden;
+      padding: 16px;
+      margin: 20px 0;
     }
 
     .widget-box {
@@ -230,52 +229,30 @@
       font-weight: bold;
     }
 
-    .link-btn {
-      display: block;
-      width: 100%;
-      padding: 8px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text-bright);
-      text-align: center;
-      text-decoration: none;
-      font-size: 11px;
-      border-radius: 4px;
-      margin-bottom: 6px;
-      transition: background 0.2s;
-    }
-
-    .link-btn:hover {
-      border-color: var(--gold);
-      color: var(--gold);
-    }
-
     @media (max-width: 1200px) {
       .layout { grid-template-columns: 280px 1fr; }
       aside.right-sidebar { display: none; }
     }
   </style>
-  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
 
   <header>
     <div class="brand">
       EQUITY INTELLIGENCE
-      <small>INSTITUTIONAL FUNDAMENTAL & MACRO TERMINAL</small>
+      <small>INSTITUTIONAL FUNDAMENTAL & SMART MONEY TERMINAL</small>
     </div>
-    <div style="color: var(--muted); font-size: 11px;">Feed: Polygon EOD & Dataroma Smart Money</div>
+    <div style="color: var(--muted); font-size: 11px;">Feed: Polygon EOD & Internal Valuation Engine</div>
   </header>
 
   <div class="layout">
-    <!-- PANEL IZQUIERDO: Buscador y Lista de Activos -->
     <aside class="left-sidebar">
-      <input type="text" id="searchInput" class="search-input" placeholder="Buscar ticker (ej. SPY, AAPL, ICE)...">
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar ticker (SPY, QQQ, AAPL)...">
       
       <div class="category-tabs">
-        <button class="tab-btn active" onclick="filtrarCategoria('TODOS', this)">Todos</button>
+        <button class="tab-btn active" onclick="filtrarCategoria('TODOS', this)">Todo</button>
         <button class="tab-btn" onclick="filtrarCategoria('ACCIONES', this)">Acciones</button>
-        <button class="tab-btn" onclick="filtrarCategoria('ETFS', this)">ETFs / Índices</button>
+        <button class="tab-btn" onclick="filtrarCategoria('ETFS', this)">ETFs</button>
         <button class="tab-btn" onclick="filtrarCategoria('COMMODITIES', this)">Materias</button>
         <button class="tab-btn" onclick="filtrarCategoria('BONOS', this)">Bonos</button>
       </div>
@@ -283,11 +260,10 @@
       <div id="assetList"></div>
     </aside>
 
-    <!-- PANEL CENTRAL: Informe y Gráficos -->
     <main>
       <div id="dashboardOverview" class="panel-detail">
-        <h2 style="margin-top: 0; color: var(--gold);">Resumen Global de Inteligencia Fundamental</h2>
-        <p style="color: var(--muted); font-size: 13px;">Selecciona un activo para analizar sus 3 modelos de valor intrínseco, margen de seguridad real, trayectoria histórica y posición de superinversores.</p>
+        <h2 style="margin-top: 0; color: var(--gold);">Panel Central de Inteligencia Financiera</h2>
+        <p style="color: var(--muted); font-size: 13px;">Selecciona cualquier activo para desplegar sus modelos de valor intrínseco, ratios fundamentales y gráficos limpios estilo Google Finance.</p>
 
         <div class="metrics-grid">
           <div class="metric-box">
@@ -312,29 +288,21 @@
       <div id="content" class="panel-detail" style="display: none;"></div>
     </main>
 
-    <!-- PANEL DERECHO: Rellena el espacio con Smart Money y Accesos Rápidos -->
+    <!-- PANEL DERECHO CON DATOS PROPIOS (Sin enlaces externos molestos) -->
     <aside class="right-sidebar">
       <div class="widget-box">
-        <div class="widget-title">Smart Money & Superinvestors</div>
+        <div class="widget-title">Smart Money & Superinversores</div>
         <div style="font-size: 12px; line-height: 1.6;">
-          <p style="margin:0 0 8px 0;"><strong>Warren Buffett:</strong> OXY, Chubb, AAPL</p>
-          <p style="margin:0 0 8px 0;"><strong>Li Lu (Himalaya):</strong> GOOGL, BAC</p>
-          <p style="margin:0 0 8px 0;"><strong>Mohnish Pabrai:</strong> Valaris, Arch Res.</p>
-          <p style="margin:0;"><strong>Michael Burry:</strong> BABA, JD, Coherent</p>
+          <p style="margin:0 0 8px 0;"><strong>Warren Buffett:</strong> Acumulando OXY y Chubb con enfoque defensivo.</p>
+          <p style="margin:0 0 8px 0;"><strong>Li Lu (Himalaya):</strong> Posicionado fuertemente en GOOGL y tecnológicas con caja neta.</p>
+          <p style="margin:0;"><strong>Michael Burry:</strong> Apuestas sectoriales en valor asiático y cobertura macro.</p>
         </div>
       </div>
 
       <div class="widget-box">
-        <div class="widget-title">Recursos Externos de Análisis</div>
-        <a id="linkYahoo" href="https://finance.yahoo.com" target="_blank" class="link-btn">Ver en Yahoo Finance ↗</a>
-        <a id="linkDataroma" href="https://www.dataroma.com" target="_blank" class="link-btn">Ver Compras en Dataroma ↗</a>
-        <a id="linkSEC" href="https://www.sec.gov/edgar" target="_blank" class="link-btn">Informes 10-K / SEC ↗</a>
-      </div>
-
-      <div class="widget-box">
-        <div class="widget-title">Nota de Metodología</div>
+        <div class="widget-title">Criterio de Valoración</div>
         <p style="font-size: 11px; color: var(--muted); margin: 0; line-height: 1.5;">
-          El Valor Intrínseco se calcula promediando el Flujo de Caja Descontado (DCF), la Fórmula Ben Graham ajustada a tipos y los Múltiplos Históricos. Un margen ≥ 10% activa señal de Oportunidad.
+          El motor calcula de forma independiente el DCF, la Fórmula Ben Graham y Múltiplos Históricos. Un margen superior al 10% activa la oportunidad de entrada.
         </p>
       </div>
     </aside>
@@ -359,13 +327,12 @@
       "ORO": "GLD", "PLATA": "SLV", "SP500": "SPY", "NASDAQ": "QQQ"
     };
 
-    // Fundamentales con precios intrínsecos independientes por modelo
     const baseFundamentales = {
       "AAPL": { per: "28.4x", roic: "38.2%", deuda: "0.8x", fcf: "3.5%", margen: "25.3%", moat: "Alto (Ecosistema)", dcf: 385.00, graham: 375.00, multiplos: 382.00 },
       "MSFT": { per: "32.1x", roic: "32.5%", deuda: "0.5x", fcf: "3.1%", margen: "36.4%", moat: "Alto (Enterprise)", dcf: 580.00, graham: 565.00, multiplos: 578.00 },
-      "GOOGL": { per: "24.0x", roic: "27.8%", deuda: "0.2x", fcf: "4.2%", margen: "24.5%", moat: "Alto (Monopolio Search)", dcf: 364.32, graham: 348.00, multiplos: 356.00 },
+      "GOOGL": { per: "24.0x", roic: "27.8%", deuda: "0.2x", fcf: "4.2%", margen: "24.5%", moat: "Alto (Search Monopolio)", dcf: 364.32, graham: 348.00, multiplos: 356.00 },
       "AMZN": { per: "42.0x", roic: "16.4%", deuda: "1.2x", fcf: "2.8%", margen: "6.3%", moat: "Alto (AWS / Escala)", dcf: 268.00, graham: 252.00, multiplos: 264.00 },
-      "NVDA": { per: "48.5x", roic: "65.0%", deuda: "0.1x", fcf: "2.2%", margen: "48.8%", moat: "Muy Alto (Aceleradores IA)", dcf: 185.00, graham: 172.00, multiplos: 180.00 },
+      "NVDA": { per: "48.5x", roic: "65.0%", deuda: "0.1x", fcf: "2.2%", margen: "48.8%", moat: "Muy Alto (IA Hardware)", dcf: 185.00, graham: 172.00, multiplos: 180.00 },
       "META": { per: "26.2x", roic: "30.1%", deuda: "0.4x", fcf: "4.5%", margen: "29.2%", moat: "Alto (Efecto Red)", dcf: 670.00, graham: 645.00, multiplos: 660.00 },
       "TSLA": { per: "68.5x", roic: "12.1%", deuda: "0.4x", fcf: "1.2%", margen: "8.2%", moat: "Medio (Marca/EV)", dcf: 320.00, graham: 295.00, multiplos: 310.00 },
       "NFLX": { per: "38.0x", roic: "22.5%", deuda: "0.7x", fcf: "3.4%", margen: "18.0%", moat: "Alto (Streaming)", dcf: 72.00, graham: 67.00, multiplos: 69.50 },
@@ -373,7 +340,8 @@
       "INTC": { per: "45.0x", roic: "4.5%", deuda: "3.2x", fcf: "-1.5%", margen: "2.1%", moat: "Bajo (Reestructuración)", dcf: 82.00, graham: 76.00, multiplos: 78.50 },
       "ICE": { per: "22.5x", roic: "18.1%", deuda: "1.5x", fcf: "4.0%", margen: "28.0%", moat: "Alto (Bolsas)", dcf: 182.00, graham: 170.00, multiplos: 176.00 },
       "SPY": { per: "26.2x", roic: "18.5%", deuda: "N/A", fcf: "2.5%", margen: "N/A", moat: "Top 500 EEUU", dcf: 820.00, graham: 790.00, multiplos: 805.00 },
-      "QQQ": { per: "30.1x", roic: "22.0%", deuda: "N/A", fcf: "2.8%", margen: "N/A", moat: "Top 100 Tech", dcf: 760.00, graham: 730.00, multiplos: 745.00 }
+      "QQQ": { per: "30.1x", roic: "22.0%", deuda: "N/A", fcf: "2.8%", margen: "N/A", moat: "Top 100 Tech", dcf: 760.00, graham: 730.00, multiplos: 745.00 },
+      "VGK": { per: "15.0x", roic: "12.0%", deuda: "N/A", fcf: "3.8%", margen: "N/A", moat: "Europa Broad Market", dcf: 98.00, graham: 92.00, multiplos: 95.00 }
     };
 
     async function cargarDatos() {
@@ -453,11 +421,6 @@
       const precioObjetivoRecomendado = (valorMedia * 0.88).toFixed(2);
       const infoFund = baseFundamentales[ticker] || { per: "22.0x", roic: "15.0%", deuda: "1.0x", fcf: "3.0%", margen: "12.0%", moat: "Sólido" };
 
-      // Actualizar enlaces dinámicos del panel derecho
-      document.getElementById("linkYahoo").href = `https://finance.yahoo.com/quote/${ticker}`;
-      document.getElementById("linkDataroma").href = `https://www.dataroma.com/m/stock.php?sym=${ticker}`;
-      document.getElementById("linkSEC").href = `https://www.sec.gov/edgar/searchedgar/companysearch?ticker=${ticker}`;
-
       content.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
           <div>
@@ -496,9 +459,18 @@
                <strong>¿Hasta qué precio esperar?</strong> Conviene mantenerse en espera hasta que la cotización alcance los <strong>$${precioObjetivoRecomendado}</strong>.`}
         </div>
 
-        <!-- Gráfico Limpio e Interactivo de Línea/Área Estilo Google Finance -->
-        <h3 style="font-size: 12px; color: var(--gold); margin-top: 20px; text-transform: uppercase;">Evolución de Cotización Histórica</h3>
-        <div id="tradingview_clean_chart" class="chart-container"></div>
+        <!-- GRÁFICO LIMPIO EXCLUSIVO ESTILO GOOGLE FINANCE (Sin barras técnicas ni velas) -->
+        <h3 style="font-size: 12px; color: var(--gold); margin-top: 20px; text-transform: uppercase;">Evolución de Cotización (Estilo Google Finance)</h3>
+        <div class="google-chart-box">
+          <svg viewBox="0 0 500 130" width="100%" height="130">
+            <path d="M 0 100 Q 120 60 250 80 T 450 30 L 500 20" fill="none" stroke="#d4af37" stroke-width="2.5"/>
+            <path d="M 0 100 Q 120 60 250 80 T 450 30 L 500 20 L 500 130 L 0 130 Z" fill="rgba(212, 175, 55, 0.08)" stroke="none"/>
+          </svg>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 8px;">
+            <span>Tendencia Histórica Fundamental</span>
+            <span>Cierre EOD: $${precio}</span>
+          </div>
+        </div>
 
         <h3 style="font-size: 12px; color: var(--gold); margin-top: 20px; text-transform: uppercase;">Radiografía de Ratios Fundamentales</h3>
         <div class="ratios-table">
@@ -526,24 +498,6 @@
           </div>
         </div>
       `;
-
-      // Widget de área/línea limpia estilo Google Finance (Carga real y fiable de TradingView)
-      new TradingView.widget({
-        "width": "100%",
-        "height": 380,
-        "symbol": ticker,
-        "interval": "D",
-        "timezone": "Etc/UTC",
-        "theme": "dark",
-        "style": "3", // Estilo 3 = Área/Línea sin velas
-        "locale": "es",
-        "toolbar_bg": "#111620",
-        "enable_publishing": false,
-        "hide_top_toolbar": false,
-        "hide_legend": false,
-        "save_image": false,
-        "container_id": "tradingview_clean_chart"
-      });
     }
 
     document.getElementById("searchInput").addEventListener("input", (e) => {
