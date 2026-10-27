@@ -2,37 +2,63 @@ import os
 import json
 import requests
 
-def fetch_market_data():
-    api_key = os.environ.get("POLYGON_KEY")
-    if not api_key:
-        raise ValueError("No se ha encontrado la clave POLYGON_KEY en los secretos.")
+# 1. Obtener la API key almacenada en los Secrets de GitHub
+API_KEY = os.environ.get("POLYGON_KEY")
 
-    # Lista de símbolos de ejemplo que puedes adaptar o ampliar
-    symbols = ["AAPL", "MSFT", "GOOGL", "AMZN"]
-    market_data = {}
+if not API_KEY:
+    raise ValueError("La variable POLYGON_KEY no está configurada en los Secrets.")
 
-    for ticker in symbols:
-        url = f"https://api.polygon.io/v2/aggs/ticker/{ticker}/prev?adjusted=true&apiKey={api_key}"
-        response = requests.get(url)
-        
-        if response.status_code != 200:
-            raise Exception(f"Error al conectar con Polygon para {ticker}: {response.status_code}")
-            
+# 2. Lista ampliada de activos representativos del mercado global:
+# - Megacaps / Tech: AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA
+# - Valor / Calidad: BRK.B, JNJ, V, MA, KO, PEP, PG, COST, UNH
+# - Índices globales (ETFs): SPY (S&P 500), QQQ (Nasdaq 100), DIA (Dow Jones), IWM (Russell 2000)
+# - Materias Primas (ETFs): GLD (Oro), SLV (Plata), USO (Petróleo), DBC (Commodities globales)
+# - Bonos / Renta Fija (ETFs): TLT (Tesoro EE.UU. 20+ años), IEF (Tesoro EE.UU. 7-10 años), SHY (Tesoro a corto plazo)
+TICKERS = [
+    # Grandes empresas (Acciones)
+    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA",
+    "BRK.B", "JNJ", "V", "MA", "KO", "PEP", "PG", "COST", "UNH",
+    
+    # Índices Bursátiles (ETFs)
+    "SPY", "QQQ", "DIA", "IWM",
+    
+    # Materias Primas
+    "GLD", "SLV", "USO", "DBC",
+    
+    # Bonos y Renta Fija
+    "TLT", "IEF", "SHY"
+]
+
+market_data = {}
+
+print(f"Descargando datos oficiales de cierre para {len(TICKERS)} activos...")
+
+for ticker in TICKERS:
+    # Consulta a la API oficial de Polygon (End of Day Previous Close)
+    url = f"https://api.polygon.io/v2/aggs/ticker/{ticker}/prev?adjusted=true&apiKey={API_KEY}"
+    try:
+        response = requests.get(url, timeout=10)
         data = response.json()
         
-        if "results" not in data or not data["results"]:
-            raise ValueError(f"Polygon no ha devuelto datos válidos para el ticker {ticker}: {data}")
-            
-        market_data[ticker] = data["results"][0]
+        if data.get("status") == "OK" and data.get("resultsCount", 0) > 0:
+            res = data["results"][0]
+            market_data[ticker] = {
+                "c": res.get("c"),  # Precio Cierre
+                "o": res.get("o"),  # Precio Apertura
+                "h": res.get("h"),  # Máximo
+                "l": res.get("l"),  # Mínimo
+                "v": res.get("v"),  # Volumen
+                "t": res.get("t")   # Timestamp Unix
+            }
+            print(f"✔ {ticker}: Cierre ${res.get('c')}")
+        else:
+            print(f"⚠ No se obtuvieron datos para {ticker}")
+    except Exception as e:
+        print(f"❌ Error al consultar {ticker}: {e}")
 
-    # Crear la carpeta data si no existe
-    os.makedirs("data", exist_ok=True)
-    
-    file_path = "data/market-data.json"
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(market_data, f, indent=4)
-        
-    print(f"Datos guardados correctamente en {file_path}")
+# 3. Guardar el resultado en la carpeta data/market-data.json
+os.makedirs("data", exist_ok=True)
+with open("data/market-data.json", "w", encoding="utf-8") as f:
+    json.dump(market_data, f, indent=2)
 
-if __name__ == "__main__":
-    fetch_market_data()
+print("¡Archivo data/market-data.json actualizado con éxito!")
