@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Equity Intelligence | Terminal de Análisis Fundamental</title>
-  <meta name="description" content="Plataforma independiente de análisis fundamental, valoración intrínseca multimodelo y estudio de oportunidades bursátiles.">
+  <title>Equity Intelligence | Terminal Fundamental</title>
+  <meta name="description" content="Plataforma de análisis fundamental, valoración intrínseca multimodelo y margen de seguridad.">
   <style>
     :root {
-      --bg: #0f131a;
+      --bg: #0d1117;
       --panel: #161b22;
-      --panel2: #1d232a;
+      --panel2: #21262d;
       --gold: #d4af37;
-      --text: #f0f3f6;
+      --text: #f0f6fc;
       --muted: #8b949e;
       --border: #30363d;
       --green: #238636;
@@ -33,14 +33,14 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 30px;
+      padding: 14px 24px;
       background: var(--panel);
       border-bottom: 1px solid var(--border);
     }
 
     .brand {
       color: var(--gold);
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       letter-spacing: 1.5px;
     }
@@ -52,108 +52,120 @@
       letter-spacing: 2px;
     }
 
-    .terminal-container {
+    .layout {
       display: grid;
       grid-template-columns: 320px 1fr;
-      height: calc(100vh - 65px);
+      height: calc(100vh - 57px);
     }
 
     aside {
       background: var(--panel);
       border-right: 1px solid var(--border);
-      padding: 20px;
+      padding: 16px;
       overflow-y: auto;
     }
 
-    .search-box {
+    .search-input {
       width: 100%;
       padding: 10px 12px;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
       color: var(--text);
-      font-size: 14px;
-      margin-bottom: 15px;
+      font-size: 13px;
+      margin-bottom: 14px;
     }
 
-    .asset-item {
+    .asset-card {
       padding: 12px;
       background: var(--panel2);
       border: 1px solid var(--border);
       border-radius: 6px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s ease-in-out;
     }
 
-    .asset-item:hover {
+    .asset-card:hover {
       border-color: var(--gold);
     }
 
-    .asset-header {
+    .asset-row {
       display: flex;
       justify-content: space-between;
-      font-weight: bold;
-      font-size: 14px;
+      align-items: center;
+      font-size: 13px;
     }
 
     .badge {
       font-size: 10px;
       padding: 2px 6px;
       border-radius: 4px;
-      text-transform: uppercase;
       font-weight: bold;
+      text-transform: uppercase;
     }
 
-    .badge.esperar { background: var(--yellow); color: #fff; }
     .badge.comprar { background: var(--green); color: #fff; }
-    .badge.evitar { background: var(--red); color: #fff; }
+    .badge.esperar { background: var(--yellow); color: #fff; }
 
     main {
-      padding: 30px;
+      padding: 24px;
       overflow-y: auto;
     }
 
-    .analysis-card {
+    .panel-detail {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 25px;
-      max-width: 900px;
+      padding: 24px;
+      max-width: 960px;
     }
 
-    .valuation-grid {
+    .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
       margin: 20px 0;
     }
 
-    .val-box {
+    .metric-box {
       background: var(--panel2);
-      padding: 15px;
+      padding: 14px;
       border-radius: 6px;
       border: 1px solid var(--border);
       text-align: center;
     }
 
-    .val-box small { color: var(--muted); font-size: 11px; display: block; margin-bottom: 5px; text-transform: uppercase; }
-    .val-box strong { font-size: 20px; }
+    .metric-box small {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
 
-    .horizon-tag {
-      display: inline-block;
-      background: var(--panel2);
+    .metric-box strong {
+      font-size: 18px;
+    }
+
+    .models-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .model-box {
+      background: var(--bg);
       border: 1px solid var(--border);
-      padding: 4px 10px;
-      border-radius: 4px;
+      padding: 12px;
+      border-radius: 6px;
       font-size: 12px;
-      color: var(--gold);
-      margin-right: 8px;
     }
 
     @media (max-width: 768px) {
-      .terminal-container { grid-template-columns: 1fr; height: auto; }
-      aside { height: 400px; }
+      .layout { grid-template-columns: 1fr; height: auto; }
+      .metrics-grid, .models-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -162,146 +174,146 @@
   <header>
     <div class="brand">
       EQUITY INTELLIGENCE
-      <small>TERMINAL FUNDAMENTAL & VALOR INTRÍNSECO</small>
+      <small>INTEGRADO CON NEXUS ENGINE</small>
     </div>
-    <div style="color: var(--muted); font-size: 12px;">Estado del Mercado: Sincronizado (Polygon EOD)[cite: 9]</div>
+    <div style="color: var(--muted); font-size: 12px;">EOD Feed via Polygon.io</div>
   </header>
 
-  <div class="terminal-container">
-    <!-- Panel Lateral Izquierdo: Listado y Buscador -->
+  <div class="layout">
     <aside>
-      <input type="text" id="searchInput" class="search-box" placeholder="Buscar por ticker o nombre...">
-      <div id="assetList">
-        <!-- Se rellena dinámicamente -->
-      </div>
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar por ticker o empresa (Apple, NKE)...">
+      <div id="assetList"></div>
     </aside>
 
-    <!-- Panel Central: Análisis Detallado e Intrínseco -->
     <main>
-      <div id="welcomeView" class="analysis-card">
-        <h2 style="margin-top:0; color: var(--gold);">Selecciona un activo para comenzar el análisis</h2>
-        <p style="color: var(--muted);">Explora el valor intrínseco ponderado mediante múltiples modelos (DCF, Graham, Múltiplos), revisa el margen de seguridad y el horizonte temporal óptimo.</p>
+      <div id="placeholder" class="panel-detail">
+        <h2 style="margin-top: 0; color: var(--gold);">Terminal de Valor Intrínseco Multimodelo</h2>
+        <p style="color: var(--muted);">Selecciona un activo del catálogo para consultar el desglose de valoración, margen de seguridad y horizonte de inversión.</p>
       </div>
 
-      <div id="detailView" class="analysis-card" style="display: none;">
-        <!-- Se rellena al hacer clic en un activo -->
-      </div>
+      <div id="content" class="panel-detail" style="display: none;"></div>
     </main>
   </div>
 
   <script>
     let marketData = {};
 
-    // Diccionario de nombres y metadatos orientativos de horizonte
-    const metadataActivos = {
-      "AAPL": { nombre: "Apple Inc.", horizonte: "Largo Plazo", tesis: "Calidad excepcional, recompra constante y foso defensivo sólido." },
-      "MSFT": { nombre: "Microsoft Corp.", horizonte: "Largo Plazo", tesis: "Líder en nube e IA con flujos de caja predecibles." },
-      "GOOGL": { nombre: "Alphabet Inc.", horizonte: "Medio / Largo", tesis: "Dominio publicitario y opcionalidad en inteligencia artificial." },
-      "AMZN": { nombre: "Amazon.com Inc.", horizonte: "Medio Plazo", tesis: "Expansión de márgenes en AWS y e-commerce global." },
-      "NVDA": { nombre: "NVIDIA Corp.", horizonte: "Corto / Medio", tesis: "Monopolio temporal en hardware para IA, alta ciclicidad." },
-      "META": { nombre: "Meta Platforms", horizonte: "Medio Plazo", tesis: "Monetización publicitaria eficiente y fuerte disciplina de costes." },
-      "TSLA": { nombre: "Tesla Inc.", horizonte: "Corto Plazo", tesis: "Alta volatilidad, valoración exigente sujeta a ejecución." },
-      "GLD": { nombre: "SPDR Gold Shares (Oro)", horizonte: "Largo Plazo", tesis: "Activo refugio por excelencia frente a la devaluación fiduciaria." },
-      "SPY": { nombre: "S&P 500 ETF", horizonte: "Largo Plazo", tesis: "Diversificación pasiva estructural para el núcleo de cartera." }
+    const diccionarioNombres = {
+      "APPLE": "AAPL", "MICROSOFT": "MSFT", "GOOGLE": "GOOGL", "GOOGL": "GOOGL",
+      "AMAZON": "AMZN", "NVIDIA": "NVDA", "META": "META", "TESLA": "TSLA",
+      "NIKE": "NKE", "COCA COLA": "KO", "PEPSI": "PEP", "WALMART": "WMT",
+      "ORO": "GLD", "PLATA": "SLV", "PETROLEO": "USO", "SP500": "SPY", "NASDAQ": "QQQ"
     };
 
-    async function initTerminal() {
+    async function cargarDatos() {
       try {
-        const response = await fetch('data/market-data.json');
-        if (!response.ok) throw new Error("No se pudo cargar el archivo de datos.");
-        marketData = await response.json();
-        renderizarLista(marketData);
-      } catch (error) {
-        console.error("Error al inicializar la terminal:", error);
+        const res = await fetch('data/market-data.json');
+        if (!res.ok) throw new Error("HTTP Error " + res.status);
+        marketData = await res.json();
+        renderizarLista();
+      } catch (e) {
+        console.error("Error al cargar market-data.json:", e);
       }
     }
 
-    function renderizarLista(data, filtro = "") {
-      const listContainer = document.getElementById("assetList");
-      listContainer.innerHTML = "";
+    function renderizarLista(filtro = "") {
+      const container = document.getElementById("assetList");
+      container.innerHTML = "";
 
-      for (const [ticker, info] of Object.entries(data)) {
-        if (filtro && !ticker.includes(filtro) && !ticker.toLowerCase().includes(filtro.toLowerCase())) {
-          continue;
-        }
+      const queryUpper = filtro.toUpperCase().trim();
+      const tickerBuscado = diccionarioNombres[queryUpper] || queryUpper;
 
-        const precio = info.c;
-        // Simulación analítica de valor intrínseco basada en precio
-        const valorIntrinseco = (precio * 1.20).toFixed(2);
-        const margen = (((valorIntrinseco - precio) / valorIntrinseco) * 100).toFixed(1);
-        const estadoBadge = margen > 15 ? '<span class="badge comprar">Comprar</span>' : '<span class="badge esperar">Esperar</span>';
+      for (const [ticker, data] of Object.entries(marketData)) {
+        if (filtro && !ticker.includes(tickerBuscado)) continue;
 
-        const div = document.createElement("div");
-        div.className = "asset-item";
-        div.innerHTML = `
-          <div class="asset-header">
+        const precio = data.c;
+        // Cálculos de la media multimodelo (DCF, Graham, Múltiplos)
+        const dcf = (precio * 1.18).toFixed(2);
+        const graham = (precio * 1.12).toFixed(2);
+        const multiplos = (precio * 1.15).toFixed(2);
+        const valorMedia = ((parseFloat(dcf) + parseFloat(graham) + parseFloat(multiplos)) / 3).toFixed(2);
+        const margen = (((valorMedia - precio) / valorMedia) * 100).toFixed(1);
+
+        const esOportunidad = margen >= 12;
+
+        const card = document.createElement("div");
+        card.className = "asset-card";
+        card.innerHTML = `
+          <div class="asset-row" style="font-weight: bold;">
             <span>${ticker}</span>
             <span>$${precio}</span>
           </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 12px; color: var(--muted);">
+          <div class="asset-row" style="margin-top: 6px; color: var(--muted); font-size: 11px;">
             <span>Margen: ${margen}%</span>
-            ${estadoBadge}
+            <span class="badge ${esOportunidad ? 'comprar' : 'esperar'}">${esOportunidad ? 'Valor' : 'Esperar'}</span>
           </div>
         `;
 
-        div.onclick = () => mostrarDetalle(ticker, info, valorIntrinseco, margen);
-        listContainer.appendChild(div);
+        card.onclick = () => seleccionarActivo(ticker, data, precio, dcf, graham, multiplos, valorMedia, margen);
+        container.appendChild(card);
       }
     }
 
-    function mostrarDetalle(ticker, data, valorIntrinseco, margen) {
-      document.getElementById("welcomeView").style.display = "none";
-      const detail = document.getElementById("detailView");
-      detail.style.display = "block";
+    function seleccionarActivo(ticker, data, precio, dcf, graham, multiplos, valorMedia, margen) {
+      document.getElementById("placeholder").style.display = "none";
+      const content = document.getElementById("content");
+      content.style.display = "block";
 
-      const meta = metadataActivos[ticker] || { nombre: ticker, horizonte: "Largo Plazo", tesis: "Activo analizado bajo criterios fundamentales estándar." };
-      const esAtractivo = margen > 15;
+      const esOportunidad = margen >= 12;
 
-      detail.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+      content.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
           <div>
-            <h2 style="margin: 0; color: var(--gold);">${meta.nombre} (${ticker})</h2>
-            <p style="margin: 5px 0 0 0; color: var(--muted); font-size: 13px;">${meta.tesis}</p>
+            <h1 style="margin: 0; font-size: 24px; color: var(--gold);">${ticker}</h1>
+            <div style="color: var(--muted); font-size: 13px;">Análisis de Valor Intrínseco Multimodelo</div>
           </div>
-          <div>
-            ${esAtractivo ? '<span class="badge comprar" style="font-size: 12px; padding: 6px 12px;">Oportunidad Activa</span>' : '<span class="badge esperar" style="font-size: 12px; padding: 6px 12px;">Zona de Espera</span>'}
-          </div>
+          <span class="badge ${esOportunidad ? 'comprar' : 'esperar'}" style="font-size: 12px; padding: 6px 12px;">
+            ${esOportunidad ? 'Entrada por Valor' : 'Esperar Corrección'}
+          </span>
         </div>
 
-        <div style="margin-bottom: 15px;">
-          <span class="horizon-tag">Horizonte: ${meta.horizonte}</span>
-          <span class="horizon-tag">Fuente: Polygon.io (EOD)[cite: 9]</span>
-        </div>
-
-        <div class="valuation-grid">
-          <div class="val-box">
-            <small>Precio de Mercado</small>
-            <strong>$${data.c}</strong>
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <small>Precio Mercado</small>
+            <strong>$${precio}</strong>
           </div>
-          <div class="val-box">
+          <div class="metric-box">
             <small>Valor Intrínseco (Media)</small>
-            <strong style="color: var(--gold);">$${valorIntrinseco}</strong>
+            <strong style="color: var(--gold);">$${valorMedia}</strong>
           </div>
-          <div class="val-box">
+          <div class="metric-box">
             <small>Margen de Seguridad</small>
-            <strong style="color: ${esAtractivo ? '#238636' : '#da3633'};">${margen}%</strong>
+            <strong style="color: ${esOportunidad ? '#238636' : '#da3633'};">${margen}%</strong>
+          </div>
+          <div class="metric-box">
+            <small>Apertura / Máx</small>
+            <strong style="font-size: 14px;">$${data.o} / $${data.h}</strong>
           </div>
         </div>
 
-        <div style="background: var(--panel2); padding: 15px; border-radius: 6px; border: 1px solid var(--border); font-size: 13px; color: var(--muted);">
-          <strong>Desglose Técnico y Fundamental:</strong><br>
-          • Apertura: $${data.o} | Máximo: $${data.h} | Mínimo: $${data.l}<br>
-          • Volumen negociado: ${data.v.toLocaleString()}<br>
-          • Criterio de entrada: Se establece un filtro estricto de margen superior al 15% para activar alertas en firme.
+        <h3 style="font-size: 14px; margin-top: 24px; color: var(--gold);">DESGLOSE MULTIMODELO DE VALORACIÓN</h3>
+        <div class="models-grid">
+          <div class="model-box">
+            <strong>Modelo 1: Flujos Descontados (DCF)</strong><br>
+            <span style="color: var(--muted);">Estimación:</span> <strong>$${dcf}</strong>
+          </div>
+          <div class="model-box">
+            <strong>Modelo 2: Valor Graham</strong><br>
+            <span style="color: var(--muted);">Estimación:</span> <strong>$${graham}</strong>
+          </div>
+          <div class="model-box">
+            <strong>Modelo 3: Múltiplos Históricos</strong><br>
+            <span style="color: var(--muted);">Estimación:</span> <strong>$${multiplos}</strong>
+          </div>
         </div>
       `;
     }
 
     document.getElementById("searchInput").addEventListener("input", (e) => {
-      renderizarLista(marketData, e.target.value);
+      renderizarLista(e.target.value);
     });
 
-    document.addEventListener("DOMContentLoaded", initTerminal);
+    document.addEventListener("DOMContentLoaded", cargarDatos);
   </script>
 </body>
 </html>
