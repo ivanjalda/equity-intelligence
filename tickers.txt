@@ -1,0 +1,77 @@
+# Una línea por activo. Formato:  TICKER [TIPO] [ciclica]
+# TIPO puede ser ACCIONES (por defecto), ETFS, COMMODITIES o BONOS.
+# Escribe "ciclica" al final de las empresas cíclicas (minería, petróleo, automóvil...).
+# Para añadir un activo, escribe una línea nueva. Para quitarlo, bórrala.
+
+# --- Acciones de EE. UU. ---
+AAPL
+MSFT
+GOOGL
+AMZN
+NVDA
+META
+TSLA
+NFLX
+AMD
+INTC
+ICE
+NKE
+V
+MA
+KO
+PEP
+PG
+JNJ
+UNH
+WMT
+COST
+HD
+MCD
+DIS
+ADBE
+CRM
+ORCL
+CSCO
+BRK.B
+LLY
+MRK
+ABBV
+PFE
+T
+VZ
+AVGO
+QCOM
+TXN
+MMM
+HON
+
+# --- Cíclicas ---
+XOM ciclica
+CVX ciclica
+F ciclica
+GM ciclica
+CAT ciclica
+DE ciclica
+FCX ciclica
+NUE ciclica
+DOW ciclica
+LYB ciclica
+BA ciclica
+MU ciclica
+
+# --- Índices y ETFs ---
+SPY ETFS
+QQQ ETFS
+DIA ETFS
+IWM ETFS
+VGK ETFS
+EEM ETFS
+
+# --- Materias primas ---
+GLD COMMODITIES
+SLV COMMODITIES
+USO COMMODITIES
+
+# --- Bonos ---
+TLT BONOS
+IEF BONOS

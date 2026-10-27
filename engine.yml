@@ -1,0 +1,31 @@
+name: Motor Equity Intelligence
+
+on:
+  schedule:
+    - cron: "30 22 * * 1-5"   # lunes a viernes, tras el cierre de EE. UU.
+  workflow_dispatch:           # permite ejecutarlo a mano
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Calcular valoraciones y enviar aviso
+        env:
+          # CAMBIA ESTE EMAIL POR EL TUYO (la SEC lo exige para identificar quién consulta)
+          SEC_USER_AGENT: "EquityIntelligence tu-email@ejemplo.com"
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/engine.py
+      - name: Guardar resultados
+        run: |
+          git config user.name "equity-bot"
+          git config user.email "equity-bot@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || (git commit -m "Actualización $(date -u +%F)" && git push)
