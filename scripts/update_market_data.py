@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import requests
 
 # 1. Obtener la API key almacenada en los Secrets de GitHub
@@ -8,12 +9,7 @@ API_KEY = os.environ.get("POLYGON_KEY")
 if not API_KEY:
     raise ValueError("La variable POLYGON_KEY no está configurada en los Secrets.")
 
-# 2. Lista ampliada de activos representativos del mercado global:
-# - Megacaps / Tech: AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA
-# - Valor / Calidad: BRK.B, JNJ, V, MA, KO, PEP, PG, COST, UNH
-# - Índices globales (ETFs): SPY (S&P 500), QQQ (Nasdaq 100), DIA (Dow Jones), IWM (Russell 2000)
-# - Materias Primas (ETFs): GLD (Oro), SLV (Plata), USO (Petróleo), DBC (Commodities globales)
-# - Bonos / Renta Fija (ETFs): TLT (Tesoro EE.UU. 20+ años), IEF (Tesoro EE.UU. 7-10 años), SHY (Tesoro a corto plazo)
+# 2. Lista completa de activos
 TICKERS = [
     # Grandes empresas (Acciones)
     "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA",
@@ -31,10 +27,9 @@ TICKERS = [
 
 market_data = {}
 
-print(f"Descargando datos oficiales de cierre para {len(TICKERS)} activos...")
+print(f"Descargando datos oficiales de cierre para {len(TICKERS)} activos (con pausa para respetar el plan gratuito)...")
 
 for ticker in TICKERS:
-    # Consulta a la API oficial de Polygon (End of Day Previous Close)
     url = f"https://api.polygon.io/v2/aggs/ticker/{ticker}/prev?adjusted=true&apiKey={API_KEY}"
     try:
         response = requests.get(url, timeout=10)
@@ -52,9 +47,13 @@ for ticker in TICKERS:
             }
             print(f"✔ {ticker}: Cierre ${res.get('c')}")
         else:
-            print(f"⚠ No se obtuvieron datos para {ticker}")
+            print(f"⚠ No se obtuvieron datos para {ticker} (Respuesta: {data.get('status')})")
     except Exception as e:
         print(f"❌ Error al consultar {ticker}: {e}")
+    
+    # Pausa de 12 segundos entre peticiones para cumplir estrictamente
+    # el límite gratuito de Polygon (máx 5 peticiones por minuto)
+    time.sleep(12)
 
 # 3. Guardar el resultado en la carpeta data/market-data.json
 os.makedirs("data", exist_ok=True)
