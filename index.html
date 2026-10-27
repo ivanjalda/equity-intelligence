@@ -302,23 +302,35 @@
   </footer>
 
   <script>
-    const form = document.getElementById("searchForm");
+const form = document.getElementById("searchForm");
     const input = document.getElementById("ticker");
     const result = document.getElementById("result");
 
     form.addEventListener("submit", function(event) {
       event.preventDefault();
-
       const ticker = input.value.trim().toUpperCase();
 
       if (!ticker) return;
 
       result.style.display = "block";
-      result.textContent =
-        "Activo solicitado: " + ticker +
-        ". El motor de análisis y las fuentes financieras todavía no están conectados. " +
-        "No se muestran precios ni estimaciones ficticias. Esta empresa podrá analizarse " +
-        "cuando incorporemos fuentes de datos verificables.";
+
+      if (datosMercadoGlobal && datosMercadoGlobal[ticker]) {
+        const data = datosMercadoGlobal[ticker];
+        result.innerHTML = `
+          <strong>Activo analizado: ${ticker}</strong><br>
+          Precio de cierre previo: $${data.c}<br>
+          Precio de apertura: $${data.o}<br>
+          Máximo de la sesión: $${data.h}<br>
+          Mínimo de la sesión: $${data.l}<br>
+          Volumen: ${data.v.toLocaleString()}<br>
+          <span style="color: #22c55e; font-size: 0.9em;">✔ Datos verificados desde Polygon.</span>
+        `;
+      } else {
+        result.innerHTML = `
+          <strong>Activo solicitado: ${ticker}</strong><br>
+          No se encuentran datos diarios en el archivo actual. Revisa si el ticker está incluido en la lista de descarga.
+        `;
+      }
     });
   </script>
 
