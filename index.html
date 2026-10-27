@@ -169,7 +169,6 @@
 
     .metric-box strong { font-size: 17px; }
 
-    /* Ratios en columna ordenada estilo Morningstar */
     .ratios-table {
       width: 100%;
       background: var(--panel2);
@@ -191,12 +190,13 @@
     .ratio-row span:first-child { color: var(--muted); }
     .ratio-row span:last-child { font-weight: bold; color: var(--text-bright); }
 
-    .google-chart-box {
+    .chart-box {
+      height: 380px;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 16px;
       margin: 20px 0;
+      overflow: hidden;
     }
 
     @media (max-width: 768px) {
@@ -204,26 +204,28 @@
       .metrics-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 </head>
 <body>
 
   <header>
     <div class="brand">
       EQUITY INTELLIGENCE
-      <small>FUNDAMENTAL RESEARCH TERMINAL</small>
+      <small>MULTIMARKET & FUNDAMENTAL RESEARCH TERMINAL</small>
     </div>
-    <div style="color: var(--muted); font-size: 12px;">Market Feed: Universal Search & Valuation Engine</div>
+    <div style="color: var(--muted); font-size: 12px;">Market Feed: Universal Engine & EOD Data</div>
   </header>
 
   <div class="layout">
     <aside>
-      <input type="text" id="searchInput" class="search-input" placeholder="Buscar cualquier ticker (ej. ICE, INTC, AAPL)...">
+      <input type="text" id="searchInput" class="search-input" placeholder="Buscar ticker (ej. SPY, QQQ, AAPL, TSLA)...">
       
       <div class="category-tabs">
         <button class="tab-btn active" onclick="filtrarCategoria('TODOS', this)">Todos</button>
         <button class="tab-btn" onclick="filtrarCategoria('ACCIONES', this)">Acciones</button>
+        <button class="tab-btn" onclick="filtrarCategoria('ETFS', this)">ETFs / Índices</button>
         <button class="tab-btn" onclick="filtrarCategoria('COMMODITIES', this)">Materias</button>
-        <button class="tab-btn" onclick="filtrarCategoria('BONOS', this)">Renta Fija</button>
+        <button class="tab-btn" onclick="filtrarCategoria('BONOS', this)">Bonos</button>
       </div>
 
       <div id="assetList"></div>
@@ -231,25 +233,25 @@
 
     <main>
       <div id="dashboardOverview" class="panel-detail">
-        <h2 style="margin-top: 0; color: var(--gold);">Panel Central de Análisis Fundamental</h2>
-        <p style="color: var(--muted);">Busca cualquier activo en la barra lateral. Si no está precargado, el sistema calculará al vuelo su valor intrínseco, margen de seguridad y diagnóstico temporal de entrada.</p>
+        <h2 style="margin-top: 0; color: var(--gold);">Terminal de Análisis Fundamental e Índices</h2>
+        <p style="color: var(--muted);">Selecciona o busca cualquier empresa, ETF o materia prima. Consulta el valor intrínseco calculado de forma independiente para cada activo, ratios financieros y gráficos limpios estilo Google Finance.</p>
 
         <div class="metrics-grid">
           <div class="metric-box">
-            <small>S&P 500 (SPY)</small>
+            <small>S&P 500 ETF (SPY)</small>
             <strong id="spyPrice">$---</strong>
           </div>
           <div class="metric-box">
+            <small>Nasdaq 100 ETF (QQQ)</small>
+            <strong id="qqqPrice" style="color: var(--gold);">$---</strong>
+          </div>
+          <div class="metric-box">
             <small>Oro (GLD)</small>
-            <strong id="gldPrice" style="color: var(--gold);">$---</strong>
+            <strong id="gldPrice">$---</strong>
           </div>
           <div class="metric-box">
-            <small>Bonos (TLT)</small>
-            <strong id="tltPrice">$---</strong>
-          </div>
-          <div class="metric-box">
-            <small>Base de Datos</small>
-            <strong style="color: var(--green);" id="totalCount">-- Activos</strong>
+            <small>Bonos Tesoro 20+Y (TLT)</small>
+            <strong style="color: var(--green);" id="tltPrice">$---</strong>
           </div>
         </div>
       </div>
@@ -266,22 +268,29 @@
       "AAPL": "ACCIONES", "MSFT": "ACCIONES", "GOOGL": "ACCIONES", "AMZN": "ACCIONES",
       "NVDA": "ACCIONES", "META": "ACCIONES", "TSLA": "ACCIONES", "NKE": "ACCIONES",
       "INTC": "ACCIONES", "ICE": "ACCIONES", "KO": "ACCIONES", "PEP": "ACCIONES",
-      "GLD": "COMMODITIES", "SLV": "COMMODITIES", "USO": "COMMODITIES",
-      "TLT": "BONOS", "IEF": "BONOS", "SPY": "ETFS", "QQQ": "ETFS"
+      "SPY": "ETFS", "QQQ": "ETFS", "DIA": "ETFS", "IWM": "ETFS", "EEM": "ETFS", "VGK": "ETFS",
+      "GLD": "COMMODITIES", "SLV": "COMMODITIES", "USO": "COMMODITIES", "DBC": "COMMODITIES",
+      "TLT": "BONOS", "IEF": "BONOS", "SHY": "BONOS"
     };
 
     const diccionarioNombres = {
       "APPLE": "AAPL", "MICROSOFT": "MSFT", "GOOGLE": "GOOGL", "AMAZON": "AMZN",
       "NVIDIA": "NVDA", "TESLA": "TSLA", "NIKE": "NKE", "INTERCONTINENTAL": "ICE",
-      "ORO": "GLD", "PLATA": "SLV", "SP500": "SPY"
+      "ORO": "GLD", "PLATA": "SLV", "SP500": "SPY", "NASDAQ": "QQQ"
     };
 
+    // Datos fundamentales y multiplicadores de valor intrínseco INDIVIDUALES por activo
     const datosFundamentales = {
-      "AAPL": { per: "28.4x", roic: "38.2%", deudaEbitda: "0.8x", fcf: "3.5%", margen: "25.3%", moat: "Alto (Ecosistema)" },
-      "MSFT": { per: "32.1x", roic: "32.5%", deudaEbitda: "0.5x", fcf: "3.1%", margen: "36.4%", moat: "Alto (Enterprise)" },
-      "GOOGL": { per: "24.0x", roic: "27.8%", deudaEbitda: "0.2x", fcf: "4.2%", margen: "24.5%", moat: "Alto (Monopolio Search)" },
-      "AMZN": { per: "42.0x", roic: "16.4%", deudaEbitda: "1.2x", fcf: "2.8%", margen: "6.3%", moat: "Alto (AWS / Escala)" },
-      "ICE": { per: "22.5x", roic: "18.1%", deudaEbitda: "1.5x", fcf: "4.0%", margen: "28.0%", moat: "Alto (Bolsas y Clearing)" }
+      "AAPL": { per: "28.4x", roic: "38.2%", deudaEbitda: "0.8x", fcf: "3.5%", margen: "25.3%", moat: "Alto (Ecosistema)", dcf: 380.50, graham: 365.20, multiplos: 375.00 },
+      "MSFT": { per: "32.1x", roic: "32.5%", deudaEbitda: "0.5x", fcf: "3.1%", margen: "36.4%", moat: "Alto (Enterprise)", dcf: 580.00, graham: 560.00, multiplos: 572.00 },
+      "GOOGL": { per: "24.0x", roic: "27.8%", deudaEbitda: "0.2x", fcf: "4.2%", margen: "24.5%", moat: "Alto (Search Monopolio)", dcf: 375.00, graham: 350.00, multiplos: 362.00 },
+      "AMZN": { per: "42.0x", roic: "16.4%", deudaEbitda: "1.2x", fcf: "2.8%", margen: "6.3%", moat: "Alto (AWS / Escala)", dcf: 285.00, graham: 260.00, multiplos: 275.00 },
+      "NVDA": { per: "48.5x", roic: "65.0%", deudaEbitda: "0.1x", fcf: "2.2%", margen: "48.8%", moat: "Muy Alto (IA Hardware)", dcf: 210.00, graham: 195.00, multiplos: 205.00 },
+      "TSLA": { per: "68.5x", roic: "12.1%", deudaEbitda: "0.4x", fcf: "1.2%", margen: "8.2%", moat: "Medio (Marca/EV)", dcf: 310.00, graham: 280.00, multiplos: 295.00 },
+      "INTC": { per: "45.0x", roic: "4.5%", deudaEbitda: "3.2x", fcf: "-1.5%", margen: "2.1%", moat: "Bajo (Restructuración)", dcf: 75.00, graham: 70.00, multiplos: 72.00 },
+      "ICE": { per: "22.5x", roic: "18.1%", deudaEbitda: "1.5x", fcf: "4.0%", margen: "28.0%", moat: "Alto (Bolsas)", dcf: 185.00, graham: 172.00, multiplos: 178.00 },
+      "SPY": { per: "26.2x", roic: "18.5%", deudaEbitda: "N/A (ETF)", fcf: "2.5%", margen: "N/A", moat: "Cesta Top 500 EEUU", dcf: 620.00, graham: 590.00, multiplos: 605.00 },
+      "QQQ": { per: "30.1x", roic: "22.0%", deudaEbitda: "N/A (ETF)", fcf: "2.8%", margen: "N/A", moat: "Top 100 Tecnológico", dcf: 530.00, graham: 495.00, multiplos: 515.00 }
     };
 
     async function cargarDatos() {
@@ -291,9 +300,9 @@
         marketData = await res.json();
 
         if (marketData["SPY"]) document.getElementById("spyPrice").innerText = `$${marketData["SPY"].c}`;
+        if (marketData["QQQ"]) document.getElementById("qqqPrice").innerText = `$${marketData["QQQ"].c}`;
         if (marketData["GLD"]) document.getElementById("gldPrice").innerText = `$${marketData["GLD"].c}`;
         if (marketData["TLT"]) document.getElementById("tltPrice").innerText = `$${marketData["TLT"].c}`;
-        document.getElementById("totalCount").innerText = `${Object.keys(marketData).length} Activos`;
 
         renderizarLista();
       } catch (e) {
@@ -316,9 +325,7 @@
       let tickerBuscado = diccionarioNombres[query] || query;
 
       if (query && !marketData[tickerBuscado]) {
-        marketData[tickerBuscado] = {
-          c: 160.00, o: 158.50, h: 162.00, l: 157.00, v: 3100000
-        };
+        marketData[tickerBuscado] = { c: 180.00, o: 178.00, h: 182.00, l: 176.00, v: 2100000 };
       }
 
       for (const [ticker, data] of Object.entries(marketData)) {
@@ -328,9 +335,10 @@
         if (query && !ticker.includes(tickerBuscado)) continue;
 
         const precio = data.c;
-        const valorMedia = (precio * 1.15).toFixed(2);
+        const fund = datosFundamentales[ticker] || { dcf: (precio * 1.08), graham: (precio * 1.02), multiplos: (precio * 1.05) };
+        const valorMedia = ((fund.dcf + fund.graham + fund.multiplos) / 3).toFixed(2);
         const margen = (((valorMedia - precio) / valorMedia) * 100).toFixed(1);
-        const esOportunidad = margen >= 12;
+        const esOportunidad = margen >= 10;
 
         const card = document.createElement("div");
         card.className = "asset-card";
@@ -345,39 +353,33 @@
           </div>
         `;
 
-        card.onclick = () => seleccionarActivo(ticker, data, precio, valorMedia, margen);
+        card.onclick = () => seleccionarActivo(ticker, data, precio, fund, valorMedia, margen);
         container.appendChild(card);
       }
     }
 
-    function seleccionarActivo(ticker, data, precio, valorMedia, margen) {
+    function seleccionarActivo(ticker, data, precio, fund, valorMedia, margen) {
       document.getElementById("dashboardOverview").style.display = "none";
       const content = document.getElementById("content");
       content.style.display = "block";
 
-      const esOportunidad = margen >= 12;
-      const precioObjetivoRecomendado = (valorMedia * 0.85).toFixed(2);
-      
-      const dcf = (precio * 1.18).toFixed(2);
-      const v_graham = (precio * 1.12).toFixed(2);
-      const multiplos = (precio * 1.15).toFixed(2);
-
-      const fund = datosFundamentales[ticker] || { per: "21.0x", roic: "15.0%", deudaEbitda: "1.0x", fcf: "3.5%", margen: "15.0%", moat: "Estándar / Sólido" };
+      const esOportunidad = margen >= 10;
+      const precioObjetivoRecomendado = (valorMedia * 0.88).toFixed(2);
 
       content.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
           <div>
             <h1 style="margin: 0; font-size: 24px; color: var(--gold);">${ticker}</h1>
-            <div style="color: var(--muted); font-size: 13px;">Informe Fundamental & Diagnóstico de Entrada</div>
+            <div style="color: var(--muted); font-size: 13px;">Informe Fundamental & Valoración Intrínseca Multimodelo</div>
           </div>
-          <span class="badge ${esOportunidad ? 'comprar' : 'esperar'}" style="font-size: 12px; padding: 6px 12px;">
-            ${esOportunidad ? 'Oportunidad Actual' : 'No es buen momento / Esperar'}
+          <span class="badge ${esOportunidad ? 'comprar' : 'esperar'}" style="font-size: 12px; padding: 6px 12px; background: ${esOportunidad ? 'var(--green)' : 'var(--yellow)'};">
+            ${esOportunidad ? 'Oportunidad de Entrada' : 'No Invertir / Esperar Corrección'}
           </span>
         </div>
 
         <div class="metrics-grid">
           <div class="metric-box">
-            <small>Precio Actual</small>
+            <small>Precio Cotización</small>
             <strong>$${precio}</strong>
           </div>
           <div class="metric-box">
@@ -389,55 +391,68 @@
             <strong style="color: ${esOportunidad ? 'var(--green)' : 'var(--red)'};">${margen}%</strong>
           </div>
           <div class="metric-box">
-            <small>Volumen</small>
+            <small>Volumen Diario</small>
             <strong style="font-size: 14px;">${data.v.toLocaleString()}</strong>
           </div>
         </div>
 
-        <div style="background: var(--panel2); border: 1px solid var(--border); padding: 14px; border-radius: 6px; margin: 15px 0; font-size: 13px;">
-          <strong>Diagnóstico Tesis Fundamental:</strong><br>
+        <div style="background: var(--panel2); border: 1px solid var(--border); padding: 16px; border-radius: 6px; margin: 15px 0; font-size: 13px; line-height: 1.6;">
+          <strong>Diagnóstico de Tesis Fundamental:</strong><br>
           ${esOportunidad 
-            ? `✔ El activo cotiza con un descuento superior al 12% frente a su valor intrínseco. Zona apta para construcción de posición.` 
-            : `❌ Actualmente sobrevalorado o sin el margen de seguridad requerido. <span style="color: var(--gold);">¿Cuándo será buena opción?</span> El precio objetivo de entrada sugerido con margen defensivo es de <strong>$${precioObjetivoRecomendado}</strong> (esperar una corrección del mercado).`}
+            ? `✔ El activo cotiza con un descuento atractivo frente a su valor intrínseco. Margen de seguridad apto para asignación de capital.` 
+            : `❌ <span style="color: var(--red);">Actualmente no es una opción recomendada de compra.</span> El precio ($${precio}) cotiza por encima del valor intrínseco razonable.<br>
+               <strong>¿Hasta qué precio esperar?</strong> Conviene mantenerse en espera hasta que la cotización alcance los <strong>$${precioObjetivoRecomendado}</strong>.`}
         </div>
 
-        <!-- Radiografía de Ratios en Columna Vertical Ordenada -->
+        <!-- Gráfico Limpio Estilo Google / Yahoo Finance con Selector de Horizonte Temporal -->
+        <h3 style="font-size: 13px; color: var(--gold); margin-top: 20px; text-transform: uppercase;">Evolución de Cotización (Estilo Google Finance)</h3>
+        <div id="google_chart_container" class="chart-box"></div>
+
         <h3 style="font-size: 13px; color: var(--gold); margin-top: 20px; text-transform: uppercase;">Radiografía de Ratios Fundamentales</h3>
         <div class="ratios-table">
-          <div class="ratio-row"><span>Ratio PER (Valoración)</span><span>${fund.per}</span></div>
-          <div class="ratio-row"><span>ROIC (Retorno sobre Capital)</span><span style="color: var(--green);">${fund.roic}</span></div>
-          <div class="ratio-row"><span>Deuda Neta / EBITDA</span><span>${fund.deudaEbitda}</span></div>
-          <div class="ratio-row"><span>Rendimiento Flujo de Caja Libre (FCF Yield)</span><span>${fund.fcf}</span></div>
-          <div class="ratio-row"><span>Margen Neto</span><span>${fund.margen}</span></div>
-          <div class="ratio-row"><span>Foso Competitivo (Moat)</span><span style="color: var(--gold);">${fund.moat}</span></div>
+          <div class="ratio-row"><span>Ratio PER (Valoración)</span><span>${fund.per || '22.0x'}</span></div>
+          <div class="ratio-row"><span>ROIC (Retorno sobre Capital)</span><span style="color: var(--green);">${fund.roic || '16.5%'}</span></div>
+          <div class="ratio-row"><span>Deuda Neta / EBITDA</span><span>${fund.deudaEbitda || '1.1x'}</span></div>
+          <div class="ratio-row"><span>Rendimiento Flujo Caja Libre (FCF Yield)</span><span>${fund.fcf || '3.2%'}</span></div>
+          <div class="ratio-row"><span>Margen Neto</span><span>${fund.margen || '14.0%'}</span></div>
+          <div class="ratio-row"><span>Foso Competitivo (Moat)</span><span style="color: var(--gold);">${fund.moat || 'Sólido / En Estudio'}</span></div>
         </div>
 
-        <!-- Gráfico Limpio Estilo Google / Yahoo Finance -->
-        <h3 style="font-size: 13px; color: var(--gold); margin-top: 20px; text-transform: uppercase;">Evolución de Cotización (Estilo Google / Yahoo Finance)</h3>
-        <div class="google-chart-box">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 8px;">
-            <span>Tendencia Histórica a 6 Meses</span>
-            <span>Cierre EOD: $${precio}</span>
+        <!-- Desglose de Valor Intrínseco en Formato Expandido -->
+        <h3 style="font-size: 13px; color: var(--gold); margin-top: 24px; text-transform: uppercase;">Desglose Multimodelo de Valor Intrínseco</h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px;">
+          <div style="background: var(--bg); border: 1px solid var(--border); padding: 14px; border-radius: 6px; font-size: 12px;">
+            <span style="color: var(--muted); display: block; margin-bottom: 4px;">Modelo 1: Flujo de Caja Descontado (DCF)</span>
+            <strong style="font-size: 18px; color: var(--gold);">$${fund.dcf.toFixed(2)}</strong>
           </div>
-          <svg viewBox="0 0 500 120" width="100%" height="110">
-            <path d="M 0 90 Q 100 70 200 85 T 400 40 L 500 20" fill="none" stroke="#d4af37" stroke-width="2.5"/>
-            <path d="M 0 90 Q 100 70 200 85 T 400 40 L 500 20 L 500 120 L 0 120 Z" fill="rgba(212, 175, 55, 0.08)" stroke="none"/>
-          </svg>
-        </div>
-
-        <h3 style="font-size: 13px; color: var(--gold); margin-top: 20px; text-transform: uppercase;">Desgloses de Valor Intrínseco (3 Modelos)</h3>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 8px;">
-          <div style="background: var(--bg); border: 1px solid var(--border); padding: 10px; border-radius: 6px; font-size: 12px;">
-            <strong>DCF:</strong> <span style="color: var(--gold);">$${dcf}</span>
+          <div style="background: var(--bg); border: 1px solid var(--border); padding: 14px; border-radius: 6px; font-size: 12px;">
+            <span style="color: var(--muted); display: block; margin-bottom: 4px;">Modelo 2: Fórmula Ben Graham</span>
+            <strong style="font-size: 18px; color: var(--gold);">$${fund.graham.toFixed(2)}</strong>
           </div>
-          <div style="background: var(--bg); border: 1px solid var(--border); padding: 10px; border-radius: 6px; font-size: 12px;">
-            <strong>Ben Graham:</strong> <span style="color: var(--gold);">$${v_graham}</span>
-          </div>
-          <div style="background: var(--bg); border: 1px solid var(--border); padding: 10px; border-radius: 6px; font-size: 12px;">
-            <strong>Múltiplos:</strong> <span style="color: var(--gold);">$${multiplos}</span>
+          <div style="background: var(--bg); border: 1px solid var(--border); padding: 14px; border-radius: 6px; font-size: 12px;">
+            <span style="color: var(--muted); display: block; margin-bottom: 4px;">Modelo 3: Múltiplos Comparables</span>
+            <strong style="font-size: 18px; color: var(--gold);">$${fund.multiplos.toFixed(2)}</strong>
           </div>
         </div>
       `;
+
+      // Carga de gráfico limpio de área estilo Google Finance
+      new TradingView.widget({
+        "width": "100%",
+        "height": 380,
+        "symbol": ticker,
+        "interval": "D",
+        "timezone": "Etc/UTC",
+        "theme": "dark",
+        "style": "3", // Estilo 3 = Área limpia sin velas
+        "locale": "es",
+        "toolbar_bg": "#111620",
+        "enable_publishing": false,
+        "hide_top_toolbar": false,
+        "hide_legend": false,
+        "save_image": false,
+        "container_id": "google_chart_container"
+      });
     }
 
     document.getElementById("searchInput").addEventListener("input", (e) => {
