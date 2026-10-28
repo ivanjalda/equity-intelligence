@@ -90,7 +90,7 @@ async function init(){
   mk("fVer",VERS,()=>ver,k=>ver=k);mk("fCat",CATS,()=>cat,k=>cat=k);mk("fHor",HORS,()=>hor,k=>hor=k);
   document.getElementById("q").oninput=()=>lista();
   lista();panel13f();
-  const best=tickers().map(t=>[t,calc(t)]).filter(x=>x[1]&&x[1].verdict==="COMPRAR").sort((a,b)=>b[1].mg-a[1].mg)[0];
+  const best=tickers().map(t=>[t,calc(t)]).filter(x=>x[1]&&x[1].verdict==="COMPRAR").sort((a,b)=>rkOf(b[1])-rkOf(a[1]))[0];
   best?detalle(best[0]):inicio();
 }
 function toggleCic(){cic=!cic;document.getElementById("fCic").classList.toggle("on",cic);lista()}
@@ -103,8 +103,10 @@ function calc(t){
   const iv=ms.reduce((a,b)=>a+b,0)/ms.length,mg=(iv-p)/iv*100;
   const weak=mg>=25&&v.health==="Frágil",odd=mg>70;
   const verdict=mg>=25&&!weak&&!odd?"COMPRAR":mg>=0?"ESPERAR":"CARO";
-  return{iv,mg,verdict,entry:iv*0.75,n:ms.length,p,v,weak,odd};
+  const spr=Math.max(...ms)/Math.min(...ms);
+  return{iv,mg,verdict,entry:iv*0.75,n:ms.length,p,v,weak,odd,spr};
 }
+const rkOf=c=>c?Math.min(c.mg,50)*(c.v.health==="Sólida"?1:.75)*(c.spr<1.5?1:c.spr<2.2?.85:.65)*(c.v.cyclical?.85:1):-999;
 function tickers(){return [...new Set([...Object.keys(D.m),...Object.keys(D.v.items||{})])].filter(t=>!t.startsWith("_"))}
 let LIM=40;
 function lista(keep){
@@ -122,7 +124,7 @@ function lista(keep){
     if(useVer&&ver!=="TODAS"&&(!c||c.verdict!==ver))return;
     rows.push({t,v,c});
   });
-  const rk=r=>r.c?Math.min(r.c.mg,50)*(r.v.health==="Sólida"?1:.75)*(r.v.cyclical?.85:1):-999;
+  const rk=r=>rkOf(r.c);
   rows.sort((a,b)=>q?(b.t.startsWith(q)-a.t.startsWith(q)||a.t.localeCompare(b.t)):(rk(b)-rk(a)||a.t.localeCompare(b.t)));
   el.innerHTML=`<div class="sm" style="margin-bottom:6px">${q?"Resultados de la búsqueda ("+rows.length+")":useVer?VT[ver]+" ("+rows.length+")":LBL[cat]+" ("+rows.length+")"}</div>`;
   rows.slice(0,LIM).forEach(({t,v,c})=>{
@@ -152,7 +154,8 @@ function detalle(t){
   <span class="badge ${c?c.verdict:"NA"}" style="font-size:13px;padding:5px 12px">${c?c.verdict:"Sin valorar"}</span></div>
   <div class="grid"><div class="m"><small>Precio</small><strong>${p?"$"+num(p):"—"}</strong></div>
   <div class="m"><small>Valor intrínseco</small><strong style="color:var(--gold)">${c?"$"+num(c.iv):"—"}</strong></div>
-  <div class="m"><small>Margen de seguridad</small><strong class="${c&&c.mg>=0?"up":"dn"}">${c?num(c.mg,1)+" %":"—"}</strong></div></div>`;
+  <div class="m"><small>Margen de seguridad</small><strong class="${c&&c.mg>=0?"up":"dn"}">${c?num(c.mg,1)+" %":"—"}</strong></div>
+  ${c&&c.n>1?`<div class="m"><small>Acuerdo entre métodos</small><strong class="${c.spr<1.5?"up":c.spr<2.2?"":"dn"}">${c.spr<1.5?"Alto":c.spr<2.2?"Medio":"Bajo"}</strong><small>el más alto es ×${num(c.spr,1)} el más bajo</small></div>`:""}</div>`;
   if(c){
     h+=`<div class="note"><strong>${c.verdict==="COMPRAR"?"Zona de compra.":c.verdict==="ESPERAR"?"Mejor esperar.":"Caro ahora."}</strong> `;
     if(c.verdict==="COMPRAR")h+=`El precio ya ofrece un margen de seguridad suficiente.`;
@@ -160,6 +163,7 @@ function detalle(t){
     h+=` Valor calculado con ${c.n} de 3 métodos. No es asesoramiento financiero.</div>`;
   }
   if(!c&&v.kind==="financiera")h+=`<div class="note">Los bancos, aseguradoras, fondos e inmobiliarias se valoran con otros métodos (valor contable, dividendos…). Todavía no los incluimos, así que no damos veredicto para evitar un número engañoso.</div>`;
+  h+=`<div id="drop"></div>`;
   h+=`<div class="flex"><h3>Cotización</h3><div class="row" id="rng" style="margin:0"></div></div><div id="chart" class="chart"></div>`;
   if(c)h+=`<h3>Tres formas de calcular el valor intrínseco</h3><table>
   <tr><th>Método</th><th>Qué hace</th><th>Valor</th></tr>
@@ -178,6 +182,9 @@ async function grafico(t){
   const raw=D.h[t];
   if(!raw||!raw.length){el.innerHTML='<p class="sm">Histórico no disponible todavía para este activo.</p>';return}
   const data=raw.map(([d,x])=>({time:d,value:x}));
+  const lastT=new Date(data[data.length-1].time),yr=data.filter(x=>new Date(x.time)>=new Date(lastT-365*864e5));
+  const drop=(1-data[data.length-1].value/Math.max(...yr.map(x=>x.value)))*100,wd=document.getElementById("drop");
+  if(wd&&drop>=35)wd.innerHTML=`<div class="note" style="border-color:var(--y)">⚠ El precio ha caído un ${num(drop,0)} % desde su máximo del último año. A veces el mercado ve algo que las cuentas todavía no reflejan: conviene entender el motivo antes de actuar.</div>`;
   const chart=LightweightCharts.createChart(el,{autoSize:true,layout:{background:{color:"#0b0e14"},textColor:"#d1d4dc"},grid:{vertLines:{visible:false},horzLines:{color:"#1e222d"}},rightPriceScale:{borderColor:"#2a2e39"},timeScale:{borderColor:"#2a2e39"},crosshair:{mode:0}});
   const up=data[data.length-1].value>=data[0].value,col=up?"#81c995":"#f28b82";
   const cv=calc(t);
