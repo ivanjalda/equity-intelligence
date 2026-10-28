@@ -5,7 +5,7 @@
 import json, os, re, sys, time, urllib.error
 from datetime import date, timedelta
 from statistics import mean, pstdev
-from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, is_financial, telegram, prices_polygon, downsample,
+from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, is_financial, telegram, prices_polygon, downsample,
                     DATA, FUND, HIST, TODAY, POLY, SEC_UA, YIELD_AAA, read_universe)
 
 MODELS = DATA / "models.json"
@@ -161,7 +161,7 @@ def daily():
             buys.append((mg, t, iv, m))
     mp.write_text(json.dumps(market), encoding="utf-8")
     vp.write_text(json.dumps({**vals, "updated": vals.get("updated", TODAY)}, ensure_ascii=False), encoding="utf-8")
-    buys.sort(key=lambda x: rank(x[0], x[3].get("health"), x[3].get("cyclical")), reverse=True)
+    buys.sort(key=lambda x: rank(x[0], x[3].get("health"), x[3].get("cyclical"), spread(x[3])), reverse=True)
     # histórico para el gráfico de las mejores oportunidades
     HIST.mkdir(exist_ok=True)
     made = 0
