@@ -39,9 +39,16 @@ def is_financial(facts):
     return bool(FINANCIAL_TAGS & set(facts.get("us-gaap", {})))
 
 
-def rank(mg, health=None, cyc=False):
-    """Orden de las oportunidades: margen (máx. 50) ajustado por calidad."""
-    return min(mg, 50) * (1.0 if health == "Sólida" else 0.75) * (0.85 if cyc else 1.0)
+def spread(item):
+    """Cuántas veces difiere el método más alto del más bajo (1 = coinciden)."""
+    v = [item[k] for k in ("dcf", "graham", "multiples") if isinstance(item.get(k), (int, float)) and item[k] > 0]
+    return max(v) / min(v) if len(v) > 1 else 1.0
+
+
+def rank(mg, health=None, cyc=False, spr=1.0):
+    """Orden de las oportunidades: margen (máx. 50) ajustado por calidad y por acuerdo entre métodos."""
+    agree = 1.0 if spr < 1.5 else 0.85 if spr < 2.2 else 0.65
+    return min(mg, 50) * (1.0 if health == "Sólida" else 0.75) * agree * (0.85 if cyc else 1.0)
 
 
 def get(url, headers=None, timeout=30):
@@ -432,7 +439,7 @@ def main():
         iv, mg = e.pop("_iv", None), e.pop("_mg", None)
         if iv is not None and verdict(mg, e.get("health")) == "COMPRAR":
             buys.append((mg, t, e, iv))
-    buys.sort(key=lambda x: rank(x[0], x[2].get("health"), x[2].get("cyclical")), reverse=True)
+    buys.sort(key=lambda x: rank(x[0], x[2].get("health"), x[2].get("cyclical"), spread(x[2])), reverse=True)
     (DATA / "valuations.json").write_text(json.dumps({"updated": TODAY, "items": items}, ensure_ascii=False), encoding="utf-8")
 
     # Historial de señales: solo se añaden filas nuevas, nunca se editan
