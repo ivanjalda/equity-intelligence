@@ -84,7 +84,7 @@ async function init(){
   document.getElementById("upd").textContent=D.v.updated?"Datos al cierre de mercado · actualizado "+D.v.updated:"Sin datos cargados todavía";
   const mk=(id,arr,get,set)=>{const e=document.getElementById(id);e.innerHTML="";arr.forEach(k=>{const b=document.createElement("button");b.className="btn"+(get()===k?" on":"");b.textContent=LBL[k];b.onclick=()=>{set(k);mk(id,arr,get,set);lista()};e.appendChild(b)})};
   mk("fCat",CATS,()=>cat,k=>cat=k);mk("fHor",HORS,()=>hor,k=>hor=k);
-  document.getElementById("q").oninput=lista;
+  document.getElementById("q").oninput=()=>lista();
   lista();panel13f();
   const best=tickers().map(t=>[t,calc(t)]).filter(x=>x[1]&&x[1].verdict==="COMPRAR").sort((a,b)=>b[1].mg-a[1].mg)[0];
   best?detalle(best[0]):inicio();
@@ -97,13 +97,17 @@ function calc(t){
   const ms=[v.dcf,v.graham,v.multiples].filter(x=>typeof x==="number"&&x>0);
   if(!ms.length)return null;
   const iv=ms.reduce((a,b)=>a+b,0)/ms.length,mg=(iv-p)/iv*100;
-  const verdict=mg>=25?"COMPRAR":mg>=0?"ESPERAR":"CARO";
-  return{iv,mg,verdict,entry:iv*0.75,n:ms.length,p,v};
+  const weak=mg>=25&&v.health==="Frágil",odd=mg>70;
+  const verdict=mg>=25&&!weak&&!odd?"COMPRAR":mg>=0?"ESPERAR":"CARO";
+  return{iv,mg,verdict,entry:iv*0.75,n:ms.length,p,v,weak,odd};
 }
 function tickers(){return [...new Set([...Object.keys(D.m),...Object.keys(D.v.items||{})])].filter(t=>!t.startsWith("_"))}
-function lista(){
+let LIM=40;
+function lista(keep){
+  if(!keep)LIM=40;
   const q=document.getElementById("q").value.toUpperCase().trim(),el=document.getElementById("list");
-  el.innerHTML=`<div class="sm" style="margin-bottom:6px">${q?"Resultados de la búsqueda":"Oportunidades de compra hoy"}</div>`;let n=0;
+  const onlyBuys=!q&&(cat==="TODOS"||cat==="ACCIONES");
+  const rows=[];
   tickers().forEach(t=>{
     const v=D.v.items?.[t]||{},type=v.type||D.m[t]?.type||"ACCIONES";
     if(cat!=="TODOS"&&type!==cat)return;
@@ -111,13 +115,19 @@ function lista(){
     if(cic&&!v.cyclical)return;
     if(q&&!t.includes(q)&&!(v.name||"").toUpperCase().includes(q))return;
     const c=calc(t);
-    if(!q&&(!c||c.verdict!=="COMPRAR"))return;
+    if(onlyBuys&&(!c||c.verdict!=="COMPRAR"))return;
+    rows.push({t,v,c});
+  });
+  rows.sort((a,b)=>q?(b.t.startsWith(q)-a.t.startsWith(q)||a.t.localeCompare(b.t)):((b.c?b.c.mg:-999)-(a.c?a.c.mg:-999)||a.t.localeCompare(b.t)));
+  el.innerHTML=`<div class="sm" style="margin-bottom:6px">${q?"Resultados de la búsqueda":onlyBuys?"Oportunidades de compra hoy ("+rows.length+")":LBL[cat]}</div>`;
+  rows.slice(0,LIM).forEach(({t,v,c})=>{
     const d=document.createElement("div");d.className="card";
     d.innerHTML=`<div class="flex"><strong>${esc(t)}</strong><span>${D.m[t]?"$"+num(D.m[t].c):"—"}</span></div>
     <div class="flex sm"><span>${esc(v.name||"")}${v.cyclical?" · cíclica":""}${v.health?" · salud "+esc(v.health.toLowerCase()):""}</span><span class="badge ${c?c.verdict:"NA"}">${c?c.verdict:"Sin valorar"}</span></div>`;
-    d.onclick=()=>detalle(t);el.appendChild(d);n++;
+    d.onclick=()=>detalle(t);el.appendChild(d);
   });
-  if(!n)el.innerHTML+=q?'<p class="sm">Ningún activo coincide con la búsqueda.</p>':'<p class="sm">Hoy no hay oportunidades de compra con estos filtros. Usa el buscador para consultar cualquier activo.</p>';
+  if(rows.length>LIM){const b=document.createElement("button");b.className="btn";b.style.width="100%";b.textContent=`Mostrar más (${rows.length-LIM} restantes)`;b.onclick=()=>{LIM+=40;lista(true)};el.appendChild(b)}
+  if(!rows.length)el.innerHTML+=q?'<p class="sm">Ningún activo coincide con la búsqueda.</p>':'<p class="sm">Hoy no hay oportunidades de compra con estos filtros. Usa el buscador para consultar cualquier activo.</p>';
 }
 function inicio(){
   const idx=["SPY","QQQ","DIA","IWM"].filter(t=>D.m[t]);
@@ -141,7 +151,7 @@ function detalle(t){
   if(c){
     h+=`<div class="note"><strong>${c.verdict==="COMPRAR"?"Zona de compra.":c.verdict==="ESPERAR"?"Mejor esperar.":"Caro ahora."}</strong> `;
     if(c.verdict==="COMPRAR")h+=`El precio ya ofrece un margen de seguridad suficiente.`;
-    else h+=`Precio de entrada recomendado: <strong>$${num(c.entry)}</strong> (25 % bajo el valor intrínseco).${v.review?` Próxima revisión: <strong>${esc(v.review)}</strong>${v.review_reason?" ("+esc(v.review_reason)+")":""}.`:""}`;
+    else h+=`${c.weak?"Parece barata en números, pero su salud financiera es frágil. ":""}${c.odd?"La diferencia con su valor es tan grande que puede deberse a un dato atípico: verifícalo antes de actuar. ":""}Precio de entrada recomendado: <strong>$${num(c.entry)}</strong> (25 % bajo el valor intrínseco).${v.review?` Próxima revisión: <strong>${esc(v.review)}</strong>${v.review_reason?" ("+esc(v.review_reason)+")":""}.`:""}`;
     h+=` Valor calculado con ${c.n} de 3 métodos. No es asesoramiento financiero.</div>`;
   }
   h+=`<div class="flex"><h3>Cotización</h3><div class="row" id="rng" style="margin:0"></div></div><div id="chart" class="chart"></div>`;
