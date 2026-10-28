@@ -11,6 +11,7 @@ permissions:
 jobs:
   actualizar:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,8 +19,9 @@ jobs:
           python-version: "3.12"
       - name: Calcular valoraciones y enviar aviso
         env:
-          # CAMBIA ESTE EMAIL POR EL TUYO (la SEC lo exige para identificar quién consulta)
-          SEC_USER_AGENT: "EquityIntelligence tu-email@ejemplo.com"
+          # Email de contacto que la SEC pide para identificar quién consulta sus datos
+          SEC_USER_AGENT: "EquityIntelligence community16jalda@gmail.com"
+          POLYGON_KEY: ${{ secrets.POLYGON_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/engine.py

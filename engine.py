@@ -3,7 +3,7 @@
 Descarga precios, calcula el valor intrínseco con 3 métodos (DCF, Graham,
 múltiplos históricos) usando datos oficiales de la SEC, registra señales y
 avisa por Telegram. Solo usa la librería estándar de Python."""
-import json, os, sys, time, csv, io, bisect, urllib.request, urllib.parse
+import json, os, sys, time, csv, io, bisect, urllib.request, urllib.parse, urllib.error
 from datetime import date, timedelta
 from pathlib import Path
 from statistics import median, mean
@@ -11,6 +11,7 @@ from statistics import median, mean
 DATA = Path("data")
 HIST = DATA / "history"
 TODAY = date.today().isoformat()
+POLY = os.environ.get("POLYGON_KEY")
 SEC_UA = os.environ.get("SEC_USER_AGENT", "EquityIntelligence contacto@ejemplo.com")
 YIELD_AAA = 5.0      # rendimiento de bonos AAA usado en la fórmula de Graham (%)
 DISCOUNT = 0.10      # tasa de descuento del DCF
@@ -58,15 +59,46 @@ def prices_stooq(t):
     return rows[-2600:]
 
 
+def prices_polygon(t):
+    """Precios de Polygon (plan gratuito: 2 años de histórico, 5 consultas/minuto)."""
+    start = (date.today() - timedelta(days=730)).isoformat()
+    url = (f"https://api.polygon.io/v2/aggs/ticker/{t}/range/1/day/{start}/{TODAY}"
+           f"?adjusted=true&sort=asc&limit=50000&apiKey={POLY}")
+    for intento in range(2):
+        try:
+            d = json.loads(get(url))
+            break
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and intento == 0:
+                time.sleep(65)
+                continue
+            raise
+    return [(date.fromtimestamp(r["t"] / 1000).isoformat(), r["o"], r["h"], r["l"], r["c"], r.get("v", 0))
+            for r in (d.get("results") or [])]
+
+
 def prices(t):
+    """Devuelve (corto, largo): corto = Polygon (precio oficial); largo = histórico de 10 años si hay fuente."""
+    short, long_ = None, None
+    if POLY:
+        try:
+            short = prices_polygon(t)
+        except Exception as e:
+            print(f"  {t}: Polygon falló ({e})")
+        time.sleep(12.5)  # respeta el límite del plan gratuito
     for fn in (prices_yahoo, prices_stooq):
         try:
             rows = fn(t)
             if len(rows) > 30:
-                return rows
+                long_ = rows
+                break
         except Exception as e:
-            print(f"  {t}: {fn.__name__} falló ({e})")
-    return None
+            print(f"  {t}: {fn.__name__} sin histórico largo ({e})")
+    if not short or len(short) < 30:
+        short = long_
+    if not short:
+        return None
+    return short, (long_ or short)
 
 
 def downsample(rows):
@@ -105,14 +137,13 @@ def dcf(fcfps, g):
     return v + f * (1 + TERMINAL) / (DISCOUNT - TERMINAL) / (1 + DISCOUNT) ** 10
 
 
-def value_stock(t, cyc, facts, hist):
+def value_stock(t, cyc, facts, hist, price):
     eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
     cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities"], "USD")
     cap, _ = annual(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], "USD")
     ni, _ = annual(facts, ["NetIncomeLoss"], "USD")
     if len(eps) < 3 or not cfo:
         return None
-    price = hist[-1][4]
     ends = list(eps)
     e_last = eps[ends[-1]]
     n_norm = 7 if cyc else 3
@@ -191,21 +222,21 @@ def main():
     market, items, hists = {}, {}, {}
     for u in uni:
         t = u["t"]
-        rows = prices(t)
-        time.sleep(0.4)
-        if not rows:
+        got = prices(t)
+        if not got:
             print(f"{t}: sin precios, se omite")
             continue
+        rows, long_rows = got
         last = rows[-1]
         market[t] = {"c": round(last[4], 2), "o": round(last[1], 2), "h": round(last[2], 2), "l": round(last[3], 2), "v": int(last[5]), "type": u["type"]}
-        hists[t] = downsample(rows)
+        hists[t] = downsample(long_rows)
         entry = {"type": u["type"], "name": cik.get(t.replace(".", "-"), (0, t))[1].title()}
         items[t] = entry
         if u["type"] == "ACCIONES" and t.replace(".", "-") in cik:
             try:
                 n = cik[t.replace(".", "-")][0]
                 facts = json.loads(get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{int(n):010d}.json", {"User-Agent": SEC_UA}, 60))["facts"]
-                res = value_stock(t, u["cyc"], facts, rows)
+                res = value_stock(t, u["cyc"], facts, long_rows, last[4])
                 time.sleep(0.2)
                 if res:
                     item, iv, mg = res
