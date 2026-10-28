@@ -114,7 +114,7 @@ function lista(){
     if(!q&&(!c||c.verdict!=="COMPRAR"))return;
     const d=document.createElement("div");d.className="card";
     d.innerHTML=`<div class="flex"><strong>${esc(t)}</strong><span>${D.m[t]?"$"+num(D.m[t].c):"—"}</span></div>
-    <div class="flex sm"><span>${esc(v.name||"")}${v.cyclical?" · cíclica":""}</span><span class="badge ${c?c.verdict:"NA"}">${c?c.verdict:"Sin valorar"}</span></div>`;
+    <div class="flex sm"><span>${esc(v.name||"")}${v.cyclical?" · cíclica":""}${v.health?" · salud "+esc(v.health.toLowerCase()):""}</span><span class="badge ${c?c.verdict:"NA"}">${c?c.verdict:"Sin valorar"}</span></div>`;
     d.onclick=()=>detalle(t);el.appendChild(d);n++;
   });
   if(!n)el.innerHTML+=q?'<p class="sm">Ningún activo coincide con la búsqueda.</p>':'<p class="sm">Hoy no hay oportunidades de compra con estos filtros. Usa el buscador para consultar cualquier activo.</p>';
@@ -150,9 +150,10 @@ function detalle(t){
   <tr><td>Flujo de caja descontado</td><td class="sm">Estima el dinero libre futuro y lo trae a valor de hoy.</td><td>${v.dcf?"$"+num(v.dcf):"—"}</td></tr>
   <tr><td>Fórmula de Graham</td><td class="sm">Beneficio por acción y crecimiento esperado.</td><td>${v.graham?"$"+num(v.graham):"—"}</td></tr>
   <tr><td>Múltiplos históricos</td><td class="sm">PER medio de los últimos años por el beneficio actual.</td><td>${v.multiples?"$"+num(v.multiples):"—"}</td></tr></table>`;
+  h+=`<h3 style="margin-top:18px">Salud de la empresa · últimos 5 años</h3><div id="fund" class="sm">Cargando cuentas…</div>`;
   if(v.ratios&&Object.keys(v.ratios).length)h+=`<h3 style="margin-top:16px">Ratios</h3><table>${Object.entries(v.ratios).map(([k,x])=>`<tr><td class="sm">${esc(k)}</td><td>${esc(x)}</td></tr>`).join("")}</table>`;
   main.innerHTML=h+"</div>";
-  grafico(t);
+  grafico(t);fundamentos(t);
 }
 async function grafico(t){
   const el=document.getElementById("chart");
@@ -163,8 +164,8 @@ async function grafico(t){
   const data=raw.map(([d,x])=>({time:d,value:x}));
   const chart=LightweightCharts.createChart(el,{autoSize:true,layout:{background:{color:"#0b0e14"},textColor:"#d1d4dc"},grid:{vertLines:{visible:false},horzLines:{color:"#1e222d"}},rightPriceScale:{borderColor:"#2a2e39"},timeScale:{borderColor:"#2a2e39"},crosshair:{mode:0}});
   const up=data[data.length-1].value>=data[0].value,col=up?"#81c995":"#f28b82";
-  const s=chart.addAreaSeries({lineColor:col,topColor:up?"rgba(129,201,149,.30)":"rgba(242,139,130,.30)",bottomColor:"rgba(0,0,0,0)",lineWidth:2});
   const cv=calc(t);
+  const s=chart.addAreaSeries({autoscaleInfoProvider:o=>{const r=o();if(r&&cv){r.priceRange.maxValue=Math.max(r.priceRange.maxValue,cv.iv*1.03);r.priceRange.minValue=Math.min(r.priceRange.minValue,cv.entry*0.97)}return r},lineColor:col,topColor:up?"rgba(129,201,149,.30)":"rgba(242,139,130,.30)",bottomColor:"rgba(0,0,0,0)",lineWidth:2});
   if(cv){
     s.createPriceLine({price:cv.iv,color:"#d4af37",lineWidth:1,lineStyle:2,axisLabelVisible:true,title:"Valor intrínseco"});
     s.createPriceLine({price:cv.entry,color:"#089981",lineWidth:1,lineStyle:2,axisLabelVisible:true,title:"Entrada (-25 %)"});
@@ -182,6 +183,26 @@ async function grafico(t){
   set("1A");
 }
 
+async function fundamentos(t){
+  const el=document.getElementById("fund");if(!el)return;
+  const f=await j(`data/fundamentals/${t}.json`);
+  if(!f){el.innerHTML='<p class="sm">Las cuentas de la empresa no están disponibles para este activo.</p>';return}
+  const bad=new Set(["Pasivos totales","Pasivo corriente","Deuda a largo plazo"]);
+  const fmt=v=>v==null?"—":Math.abs(v)>=1000?"$"+num(v/1000,1)+" mil M":"$"+num(v,0)+" M";
+  const spark=a=>{const v=a.map(x=>x??0),mx=Math.max(...v.map(Math.abs),1);return `<svg width="${v.length*18}" height="30">${v.map((x,i)=>{const hh=Math.max(1.5,26*Math.abs(x)/mx);return `<rect x="${i*18+2}" y="${28-hh}" width="14" height="${hh}" rx="2" fill="${x<0?"#f23645":"#5b6b8c"}"/>`}).join("")}</svg>`};
+  const ico={ok:'<span class="up">✔</span>',warn:'<span style="color:var(--y)">⚠</span>',bad:'<span class="dn">✖</span>'};
+  const col={"Sólida":"COMPRAR","Aceptable":"ESPERAR","Frágil":"CARO"}[f.health]||"NA";
+  const cards=Object.entries(f.series).map(([k,a])=>{
+    const nn=a.filter(x=>x!=null),first=nn[0],last=nn[nn.length-1];
+    const ch=first>0&&last!=null?(last/first-1)*100:null,good=ch==null?null:(bad.has(k)?ch<=0:ch>=0);
+    return `<div class="m" style="text-align:left"><small>${esc(k)}</small><strong style="font-size:16px">${fmt(last)}</strong>
+    ${ch!==null?`<div class="${good?"up":"dn"}" style="font-size:12px">${ch>=0?"▲":"▼"} ${num(Math.abs(ch),0)} % en ${f.years.length-1} años</div>`:""}
+    ${spark(a)}<div class="sm" style="font-size:11px">${esc(f.hints[k]||"")}</div></div>`}).join("");
+  el.innerHTML=`<div class="flex" style="margin-bottom:8px"><span>Lectura rápida</span><span class="badge ${col}">Salud: ${esc(f.health)}</span></div>
+  ${f.insights.map(i=>`<div style="margin:4px 0">${ico[i.t]} ${esc(i.x)}</div>`).join("")}
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">${cards}</div>
+  <div class="sm">Años: ${f.years.map(esc).join(" · ")}. Cifras anuales oficiales (SEC), en dólares. M = millones.</div>`;
+}
 function panel13f(){
   const f=D.f,el=document.getElementById("f13");
   if(!f||!f.top||!f.top.length){el.innerHTML='<div class="box"><h3>Grandes fondos (13F)</h3><p class="sm">Todavía no hay datos 13F cargados. Se generarán desde la SEC (EDGAR).</p></div>';return}
