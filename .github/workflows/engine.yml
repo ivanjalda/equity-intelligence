@@ -36,6 +36,13 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/broad.py daily
+      - name: Bonos, índices y materias primas
+        continue-on-error: true
+        env:
+          SEC_USER_AGENT: "EquityIntelligence community16jalda@gmail.com"
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/macro.py
       - name: Guardar resultados
         run: |
           git config user.name "equity-bot"
