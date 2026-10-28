@@ -16,26 +16,31 @@ def load(path, default):
 
 
 def grouped():
-    """Precios de TODAS las acciones de EE. UU. en una consulta (último día con datos)."""
-    for back in range(7):
+    """Precios de TODAS las acciones de EE. UU. en una consulta (último día cerrado con datos).
+    El plan gratuito no da el día en curso, así que se empieza por ayer y se retrocede."""
+    denied = 0
+    for back in range(1, 9):
         day = (date.today() - timedelta(days=back)).isoformat()
         url = f"https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/{day}?adjusted=true&apiKey={POLY}"
         for intento in range(2):
             try:
                 res = json.loads(get(url, timeout=90)).get("results") or []
                 if res:
+                    print(f"Datos de todo el mercado del día {day}: {len(res)} valores.")
                     return day, {r["T"]: r for r in res}
+                print(f"{day}: sin datos (fin de semana o festivo).")
                 break
             except urllib.error.HTTPError as e:
                 if e.code == 429 and intento == 0:
                     time.sleep(65)
                     continue
-                print(f"Polygon respondió {e.code} para el día {day}.")
+                print(f"{day}: Polygon respondió {e.code}.")
                 if e.code in (401, 403):
-                    print("Tu plan de Polygon no permite la consulta de todo el mercado. Se omite el mercado amplio.")
-                    return None, {}
+                    denied += 1
                 break
         time.sleep(12.5)
+    if denied >= 8:
+        print("Tu plan de Polygon no permite la consulta de todo el mercado. Se omite el mercado amplio.")
     return None, {}
 
 
