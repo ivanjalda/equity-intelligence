@@ -139,11 +139,11 @@ def dcf(fcfps, g):
 
 def value_stock(t, cyc, facts, hist, price):
     eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
-    cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities"], "USD")
+    cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], "USD")
     cap, _ = annual(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], "USD")
     ni, _ = annual(facts, ["NetIncomeLoss"], "USD")
     if len(eps) < 3 or not cfo:
-        return None
+        return f"pocos datos oficiales (beneficio {len(eps)} años, flujo de caja {len(cfo)} años)"
     ends = list(eps)
     e_last = eps[ends[-1]]
     n_norm = 7 if cyc else 3
@@ -158,7 +158,8 @@ def value_stock(t, cyc, facts, hist, price):
         models["graham"] = e_use * (8.5 + 2 * g * 100) * 4.4 / YIELD_AAA
     # DCF (flujo de caja libre por acción, media de varios años)
     k = ends[-1]
-    shares = ni[k] / eps[k] if k in ni and eps[k] > 0 else None
+    sh, _ = annual(facts, ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"], "shares")
+    shares = sh.get(k) or (ni[k] / eps[k] if k in ni and eps[k] > 0 else None)
     fcf = [cfo[x] - abs(cap.get(x, 0)) for x in list(cfo)[-(7 if cyc else 3):]]
     fcfps = None
     if shares and shares > 0 and fcf and mean(fcf) > 0:
@@ -173,9 +174,14 @@ def value_stock(t, cyc, facts, hist, price):
             pes.append(hist[i][4] / eps[e])
     if len(pes) >= 4 and e_use > 0:
         models["multiples"] = clamp(median(pes), 8, 30) * e_use
-    vals = [v for v in models.values() if v > 0]
-    if len(vals) < 2 or max(vals) > 3 * min(vals):
-        return None  # modelos incoherentes: mejor no opinar
+    models = {m: v for m, v in models.items() if v > 0}
+    if len(models) < 2:
+        return f"menos de 2 métodos válidos (hay: {', '.join(models) or 'ninguno'})"
+    while len(models) >= 2 and max(models.values()) > 3 * min(models.values()):
+        models.pop(max(models, key=models.get))  # descartamos el más optimista
+    if len(models) < 2:
+        return "los métodos discrepan demasiado entre sí"
+    vals = list(models.values())
     iv = mean(vals)
     mg = (iv - price) / iv * 100
     # plazo (mezcla interna de fundamental y técnico)
@@ -238,12 +244,12 @@ def main():
                 facts = json.loads(get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{int(n):010d}.json", {"User-Agent": SEC_UA}, 60))["facts"]
                 res = value_stock(t, u["cyc"], facts, long_rows, last[4])
                 time.sleep(0.2)
-                if res:
+                if isinstance(res, tuple):
                     item, iv, mg = res
                     entry.update(item)
                     entry["_iv"], entry["_mg"] = iv, mg
                 else:
-                    print(f"{t}: sin datos suficientes para valorar")
+                    print(f"{t}: sin valorar ({res})")
             except Exception as e:
                 print(f"{t}: error de valoración ({e})")
 
