@@ -99,6 +99,7 @@ function toggleCic(){cic=!cic;document.getElementById("fCic").classList.toggle("
 
 function calc(t){
   const v=D.v.items?.[t],p=D.m[t]?.c;
+  if(v&&v.assess&&p)return{verdict:v.assess.verdict,mg:null,iv:null,n:0,p,v,assess:v.assess,spr:1,weak:false,odd:false};
   if(!v||!p)return null;
   const ms=[v.dcf,v.graham,v.multiples].filter(x=>typeof x==="number"&&x>0);
   if(!ms.length)return null;
@@ -108,13 +109,13 @@ function calc(t){
   const spr=Math.max(...ms)/Math.min(...ms);
   return{iv,mg,verdict,entry:iv*0.75,n:ms.length,p,v,weak,odd,spr};
 }
-const rkOf=c=>c?Math.min(c.mg,50)*(c.v.health==="Sólida"?1:.75)*(c.spr<1.5?1:c.spr<2.2?.85:.65)*(c.v.cyclical?.85:1):-999;
+const rkOf=c=>!c?-999:c.assess?c.assess.rank:Math.min(c.mg,50)*(c.v.health==="Sólida"?1:.75)*(c.spr<1.5?1:c.spr<2.2?.85:.65)*(c.v.cyclical?.85:1);
 function tickers(){return [...new Set([...Object.keys(D.m),...Object.keys(D.v.items||{})])].filter(t=>!t.startsWith("_"))}
 let LIM=40;
 function lista(keep){
   if(!keep)LIM=40;
   const q=document.getElementById("q").value.toUpperCase().trim(),el=document.getElementById("list");
-  const useVer=!q&&(cat==="TODOS"||cat==="ACCIONES");
+  const useVer=!q;
   const rows=[];
   tickers().forEach(t=>{
     const v=D.v.items?.[t]||{},type=v.type||D.m[t]?.type||"ACCIONES";
@@ -136,7 +137,7 @@ function lista(keep){
     d.onclick=()=>detalle(t);el.appendChild(d);
   });
   if(rows.length>LIM){const b=document.createElement("button");b.className="btn";b.style.width="100%";b.textContent=`Mostrar más (${rows.length-LIM} restantes)`;b.onclick=()=>{LIM+=40;lista(true)};el.appendChild(b)}
-  if(!rows.length)el.innerHTML+=q?'<p class="sm">Ningún activo coincide con la búsqueda.</p>':'<p class="sm">No hay activos con estos filtros. Prueba otro veredicto o usa el buscador.</p>';
+  if(!rows.length)el.innerHTML+=q?'<p class="sm">Ningún activo coincide con la búsqueda.</p>':'<p class="sm">No hay activos con este veredicto y estos filtros. Prueba otro veredicto, pulsa «Todas» o usa el buscador.</p>';
 }
 function inicio(){
   const idx=["SPY","QQQ","DIA","IWM"].filter(t=>D.m[t]);
@@ -151,6 +152,7 @@ function inicio(){
 
 function detalle(t){
   const c=calc(t),v=D.v.items?.[t]||{},p=D.m[t]?.c,main=document.getElementById("main");
+  if(c&&c.assess){detalleAssess(t,c);return}
   let h=`<div class="box"><div class="flex"><div><h2>${esc(t)} <span class="sm">${esc(v.name||"")}</span></h2>
   <div class="sm">${v.cyclical?"Empresa cíclica · se valora con beneficios medios de varios años":"Empresa no cíclica"}${v.horizon?" · plazo ideal: "+esc(v.horizon):""}</div></div>
   <span class="badge ${c?c.verdict:"NA"}" style="font-size:13px;padding:5px 12px">${c?c.verdict:"Sin valorar"}</span></div>
@@ -191,8 +193,8 @@ async function grafico(t){
   const chart=LightweightCharts.createChart(el,{autoSize:true,layout:{background:{color:"#0b0e14"},textColor:"#d1d4dc"},grid:{vertLines:{visible:false},horzLines:{color:"#1e222d"}},rightPriceScale:{borderColor:"#2a2e39"},timeScale:{borderColor:"#2a2e39"},crosshair:{mode:0}});
   const up=data[data.length-1].value>=data[0].value,col=up?"#81c995":"#f28b82";
   const cv=calc(t);
-  const s=chart.addAreaSeries({autoscaleInfoProvider:o=>{const r=o();if(r&&cv){r.priceRange.maxValue=Math.max(r.priceRange.maxValue,cv.iv*1.03);r.priceRange.minValue=Math.min(r.priceRange.minValue,cv.entry*0.97)}return r},lineColor:col,topColor:up?"rgba(129,201,149,.30)":"rgba(242,139,130,.30)",bottomColor:"rgba(0,0,0,0)",lineWidth:2});
-  if(cv){
+  const s=chart.addAreaSeries({autoscaleInfoProvider:o=>{const r=o();if(r&&cv&&cv.iv){r.priceRange.maxValue=Math.max(r.priceRange.maxValue,cv.iv*1.03);r.priceRange.minValue=Math.min(r.priceRange.minValue,cv.entry*0.97)}return r},lineColor:col,topColor:up?"rgba(129,201,149,.30)":"rgba(242,139,130,.30)",bottomColor:"rgba(0,0,0,0)",lineWidth:2});
+  if(cv&&cv.iv){
     s.createPriceLine({price:cv.iv,color:"#d4af37",lineWidth:1,lineStyle:2,axisLabelVisible:true,title:"Valor intrínseco"});
     s.createPriceLine({price:cv.entry,color:"#089981",lineWidth:1,lineStyle:2,axisLabelVisible:true,title:"Entrada (-25 %)"});
   }
@@ -229,6 +231,16 @@ async function fundamentos(t){
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">${cards}</div>
   <div class="sm">Años: ${f.years.map(esc).join(" · ")}. Cifras anuales oficiales (SEC), en dólares. M = millones.</div>`;
 }
+function detalleAssess(t,c){
+  const A=c.assess,v=c.v,ic={ok:'<span class="up">✔</span>',warn:'<span style="color:var(--y)">⚠</span>',bad:'<span class="dn">✖</span>'};
+  document.getElementById("main").innerHTML=`<div class="box"><div class="flex"><div><h2>${esc(t)} <span class="sm">${esc(v.name||"")}</span></h2><div class="sm">${esc(A.method)}</div></div><span class="badge ${A.verdict}" style="font-size:13px;padding:5px 12px">${A.verdict}</span></div>
+  <div class="grid"><div class="m"><small>Precio</small><strong>$${num(c.p)}</strong></div>${A.metrics.slice(0,3).map(m=>`<div class="m"><small>${esc(m.k)}</small><strong>${esc(m.v)}</strong></div>`).join("")}</div>
+  <div class="note"><strong>${A.verdict==="COMPRAR"?"Zona de compra.":A.verdict==="ESPERAR"?"Mejor esperar.":"Caro ahora."}</strong> ${esc(A.summary)} No es asesoramiento financiero.</div>
+  <div id="drop"></div><div class="flex"><h3>Cotización</h3><div class="row" id="rng" style="margin:0"></div></div><div id="chart" class="chart"></div>
+  <h3>Cómo se ha calculado</h3>${A.points.map(i=>`<div style="margin:4px 0">${ic[i.t]} ${esc(i.x)}</div>`).join("")}
+  <p class="sm" style="margin-top:12px">${esc(A.source)}</p></div>`;
+  grafico(t);
+}
 function panel13f(){
   const f=D.f,el=document.getElementById("f13");
   if(!f||!f.top||!f.top.length){el.innerHTML='<div class="box"><h3>Grandes fondos (13F)</h3><p class="sm">Todavía no hay datos 13F cargados. Se generan desde la SEC (EDGAR).</p></div>';return}
@@ -242,7 +254,7 @@ function panel13f(){
 }
 function holders(t){
   const f=D.f;if(!f||!f.managers)return"";
-  const r=[];f.managers.forEach(m=>{const p=m.positions.find(x=>x.ticker===t);if(p)r.push([m,p])});
+  const r=[];f.managers.forEach(m=>{if(m.stale)return;const p=m.positions.find(x=>x.ticker===t);if(p)r.push([m,p])});
   if(!r.length)return"";
   return `<h3 style="margin-top:16px">Grandes fondos que la tienen</h3><table>${r.map(([m,p])=>`<tr><td>${esc(m.name)} <span class="sm">· ${esc(m.who)}</span></td><td>${num(p.pct,1)} % de su cartera</td><td class="sm">${p.action==="nuevo"?"Compra nueva":p.action==="igual"?"Sin cambios":(p.action==="compra"?"Ha comprado más (+":"Ha vendido (−")+num(Math.abs(p.delta||0),0)+" %)"}</td></tr>`).join("")}</table><p class="sm">Informes 13F a ${esc(r[0][0].period)}, con hasta 45 días de retraso.</p>`;
 }
@@ -254,7 +266,7 @@ function fondos(){
   const link=p=>p.ticker&&D.m[p.ticker]?`<a href="#" onclick="vista('term');detalle('${esc(p.ticker)}');return false" style="color:var(--gold)">${esc(p.ticker)}</a>`:`<strong>${esc(p.ticker||"—")}</strong>`;
   el.innerHTML=`<div class="box"><h2>Grandes fondos · informes 13F</h2>
   <p class="sm">Qué tienen en cartera los grandes inversores y qué han comprado o vendido respecto al trimestre anterior. Los informes llegan con hasta 45 días de retraso, solo incluyen acciones de EE. UU. y no muestran ventas en corto. Fuente: SEC.</p>
-  ${f.managers.map(m=>`<details style="margin:8px 0;border:1px solid var(--b);border-radius:6px;padding:8px 12px"><summary style="cursor:pointer"><strong>${esc(m.name)}</strong> <span class="sm">· ${esc(m.who)} · cartera ${usd(m.value)} · ${m.count} posiciones · informe a ${esc(m.period)}</span></summary>
+  ${f.managers.map(m=>`<details style="margin:8px 0;border:1px solid var(--b);border-radius:6px;padding:8px 12px"><summary style="cursor:pointer"><strong>${esc(m.name)}</strong> <span class="sm">· ${esc(m.who)} · cartera ${usd(m.value)} · ${m.count} posiciones · informe a ${esc(m.period)}</span>${m.stale?' <span class="badge ESPERAR">Informe anterior</span>':""}</summary>
   <div style="overflow-x:auto"><table style="margin-top:8px"><tr><th>Valor</th><th>Empresa</th><th>% de la cartera</th><th>Cambio vs. trimestre anterior</th><th>Importe</th></tr>
   ${m.positions.map(p=>`<tr><td>${link(p)}</td><td class="sm">${esc(p.name)}</td><td>${num(p.pct,1)} %</td><td>${chg(p)}</td><td>${usd(p.value)}</td></tr>`).join("")}</table></div>
   ${m.sold&&m.sold.length?`<p class="sm">Posiciones vendidas por completo: ${m.sold.map(s=>esc(s.ticker||s.name)).join(", ")}</p>`:""}</details>`).join("")}</div>`;
