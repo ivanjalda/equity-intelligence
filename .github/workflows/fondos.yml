@@ -1,0 +1,33 @@
+name: Grandes fondos (13F)
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"        # lunes por la mañana
+  workflow_dispatch:            # permite ejecutarlo a mano
+
+permissions:
+  contents: write
+
+concurrency:
+  group: equity-data
+  cancel-in-progress: false
+
+jobs:
+  fondos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Leer informes 13F de la SEC
+        env:
+          SEC_USER_AGENT: "EquityIntelligence community16jalda@gmail.com"
+        run: python scripts/funds.py
+      - name: Guardar resultados
+        run: |
+          git config user.name "equity-bot"
+          git config user.email "equity-bot@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || (git commit -m "Grandes fondos $(date -u +%F)" && git pull --rebase origin main && git push)
