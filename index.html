@@ -46,6 +46,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
   <div class="brand">Equity Intelligence<small id="upd">Cargando datos…</small></div>
   <div class="row" style="margin:0">
     <button class="btn on" id="tTerm" onclick="vista('term')">Terminal</button>
+    <button class="btn" id="tFund" onclick="vista('fund')">Grandes fondos</button>
     <button class="btn" id="tHist" onclick="vista('hist')">Historial de señales</button>
   </div>
 </header>
@@ -67,6 +68,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 </div>
 
 <main id="vHist" style="display:none"></main>
+<main id="vFund" style="display:none"></main>
 
 <script>
 const D={m:{},v:{items:{}},s:[],f:null,h:{}};
@@ -171,6 +173,7 @@ function detalle(t){
   <tr><td>Fórmula de Graham</td><td class="sm">Beneficio por acción y crecimiento esperado.</td><td>${v.graham?"$"+num(v.graham):"—"}</td></tr>
   <tr><td>Múltiplos históricos</td><td class="sm">PER medio de los últimos años por el beneficio actual.</td><td>${v.multiples?"$"+num(v.multiples):"—"}</td></tr></table>`;
   h+=`<h3 style="margin-top:18px">Salud de la empresa · últimos 5 años</h3><div id="fund" class="sm">Cargando cuentas…</div>`;
+  h+=holders(t);
   if(v.ratios&&Object.keys(v.ratios).length)h+=`<h3 style="margin-top:16px">Ratios</h3><table>${Object.entries(v.ratios).map(([k,x])=>`<tr><td class="sm">${esc(k)}</td><td>${esc(x)}</td></tr>`).join("")}</table>`;
   main.innerHTML=h+"</div>";
   grafico(t);fundamentos(t);
@@ -228,20 +231,40 @@ async function fundamentos(t){
 }
 function panel13f(){
   const f=D.f,el=document.getElementById("f13");
-  if(!f||!f.top||!f.top.length){el.innerHTML='<div class="box"><h3>Grandes fondos (13F)</h3><p class="sm">Todavía no hay datos 13F cargados. Se generarán desde la SEC (EDGAR).</p></div>';return}
-  const tb=(a,k)=>a&&a.length?`<table><tr><th>Valor</th><th>${k}</th></tr>${a.map(x=>`<tr><td><strong>${esc(x.ticker)}</strong> <span class="sm">${esc(x.name||"")}</span></td><td>${esc(x.funds)}${f.total?" de "+esc(f.total):""}</td></tr>`).join("")}</table>`:"";
+  if(!f||!f.top||!f.top.length){el.innerHTML='<div class="box"><h3>Grandes fondos (13F)</h3><p class="sm">Todavía no hay datos 13F cargados. Se generan desde la SEC (EDGAR).</p></div>';return}
+  const tb=(a,k)=>a&&a.length?`<table><tr><th>Valor</th><th>${k}</th></tr>${a.map(x=>`<tr><td><strong>${esc(x.ticker||"")}</strong> <span class="sm">${esc(x.name||"")}</span></td><td>${esc(x.funds)} de ${esc(f.total)}</td></tr>`).join("")}</table>`:"";
   el.innerHTML=`<div class="box"><h3>Grandes fondos (13F)</h3>
-  <p class="sm">Informe del trimestre ${esc(f.quarter)}, presentado en ${esc(f.filed)}. Los 13F llegan con hasta 45 días de retraso y solo cubren EE. UU. Fuente: SEC.</p>
-  <h3 style="margin-top:12px">Más comprados por los fondos</h3>${tb(f.top,"Fondos que lo tienen")}
-  ${f.buys?`<h3 style="margin-top:12px">Compras nuevas del trimestre</h3>${tb(f.buys,"Fondos que compraron")}`:""}</div>`;
+  <p class="sm">Informes del trimestre ${esc(f.quarter)}, presentados hasta el ${esc(f.filed)}. Llegan con hasta 45 días de retraso y solo cubren acciones de EE. UU. Fuente: SEC.</p>
+  <h3 style="margin-top:12px">Más presentes en las carteras</h3>${tb(f.top,"Fondos")}
+  <h3 style="margin-top:12px">Compras del trimestre</h3>${tb(f.buys,"Fondos")}
+  <h3 style="margin-top:12px">Ventas del trimestre</h3>${tb(f.sells,"Fondos")}
+  <button class="btn" style="width:100%;margin-top:10px" onclick="vista('fund')">Ver todas las carteras →</button></div>`;
 }
-
+function holders(t){
+  const f=D.f;if(!f||!f.managers)return"";
+  const r=[];f.managers.forEach(m=>{const p=m.positions.find(x=>x.ticker===t);if(p)r.push([m,p])});
+  if(!r.length)return"";
+  return `<h3 style="margin-top:16px">Grandes fondos que la tienen</h3><table>${r.map(([m,p])=>`<tr><td>${esc(m.name)} <span class="sm">· ${esc(m.who)}</span></td><td>${num(p.pct,1)} % de su cartera</td><td class="sm">${p.action==="nuevo"?"Compra nueva":p.action==="igual"?"Sin cambios":(p.action==="compra"?"Ha comprado más (+":"Ha vendido (−")+num(Math.abs(p.delta||0),0)+" %)"}</td></tr>`).join("")}</table><p class="sm">Informes 13F a ${esc(r[0][0].period)}, con hasta 45 días de retraso.</p>`;
+}
+function fondos(){
+  const f=D.f,el=document.getElementById("vFund");
+  if(!f||!f.managers||!f.managers.length){el.innerHTML='<div class="box"><h2>Grandes fondos</h2><p class="sm">Todavía no hay datos de los informes 13F.</p></div>';return}
+  const usd=v=>v>=1e9?"$"+num(v/1e9,1)+" mil M":"$"+num(v/1e6,0)+" M";
+  const chg=p=>p.action==="nuevo"?'<span class="badge COMPRAR">Nuevo</span>':p.action==="igual"?'<span class="sm">Sin cambios</span>':p.action==="compra"?`<span class="up">▲ ${num(Math.abs(p.delta),0)} %</span>`:`<span class="dn">▼ ${num(Math.abs(p.delta),0)} %</span>`;
+  const link=p=>p.ticker&&D.m[p.ticker]?`<a href="#" onclick="vista('term');detalle('${esc(p.ticker)}');return false" style="color:var(--gold)">${esc(p.ticker)}</a>`:`<strong>${esc(p.ticker||"—")}</strong>`;
+  el.innerHTML=`<div class="box"><h2>Grandes fondos · informes 13F</h2>
+  <p class="sm">Qué tienen en cartera los grandes inversores y qué han comprado o vendido respecto al trimestre anterior. Los informes llegan con hasta 45 días de retraso, solo incluyen acciones de EE. UU. y no muestran ventas en corto. Fuente: SEC.</p>
+  ${f.managers.map(m=>`<details style="margin:8px 0;border:1px solid var(--b);border-radius:6px;padding:8px 12px"><summary style="cursor:pointer"><strong>${esc(m.name)}</strong> <span class="sm">· ${esc(m.who)} · cartera ${usd(m.value)} · ${m.count} posiciones · informe a ${esc(m.period)}</span></summary>
+  <div style="overflow-x:auto"><table style="margin-top:8px"><tr><th>Valor</th><th>Empresa</th><th>% de la cartera</th><th>Cambio vs. trimestre anterior</th><th>Importe</th></tr>
+  ${m.positions.map(p=>`<tr><td>${link(p)}</td><td class="sm">${esc(p.name)}</td><td>${num(p.pct,1)} %</td><td>${chg(p)}</td><td>${usd(p.value)}</td></tr>`).join("")}</table></div>
+  ${m.sold&&m.sold.length?`<p class="sm">Posiciones vendidas por completo: ${m.sold.map(s=>esc(s.ticker||s.name)).join(", ")}</p>`:""}</details>`).join("")}</div>`;
+}
 function vista(v){
   document.getElementById("vTerm").style.display=v==="term"?"grid":"none";
   document.getElementById("vHist").style.display=v==="hist"?"block":"none";
-  document.getElementById("tTerm").classList.toggle("on",v==="term");
-  document.getElementById("tHist").classList.toggle("on",v==="hist");
-  if(v==="hist")historial();
+  document.getElementById("vFund").style.display=v==="fund"?"block":"none";
+  [["tTerm","term"],["tHist","hist"],["tFund","fund"]].forEach(([i,k])=>document.getElementById(i).classList.toggle("on",v===k));
+  if(v==="hist")historial();if(v==="fund")fondos();
 }
 function historial(){
   const el=document.getElementById("vHist"),S=D.s||[];
