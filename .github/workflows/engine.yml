@@ -8,26 +8,37 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: equity-data
+  cancel-in-progress: false
+
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Calcular valoraciones y enviar aviso
+      - name: Lista principal (valoraciones, gráficos y aviso)
         env:
-          # Email de contacto que la SEC pide para identificar quién consulta sus datos
           SEC_USER_AGENT: "EquityIntelligence community16jalda@gmail.com"
           POLYGON_KEY: ${{ secrets.POLYGON_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/engine.py
+      - name: Mercado amplio (miles de acciones)
+        continue-on-error: true
+        env:
+          SEC_USER_AGENT: "EquityIntelligence community16jalda@gmail.com"
+          POLYGON_KEY: ${{ secrets.POLYGON_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/broad.py daily
       - name: Guardar resultados
         run: |
           git config user.name "equity-bot"
           git config user.email "equity-bot@users.noreply.github.com"
           git add data
-          git diff --cached --quiet || (git commit -m "Actualización $(date -u +%F)" && git push)
+          git diff --cached --quiet || (git commit -m "Actualización $(date -u +%F)" && git pull --rebase origin main && git push)
