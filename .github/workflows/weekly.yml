@@ -1,0 +1,34 @@
+name: Valoración semanal del mercado amplio
+
+on:
+  schedule:
+    - cron: "0 3 * * 0"        # domingos de madrugada
+  workflow_dispatch:            # permite ejecutarlo a mano
+
+permissions:
+  contents: write
+
+concurrency:
+  group: equity-data
+  cancel-in-progress: false
+
+jobs:
+  valorar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Valorar todas las empresas con datos oficiales de la SEC
+        env:
+          SEC_USER_AGENT: "EquityIntelligence community16jalda@gmail.com"
+          POLYGON_KEY: ${{ secrets.POLYGON_KEY }}
+        run: python scripts/broad.py weekly
+      - name: Guardar resultados
+        run: |
+          git config user.name "equity-bot"
+          git config user.email "equity-bot@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || (git commit -m "Valoración semanal $(date -u +%F)" && git pull --rebase origin main && git push)
