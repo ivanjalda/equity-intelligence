@@ -5,7 +5,7 @@
 import json, os, re, sys, time, urllib.error
 from datetime import date, timedelta
 from statistics import mean, pstdev
-from engine import (get, annual, dcf, clamp, fundamentals, verdict, telegram, prices_polygon, downsample,
+from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, is_financial, telegram, prices_polygon, downsample,
                     DATA, FUND, HIST, TODAY, POLY, SEC_UA, YIELD_AAA, read_universe)
 
 MODELS = DATA / "models.json"
@@ -114,6 +114,9 @@ def weekly():
         except Exception:
             continue
         try:
+            if is_financial(facts):
+                items[tk] = {"type": "ACCIONES", "name": name.title(), "kind": "financiera"}
+                continue
             m = basic_models(facts)
             if m:
                 fd = fundamentals(facts)
@@ -150,13 +153,15 @@ def daily():
         market[t] = {"c": round(b["c"], 2), "o": round(b["o"], 2), "h": round(b["h"], 2), "l": round(b["l"], 2), "v": int(b["v"]), "type": "ACCIONES"}
         vals["items"][t] = dict(m)
         nums = [m[k] for k in ("dcf", "graham") if k in m]
+        if not nums:
+            continue
         iv = sum(nums) / len(nums)
         mg = (iv - b["c"]) / iv * 100
         if verdict(mg, m.get("health")) == "COMPRAR":
             buys.append((mg, t, iv, m))
     mp.write_text(json.dumps(market), encoding="utf-8")
     vp.write_text(json.dumps({**vals, "updated": vals.get("updated", TODAY)}, ensure_ascii=False), encoding="utf-8")
-    buys.sort(reverse=True)
+    buys.sort(key=lambda x: rank(x[0], x[3].get("health"), x[3].get("cyclical")), reverse=True)
     # histórico para el gráfico de las mejores oportunidades
     HIST.mkdir(exist_ok=True)
     made = 0
@@ -177,7 +182,7 @@ def daily():
     recent = {s["ticker"] for s in sig if s["date"] >= (date.today() - timedelta(days=90)).isoformat()}
     spy = market.get("SPY", {}).get("c")
     new = []
-    for mg, t, iv, m in buys:
+    for mg, t, iv, m in buys[:25]:  # en el historial solo se registran las 25 mejores señales del día
         if t not in recent:
             row = {"date": TODAY, "ticker": t, "verdict": "COMPRAR", "price": market[t]["c"]}
             if spy:
