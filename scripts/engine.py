@@ -100,9 +100,8 @@ def prices(t):
     if not short:
         return None
     long_ = long_ or short
-    if long_ is not short:  # completar el histórico largo con los días más recientes
-        last = long_[-1][0]
-        long_ = long_ + [r for r in short if r[0] > last]
+    if long_ is not short:  # Polygon manda en los últimos 2 años; la otra fuente solo aporta lo anterior
+        long_ = [r for r in long_ if r[0] < short[0][0]] + short
     return short, long_
 
 
@@ -273,8 +272,8 @@ def judge(s):
         r = ac[-1] / pc[-1]
         if r >= 1.5:
             add("ok", f"Puede pagar sus deudas a corto plazo con holgura: tiene ${r:.1f} por cada $1 que debe a menos de un año.")
-        elif r >= 1:
-            add("warn", f"Liquidez justa: tiene ${r:.1f} por cada $1 que debe a menos de un año.")
+        elif r >= .8:
+            add("warn", f"Liquidez justa: tiene ${r:.2f} por cada $1 que debe a menos de un año.")
         else:
             add("bad", "Liquidez débil: lo que debe a menos de un año supera lo que puede convertir en dinero en ese plazo.")
     a, p = vals("Activos totales"), vals("Pasivos totales")
@@ -309,7 +308,8 @@ def judge(s):
     e = vals("Patrimonio neto")
     if len(e) >= 3 and e[0] > 0:
         add("ok" if e[-1] > e[0] else "warn",
-            "Su patrimonio crece: la empresa vale más para sus accionistas." if e[-1] > e[0] else "Su patrimonio ha bajado en estos años.")
+            "Su patrimonio crece: la empresa vale más para sus accionistas." if e[-1] > e[0]
+            else "Su patrimonio ha bajado en estos años" + (" (algo habitual en empresas rentables que recompran muchas acciones)." if n and n[-1] > 0 else "."))
     if not acc[1]:
         return {"insights": L, "health": "Sin datos"}
     q = acc[0] / acc[1]
