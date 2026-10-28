@@ -241,6 +241,8 @@ def value_stock(t, cyc, facts, hist, price):
     for key in ("dcf", "graham", "multiples"):
         if key in models and models[key] > 0:
             item[key] = round(models[key], 2)
+    if shares and shares > 0:
+        item["sh"] = round(shares)
     return item, iv, mg
 
 
