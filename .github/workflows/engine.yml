@@ -2,7 +2,7 @@ name: Motor Equity Intelligence
 
 on:
   schedule:
-    - cron: "30 22 * * 1-5"   # lunes a viernes, tras el cierre de EE. UU.
+    - cron: "30 6 * * 2-6"    # martes a sábado de madrugada (el plan gratuito da el cierre del día anterior)
   workflow_dispatch:           # permite ejecutarlo a mano
 
 permissions:
