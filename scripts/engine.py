@@ -10,6 +10,7 @@ from statistics import median, mean
 
 DATA = Path("data")
 HIST = DATA / "history"
+FUND = DATA / "fundamentals"
 TODAY = date.today().isoformat()
 POLY = os.environ.get("POLYGON_KEY")
 SEC_UA = os.environ.get("SEC_USER_AGENT", "EquityIntelligence contacto@ejemplo.com")
@@ -98,7 +99,11 @@ def prices(t):
         short = long_
     if not short:
         return None
-    return short, (long_ or short)
+    long_ = long_ or short
+    if long_ is not short:  # completar el histórico largo con los días más recientes
+        last = long_[-1][0]
+        long_ = long_ + [r for r in short if r[0] > last]
+    return short, long_
 
 
 def downsample(rows):
@@ -142,6 +147,9 @@ def value_stock(t, cyc, facts, hist, price):
     cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], "USD")
     cap, _ = annual(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], "USD")
     ni, _ = annual(facts, ["NetIncomeLoss"], "USD")
+    if len(eps) < 3:  # algunas empresas (p. ej. Visa) no publican el beneficio por acción total
+        shs, _ = annual(facts, ["WeightedAverageNumberOfDilutedSharesOutstanding"], "shares")
+        eps = {k: ni[k] / shs[k] for k in ni if shs.get(k)}
     if len(eps) < 3 or not cfo:
         return f"pocos datos oficiales (beneficio {len(eps)} años, flujo de caja {len(cfo)} años)"
     ends = list(eps)
@@ -204,6 +212,130 @@ def value_stock(t, cyc, facts, hist, price):
     return item, iv, mg
 
 
+
+# ---------- CUENTAS DE LA EMPRESA (5 años) ----------
+BAL = {"Activos totales": ["Assets"], "Activo corriente": ["AssetsCurrent"], "Pasivos totales": ["Liabilities"],
+       "Pasivo corriente": ["LiabilitiesCurrent"],
+       "Patrimonio neto": ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"],
+       "Caja": ["CashAndCashEquivalentsAtCarryingValue"], "Deuda a largo plazo": ["LongTermDebtNoncurrent", "LongTermDebt"]}
+FLOW = {"Ingresos": ["Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "SalesRevenueNet"],
+        "Beneficio neto": ["NetIncomeLoss"]}
+HINTS = {"Ingresos": "Lo que vende al año.",
+         "Beneficio neto": "Lo que gana al año después de pagar todos sus gastos.",
+         "Flujo de caja libre": "Dinero real que le sobra tras invertir en su negocio.",
+         "Caja": "Dinero disponible ahora mismo.",
+         "Activos totales": "Todo lo que posee la empresa.",
+         "Activo corriente": "Lo que puede convertir en dinero en menos de un año.",
+         "Pasivos totales": "Todo lo que debe.",
+         "Pasivo corriente": "Lo que tiene que pagar en menos de un año.",
+         "Deuda a largo plazo": "Préstamos que vencen dentro de más de un año.",
+         "Patrimonio neto": "Lo que quedaría para los accionistas si pagara todas sus deudas."}
+
+
+def hist_series(facts, names, flow):
+    out = {}
+    for n in names:
+        tmp = {}
+        for r in facts.get("us-gaap", {}).get(n, {}).get("units", {}).get("USD", []):
+            if flow:
+                if "start" not in r or not 340 <= (date.fromisoformat(r["end"]) - date.fromisoformat(r["start"])).days <= 380:
+                    continue
+            elif "start" in r or r.get("fp") != "FY":
+                continue
+            if r["end"] not in tmp or r["filed"] > tmp[r["end"]][1]:
+                tmp[r["end"]] = (r["val"], r["filed"])
+        for k, v in tmp.items():
+            out.setdefault(k, v[0])
+    return dict(sorted(out.items()))
+
+
+def pick(dic, end):
+    e = date.fromisoformat(end)
+    for k in dic:
+        if abs((date.fromisoformat(k) - e).days) <= 10:
+            return dic[k]
+    return None
+
+
+def judge(s):
+    L, acc = [], [0, 0]
+
+    def add(t, x):
+        L.append({"t": t, "x": x})
+        acc[0] += {"ok": 2, "warn": 1, "bad": 0}[t]
+        acc[1] += 2
+
+    def vals(k):
+        return [x for x in s.get(k, []) if x is not None]
+
+    ac, pc = vals("Activo corriente"), vals("Pasivo corriente")
+    if ac and pc and pc[-1] > 0:
+        r = ac[-1] / pc[-1]
+        if r >= 1.5:
+            add("ok", f"Puede pagar sus deudas a corto plazo con holgura: tiene ${r:.1f} por cada $1 que debe a menos de un año.")
+        elif r >= 1:
+            add("warn", f"Liquidez justa: tiene ${r:.1f} por cada $1 que debe a menos de un año.")
+        else:
+            add("bad", "Liquidez débil: lo que debe a menos de un año supera lo que puede convertir en dinero en ese plazo.")
+    a, p = vals("Activos totales"), vals("Pasivos totales")
+    if a and p and a[-1] > 0:
+        r = p[-1] / a[-1]
+        add("ok" if r <= .5 else "warn" if r <= .75 else "bad", f"Sus deudas equivalen al {r * 100:.0f} % de todo lo que posee.")
+    v = vals("Ingresos")
+    if len(v) >= 3 and v[0] > 0 and v[-1] > 0:
+        g = (v[-1] / v[0]) ** (1 / (len(v) - 1)) - 1
+        if g >= .05:
+            add("ok", f"Vende cada vez más: las ventas crecen un {g * 100:.0f} % al año.")
+        elif g >= 0:
+            add("warn", f"Las ventas apenas crecen ({g * 100:.1f} % al año).")
+        else:
+            add("bad", f"Las ventas están cayendo ({abs(g) * 100:.1f} % al año).")
+    n = vals("Beneficio neto")
+    if n:
+        if n[-1] <= 0:
+            add("bad", "Ahora mismo pierde dinero.")
+        elif len(n) > 1 and n[0] > 0 and n[-1] < n[0]:
+            add("warn", f"Gana dinero, pero menos que hace {len(n) - 1} años.")
+        else:
+            add("ok", "Gana dinero y sus beneficios no han bajado.")
+    f = vals("Flujo de caja libre")
+    if f and n:
+        if f[-1] > 0 and n[-1] > 0 and f[-1] >= .8 * n[-1]:
+            add("ok", "Sus beneficios se convierten en dinero real en la caja.")
+        elif f[-1] > 0:
+            add("warn", "Genera caja, aunque menos de lo que gana sobre el papel.")
+        else:
+            add("bad", "Gasta más dinero del que genera.")
+    e = vals("Patrimonio neto")
+    if len(e) >= 3 and e[0] > 0:
+        add("ok" if e[-1] > e[0] else "warn",
+            "Su patrimonio crece: la empresa vale más para sus accionistas." if e[-1] > e[0] else "Su patrimonio ha bajado en estos años.")
+    if not acc[1]:
+        return {"insights": L, "health": "Sin datos"}
+    q = acc[0] / acc[1]
+    return {"insights": L, "health": "Sólida" if q >= .75 else "Aceptable" if q >= .5 else "Frágil"}
+
+
+def fundamentals(facts):
+    raw = {k: hist_series(facts, v, k in FLOW) for k, v in {**BAL, **FLOW}.items()}
+    cfo = hist_series(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], True)
+    cap = hist_series(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], True)
+    raw["Flujo de caja libre"] = {k: cfo[k] - abs(pick(cap, k) or 0) for k in cfo}
+    if not raw["Pasivos totales"]:
+        tot = hist_series(facts, ["LiabilitiesAndStockholdersEquity"], False)
+        raw["Pasivos totales"] = {k: tot[k] - pick(raw["Patrimonio neto"], k) for k in tot if pick(raw["Patrimonio neto"], k) is not None}
+    base = raw["Activos totales"] or raw["Ingresos"]
+    if len(base) < 3:
+        return None
+    ends = list(base)[-5:]
+    series = {}
+    for k in HINTS:
+        vals = [pick(raw[k], e) for e in ends]
+        if any(x is not None for x in vals):
+            series[k] = [None if x is None else round(x / 1e6) for x in vals]
+    return {"years": [e[:4] for e in ends], "series": series, "hints": {k: HINTS[k] for k in series}, **judge(series)}
+
+
 # ---------- TELEGRAM ----------
 def telegram(text):
     tok, chat = os.environ.get("TELEGRAM_BOT_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID")
@@ -217,6 +349,7 @@ def telegram(text):
 def main():
     DATA.mkdir(exist_ok=True)
     HIST.mkdir(exist_ok=True)
+    FUND.mkdir(exist_ok=True)
     uni = read_universe()
     cik = {}
     try:
@@ -242,6 +375,13 @@ def main():
             try:
                 n = cik[t.replace(".", "-")][0]
                 facts = json.loads(get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{int(n):010d}.json", {"User-Agent": SEC_UA}, 60))["facts"]
+                try:
+                    fd = fundamentals(facts)
+                    if fd:
+                        (FUND / f"{t}.json").write_text(json.dumps(fd, ensure_ascii=False), encoding="utf-8")
+                        entry["health"] = fd["health"]
+                except Exception as e:
+                    print(f"{t}: error en cuentas ({e})")
                 res = value_stock(t, u["cyc"], facts, long_rows, last[4])
                 time.sleep(0.2)
                 if isinstance(res, tuple):
