@@ -2,6 +2,7 @@
 """Equity Intelligence: grandes fondos (informes 13F de la SEC).
 Descarga el último informe y el anterior de cada gestor, compara posiciones y genera data/13f.json."""
 import difflib, json, re, sys, time
+from datetime import date, timedelta
 import xml.etree.ElementTree as ET
 from collections import Counter
 from engine import get, DATA, TODAY, SEC_UA
@@ -18,7 +19,7 @@ MANAGERS = [
     (1103804, "VIKING", "Andreas Halvorsen"), (1135730, "COATUE", "Philippe Laffont"),
     (783412, "DAILY JOURNAL", "Daily Journal Corp."), (1709323, "HIMALAYA", "Li Lu"),
     (1549575, "DALAL", "Mohnish Pabrai"), (1112520, "AKRE", "Chuck Akre"),
-    (1345471, "TRIAN", "Nelson Peltz"), (1105510, "VALUEACT", "ValueAct"),
+    (1345471, "TRIAN", "Nelson Peltz"), (1418814, "VALUEACT", "ValueAct"),
     (1791786, "ELLIOTT", "Paul Singer"), (200217, "DODGE", "Dodge & Cox"),
     (1037389, "RENAISSANCE", "Jim Simons (Renaissance)"), (1603466, "POINT72", "Steve Cohen"),
 ]
@@ -107,6 +108,9 @@ def build(cik, expect, who, to_ticker):
         print(f"  {name}: sin informes 13F recientes.")
         return None
     period, filed, acc = fl[0]
+    if period < (date.today() - timedelta(days=380)).isoformat():
+        print(f"  {name}: último informe de {period}, demasiado antiguo. Se omite.")
+        return None
     cur = positions(cik, acc, period)
     prev = positions(cik, fl[1][2], fl[1][0]) if len(fl) > 1 else {}
     total = sum(p["value"] for p in cur.values())
@@ -159,12 +163,15 @@ def main():
     if not mans:
         sys.exit("No se pudo leer ningún informe 13F. No se modifica nada.")
     per = Counter(m["period"] for m in mans).most_common(1)[0][0]
+    for m in mans:
+        m["stale"] = m["period"] != per
+    latest = [m for m in mans if not m["stale"]]
     y, mth = int(per[:4]), int(per[5:7])
     data = {
-        "updated": TODAY, "quarter": f"{y}-T{(mth - 1) // 3 + 1}", "filed": max(m["filed"] for m in mans), "total": len(mans),
-        "top": ranking(mans, lambda m: m["positions"][:15]),
-        "buys": ranking(mans, lambda m: [p for p in m["positions"] if p["action"] == "nuevo" or (p["delta"] or 0) >= 20]),
-        "sells": ranking(mans, lambda m: [p for p in m["positions"] if p["action"] == "venta" and (p["delta"] or 0) <= -20] + m["sold"]),
+        "updated": TODAY, "quarter": f"{y}-T{(mth - 1) // 3 + 1}", "filed": max(m["filed"] for m in latest), "total": len(latest),
+        "top": ranking(latest, lambda m: m["positions"][:15]),
+        "buys": ranking(latest, lambda m: [p for p in m["positions"] if p["action"] == "nuevo" or (p["delta"] or 0) >= 20]),
+        "sells": ranking(latest, lambda m: [p for p in m["positions"] if p["action"] == "venta" and (p["delta"] or 0) <= -20] + m["sold"]),
         "managers": mans,
     }
     (DATA / "13f.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
