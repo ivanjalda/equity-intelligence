@@ -78,10 +78,13 @@ def basic_models(facts):
     while rev <= date.today():
         rev += timedelta(days=91)
     stable = all(x > 0 for x in v[-5:]) and cagr >= .05
-    return {"cyclical": cyc, "horizon": "largo" if stable and not cyc else "medio", "review": rev.isoformat(),
+    res = {"cyclical": cyc, "horizon": "largo" if stable and not cyc else "medio", "review": rev.isoformat(),
             "review_reason": "próximos resultados trimestrales (fecha estimada)",
             "ratios": {"Crecimiento beneficio (5 años)": f"{cagr * 100:.1f} %"},
             **{a: round(b, 2) for a, b in m.items()}}
+    if shares and shares > 0:
+        res["sh"] = round(shares)
+    return res
 
 
 def weekly():
