@@ -53,6 +53,8 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 <div id="vTerm" class="layout">
   <aside class="l">
     <input id="q" placeholder="Buscar ticker o nombre">
+    <div class="sm">Veredicto</div>
+    <div class="row" id="fVer"></div>
     <div class="sm">Tipo de activo</div>
     <div class="row" id="fCat"></div>
     <div class="sm">Plazo de inversión</div>
@@ -68,10 +70,12 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 
 <script>
 const D={m:{},v:{items:{}},s:[],f:null,h:{}};
-let cat="TODOS",hor="TODOS",cic=false;
+let cat="TODOS",hor="TODOS",ver="COMPRAR",cic=false;
+const VERS=["COMPRAR","ESPERAR","CARO","TODAS"];
+const VT={COMPRAR:"Oportunidades de compra",ESPERAR:"Mejor esperar",CARO:"Caras ahora",TODAS:"Todas las acciones"};
 const CATS=["TODOS","ACCIONES","ETFS","COMMODITIES","BONOS"];
 const HORS=["TODOS","corto","medio","largo"];
-const LBL={TODOS:"Todo",ACCIONES:"Acciones",ETFS:"Índices / ETFs",COMMODITIES:"Materias primas",BONOS:"Bonos",corto:"Corto plazo",medio:"Medio plazo",largo:"Largo plazo"};
+const LBL={COMPRAR:"Comprar",ESPERAR:"Esperar",CARO:"Caro",TODAS:"Todas",TODOS:"Todo",ACCIONES:"Acciones",ETFS:"Índices / ETFs",COMMODITIES:"Materias primas",BONOS:"Bonos",corto:"Corto plazo",medio:"Medio plazo",largo:"Largo plazo"};
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const j=async u=>{try{const r=await fetch(u,{cache:"no-store"});return r.ok?await r.json():null}catch(e){return null}};
 const num=(x,d=2)=>typeof x==="number"?x.toLocaleString("es-ES",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
@@ -83,7 +87,7 @@ async function init(){
   D.f=await j("data/13f.json");
   document.getElementById("upd").textContent=D.v.updated?"Datos al cierre de mercado · actualizado "+D.v.updated:"Sin datos cargados todavía";
   const mk=(id,arr,get,set)=>{const e=document.getElementById(id);e.innerHTML="";arr.forEach(k=>{const b=document.createElement("button");b.className="btn"+(get()===k?" on":"");b.textContent=LBL[k];b.onclick=()=>{set(k);mk(id,arr,get,set);lista()};e.appendChild(b)})};
-  mk("fCat",CATS,()=>cat,k=>cat=k);mk("fHor",HORS,()=>hor,k=>hor=k);
+  mk("fVer",VERS,()=>ver,k=>ver=k);mk("fCat",CATS,()=>cat,k=>cat=k);mk("fHor",HORS,()=>hor,k=>hor=k);
   document.getElementById("q").oninput=()=>lista();
   lista();panel13f();
   const best=tickers().map(t=>[t,calc(t)]).filter(x=>x[1]&&x[1].verdict==="COMPRAR").sort((a,b)=>b[1].mg-a[1].mg)[0];
@@ -106,7 +110,7 @@ let LIM=40;
 function lista(keep){
   if(!keep)LIM=40;
   const q=document.getElementById("q").value.toUpperCase().trim(),el=document.getElementById("list");
-  const onlyBuys=!q&&(cat==="TODOS"||cat==="ACCIONES");
+  const useVer=!q&&(cat==="TODOS"||cat==="ACCIONES");
   const rows=[];
   tickers().forEach(t=>{
     const v=D.v.items?.[t]||{},type=v.type||D.m[t]?.type||"ACCIONES";
@@ -115,11 +119,12 @@ function lista(keep){
     if(cic&&!v.cyclical)return;
     if(q&&!t.includes(q)&&!(v.name||"").toUpperCase().includes(q))return;
     const c=calc(t);
-    if(onlyBuys&&(!c||c.verdict!=="COMPRAR"))return;
+    if(useVer&&ver!=="TODAS"&&(!c||c.verdict!==ver))return;
     rows.push({t,v,c});
   });
-  rows.sort((a,b)=>q?(b.t.startsWith(q)-a.t.startsWith(q)||a.t.localeCompare(b.t)):((b.c?b.c.mg:-999)-(a.c?a.c.mg:-999)||a.t.localeCompare(b.t)));
-  el.innerHTML=`<div class="sm" style="margin-bottom:6px">${q?"Resultados de la búsqueda":onlyBuys?"Oportunidades de compra hoy ("+rows.length+")":LBL[cat]}</div>`;
+  const rk=r=>r.c?Math.min(r.c.mg,50)*(r.v.health==="Sólida"?1:.75)*(r.v.cyclical?.85:1):-999;
+  rows.sort((a,b)=>q?(b.t.startsWith(q)-a.t.startsWith(q)||a.t.localeCompare(b.t)):(rk(b)-rk(a)||a.t.localeCompare(b.t)));
+  el.innerHTML=`<div class="sm" style="margin-bottom:6px">${q?"Resultados de la búsqueda ("+rows.length+")":useVer?VT[ver]+" ("+rows.length+")":LBL[cat]+" ("+rows.length+")"}</div>`;
   rows.slice(0,LIM).forEach(({t,v,c})=>{
     const d=document.createElement("div");d.className="card";
     d.innerHTML=`<div class="flex"><strong>${esc(t)}</strong><span>${D.m[t]?"$"+num(D.m[t].c):"—"}</span></div>
@@ -127,7 +132,7 @@ function lista(keep){
     d.onclick=()=>detalle(t);el.appendChild(d);
   });
   if(rows.length>LIM){const b=document.createElement("button");b.className="btn";b.style.width="100%";b.textContent=`Mostrar más (${rows.length-LIM} restantes)`;b.onclick=()=>{LIM+=40;lista(true)};el.appendChild(b)}
-  if(!rows.length)el.innerHTML+=q?'<p class="sm">Ningún activo coincide con la búsqueda.</p>':'<p class="sm">Hoy no hay oportunidades de compra con estos filtros. Usa el buscador para consultar cualquier activo.</p>';
+  if(!rows.length)el.innerHTML+=q?'<p class="sm">Ningún activo coincide con la búsqueda.</p>':'<p class="sm">No hay activos con estos filtros. Prueba otro veredicto o usa el buscador.</p>';
 }
 function inicio(){
   const idx=["SPY","QQQ","DIA","IWM"].filter(t=>D.m[t]);
@@ -154,6 +159,7 @@ function detalle(t){
     else h+=`${c.weak?"Parece barata en números, pero su salud financiera es frágil. ":""}${c.odd?"La diferencia con su valor es tan grande que puede deberse a un dato atípico: verifícalo antes de actuar. ":""}Precio de entrada recomendado: <strong>$${num(c.entry)}</strong> (25 % bajo el valor intrínseco).${v.review?` Próxima revisión: <strong>${esc(v.review)}</strong>${v.review_reason?" ("+esc(v.review_reason)+")":""}.`:""}`;
     h+=` Valor calculado con ${c.n} de 3 métodos. No es asesoramiento financiero.</div>`;
   }
+  if(!c&&v.kind==="financiera")h+=`<div class="note">Los bancos, aseguradoras, fondos e inmobiliarias se valoran con otros métodos (valor contable, dividendos…). Todavía no los incluimos, así que no damos veredicto para evitar un número engañoso.</div>`;
   h+=`<div class="flex"><h3>Cotización</h3><div class="row" id="rng" style="margin:0"></div></div><div id="chart" class="chart"></div>`;
   if(c)h+=`<h3>Tres formas de calcular el valor intrínseco</h3><table>
   <tr><th>Método</th><th>Qué hace</th><th>Valor</th></tr>
