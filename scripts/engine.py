@@ -20,6 +20,15 @@ TERMINAL = 0.025     # crecimiento a perpetuidad del DCF
 MIN_MARGIN = 25.0    # margen de seguridad mínimo para COMPRAR (%)
 
 
+def verdict(mg, health=None):
+    """Regla común: margen de seguridad entre 25 % y 70 % y salud financiera no frágil."""
+    if mg is None:
+        return None
+    if MIN_MARGIN <= mg <= 70 and health != "Frágil":
+        return "COMPRAR"
+    return "ESPERAR" if mg >= 0 else "CARO"
+
+
 def get(url, headers=None, timeout=30):
     req = urllib.request.Request(url, headers=headers or {"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -404,7 +413,7 @@ def main():
     buys = []
     for t, e in items.items():
         iv, mg = e.pop("_iv", None), e.pop("_mg", None)
-        if iv is not None and mg >= MIN_MARGIN:
+        if iv is not None and verdict(mg, e.get("health")) == "COMPRAR":
             buys.append((mg, t, e, iv))
     buys.sort(reverse=True)
     (DATA / "valuations.json").write_text(json.dumps({"updated": TODAY, "items": items}, ensure_ascii=False), encoding="utf-8")
@@ -426,12 +435,12 @@ def main():
 
     # Aviso diario
     if buys:
-        lines = [f"Oportunidades de compra · {TODAY}", ""]
+        lines = [f"Lista principal · {TODAY}", ""]
         for mg, t, e, iv in buys[:15]:
             lines.append(f"{t}{' (nueva)' if t in new else ''}: ${market[t]['c']} · valor ${iv:.2f} · margen {mg:.0f} % · plazo {e['horizon']}{' · cíclica' if e['cyclical'] else ''}")
         lines += ["", "Información, no asesoramiento financiero."]
     else:
-        lines = [f"Resumen · {TODAY}", "", "Hoy no hay oportunidades de compra con margen de seguridad suficiente."]
+        lines = [f"Lista principal · {TODAY}", "", "Hoy no hay oportunidades con margen de seguridad suficiente."]
     telegram("\n".join(lines))
     print(f"Listo: {len(market)} activos, {len(buys)} oportunidades.")
 
