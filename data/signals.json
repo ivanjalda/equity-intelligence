@@ -12,5 +12,1573 @@
   "verdict": "COMPRAR",
   "price": 258.62,
   "spy": 765.37
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BCSF",
+  "verdict": "COMPRAR",
+  "price": 10.45,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HOG",
+  "verdict": "COMPRAR",
+  "price": 29.44,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "FSK",
+  "verdict": "COMPRAR",
+  "price": 10.66,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "GPK",
+  "verdict": "COMPRAR",
+  "price": 8.69,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "INGR",
+  "verdict": "COMPRAR",
+  "price": 94.71,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "VYX",
+  "verdict": "COMPRAR",
+  "price": 7.73,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "LULU",
+  "verdict": "COMPRAR",
+  "price": 104.59,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "INVA",
+  "verdict": "COMPRAR",
+  "price": 20.94,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PIPR",
+  "verdict": "COMPRAR",
+  "price": 65.3,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SIGI",
+  "verdict": "COMPRAR",
+  "price": 98.53,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HIG",
+  "verdict": "COMPRAR",
+  "price": 133.51,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "MLI",
+  "verdict": "COMPRAR",
+  "price": 54.88,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ACI",
+  "verdict": "COMPRAR",
+  "price": 13.72,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "NMIH",
+  "verdict": "COMPRAR",
+  "price": 42.58,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ESNT",
+  "verdict": "COMPRAR",
+  "price": 66.31,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "EPD",
+  "verdict": "COMPRAR",
+  "price": 37.17,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "MTG",
+  "verdict": "COMPRAR",
+  "price": 28.66,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "INMD",
+  "verdict": "COMPRAR",
+  "price": 13.58,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SFBS",
+  "verdict": "COMPRAR",
+  "price": 40.68,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BKU",
+  "verdict": "COMPRAR",
+  "price": 43.45,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "UHS",
+  "verdict": "COMPRAR",
+  "price": 177.32,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "OTEX",
+  "verdict": "COMPRAR",
+  "price": 27.22,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "MHO",
+  "verdict": "COMPRAR",
+  "price": 126.17,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SKWD",
+  "verdict": "COMPRAR",
+  "price": 58.59,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SBH",
+  "verdict": "COMPRAR",
+  "price": 17.18,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AMP",
+  "verdict": "COMPRAR",
+  "price": 492.85,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "WU",
+  "verdict": "COMPRAR",
+  "price": 5.99,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HAFC",
+  "verdict": "COMPRAR",
+  "price": 32.41,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "WGO",
+  "verdict": "COMPRAR",
+  "price": 28.46,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ALC",
+  "verdict": "COMPRAR",
+  "price": 69.42,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "OFG",
+  "verdict": "COMPRAR",
+  "price": 50.96,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "GL",
+  "verdict": "COMPRAR",
+  "price": 156.99,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HBANP",
+  "verdict": "COMPRAR",
+  "price": 14.68,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "GOOGN",
+  "verdict": "COMPRAR",
+  "price": 46.16,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "GOOGM",
+  "verdict": "COMPRAR",
+  "price": 46.25,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ACT",
+  "verdict": "COMPRAR",
+  "price": 48.07,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ZION",
+  "verdict": "COMPRAR",
+  "price": 65.68,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SIGA",
+  "verdict": "COMPRAR",
+  "price": 3.2,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "OBDC",
+  "verdict": "COMPRAR",
+  "price": 10.16,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "VRRM",
+  "verdict": "COMPRAR",
+  "price": 3.14,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SPH",
+  "verdict": "COMPRAR",
+  "price": 18.01,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BXC",
+  "verdict": "COMPRAR",
+  "price": 76.36,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "COLM",
+  "verdict": "COMPRAR",
+  "price": 61.17,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "DEC",
+  "verdict": "COMPRAR",
+  "price": 14.59,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "NMFC",
+  "verdict": "COMPRAR",
+  "price": 6.86,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BLDR",
+  "verdict": "COMPRAR",
+  "price": 56.7,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PFS",
+  "verdict": "COMPRAR",
+  "price": 23.23,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "EFSC",
+  "verdict": "COMPRAR",
+  "price": 62.43,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "MMS",
+  "verdict": "COMPRAR",
+  "price": 62.47,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CRTO",
+  "verdict": "COMPRAR",
+  "price": 14.17,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HBAN",
+  "verdict": "COMPRAR",
+  "price": 15.71,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "KSS",
+  "verdict": "COMPRAR",
+  "price": 23.78,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "OXM",
+  "verdict": "COMPRAR",
+  "price": 27.43,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "FULT",
+  "verdict": "COMPRAR",
+  "price": 23.54,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "WRB",
+  "verdict": "COMPRAR",
+  "price": 72.38,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PRI",
+  "verdict": "COMPRAR",
+  "price": 277.55,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "TOL",
+  "verdict": "COMPRAR",
+  "price": 141.95,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "UPBD",
+  "verdict": "COMPRAR",
+  "price": 16.95,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "FBP",
+  "verdict": "COMPRAR",
+  "price": 26.86,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CTVA",
+  "verdict": "COMPRAR",
+  "price": 11.63,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PEBO",
+  "verdict": "COMPRAR",
+  "price": 38.45,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PHM",
+  "verdict": "COMPRAR",
+  "price": 121.63,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "FMS",
+  "verdict": "COMPRAR",
+  "price": 22.5,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "TRV",
+  "verdict": "COMPRAR",
+  "price": 397.03,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CB",
+  "verdict": "COMPRAR",
+  "price": 356.25,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PLGO",
+  "verdict": "COMPRAR",
+  "price": 25.7,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "LKQ",
+  "verdict": "COMPRAR",
+  "price": 17.1,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "MTB",
+  "verdict": "COMPRAR",
+  "price": 221.31,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BY",
+  "verdict": "COMPRAR",
+  "price": 38.68,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "VICI",
+  "verdict": "COMPRAR",
+  "price": 23.7,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BFST",
+  "verdict": "COMPRAR",
+  "price": 31.87,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PYPL",
+  "verdict": "COMPRAR",
+  "price": 56.09,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "G",
+  "verdict": "COMPRAR",
+  "price": 39.2,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SHOE",
+  "verdict": "COMPRAR",
+  "price": 14.25,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ODD",
+  "verdict": "COMPRAR",
+  "price": 21.59,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "RF",
+  "verdict": "COMPRAR",
+  "price": 28.5,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AX",
+  "verdict": "COMPRAR",
+  "price": 92.3,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "LEA",
+  "verdict": "COMPRAR",
+  "price": 116.64,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "THFF",
+  "verdict": "COMPRAR",
+  "price": 77.78,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "FITB",
+  "verdict": "COMPRAR",
+  "price": 53.59,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ASB",
+  "verdict": "COMPRAR",
+  "price": 30.21,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ZUMZ",
+  "verdict": "COMPRAR",
+  "price": 13.99,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "OSBC",
+  "verdict": "COMPRAR",
+  "price": 24.6,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CBNK",
+  "verdict": "COMPRAR",
+  "price": 41.56,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "GSBD",
+  "verdict": "COMPRAR",
+  "price": 8.77,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "EG",
+  "verdict": "COMPRAR",
+  "price": 391.09,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ABG",
+  "verdict": "COMPRAR",
+  "price": 194.99,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ASIX",
+  "verdict": "COMPRAR",
+  "price": 15.62,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "FRME",
+  "verdict": "COMPRAR",
+  "price": 40.93,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "EWBC",
+  "verdict": "COMPRAR",
+  "price": 131.41,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "FNB",
+  "verdict": "COMPRAR",
+  "price": 18.24,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BKE",
+  "verdict": "COMPRAR",
+  "price": 46.39,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "DHI",
+  "verdict": "COMPRAR",
+  "price": 147.02,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "THO",
+  "verdict": "COMPRAR",
+  "price": 70.44,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "WTFC",
+  "verdict": "COMPRAR",
+  "price": 150.79,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PRG",
+  "verdict": "COMPRAR",
+  "price": 29.61,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "STBA",
+  "verdict": "COMPRAR",
+  "price": 50.59,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "MOMO",
+  "verdict": "COMPRAR",
+  "price": 4.45,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HOMB",
+  "verdict": "COMPRAR",
+  "price": 30.01,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CRUS",
+  "verdict": "COMPRAR",
+  "price": 114.27,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CUBI",
+  "verdict": "COMPRAR",
+  "price": 86.53,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "IMXI",
+  "verdict": "COMPRAR",
+  "price": 9,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "GOLD",
+  "verdict": "COMPRAR",
+  "price": 39.56,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "NJR",
+  "verdict": "COMPRAR",
+  "price": 53.12,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ALV",
+  "verdict": "COMPRAR",
+  "price": 116,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "FHI",
+  "verdict": "COMPRAR",
+  "price": 56.31,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PRIM",
+  "verdict": "COMPRAR",
+  "price": 69.12,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PERI",
+  "verdict": "COMPRAR",
+  "price": 8.67,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "FHB",
+  "verdict": "COMPRAR",
+  "price": 25.27,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SFM",
+  "verdict": "COMPRAR",
+  "price": 64.41,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "EVTC",
+  "verdict": "COMPRAR",
+  "price": 30.72,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AMAL",
+  "verdict": "COMPRAR",
+  "price": 51.43,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CHRD",
+  "verdict": "COMPRAR",
+  "price": 153.31,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "UVSP",
+  "verdict": "COMPRAR",
+  "price": 42.4,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "RYZ",
+  "verdict": "COMPRAR",
+  "price": 29.34,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "KRC",
+  "verdict": "COMPRAR",
+  "price": 35.97,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "USB",
+  "verdict": "COMPRAR",
+  "price": 59.74,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ALSN",
+  "verdict": "COMPRAR",
+  "price": 107.67,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "KFY",
+  "verdict": "COMPRAR",
+  "price": 76.07,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CNM",
+  "verdict": "COMPRAR",
+  "price": 42.35,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ZTO",
+  "verdict": "COMPRAR",
+  "price": 20.05,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "KTB",
+  "verdict": "COMPRAR",
+  "price": 74.86,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ZTS",
+  "verdict": "COMPRAR",
+  "price": 78.23,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "MBUU",
+  "verdict": "COMPRAR",
+  "price": 22.28,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CFG",
+  "verdict": "COMPRAR",
+  "price": 65.31,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CMRE",
+  "verdict": "COMPRAR",
+  "price": 14.35,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "UROY",
+  "verdict": "COMPRAR",
+  "price": 3.7,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HCKT",
+  "verdict": "COMPRAR",
+  "price": 12.19,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ALG",
+  "verdict": "COMPRAR",
+  "price": 145.68,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BAH",
+  "verdict": "COMPRAR",
+  "price": 83.4,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CNH",
+  "verdict": "COMPRAR",
+  "price": 11.14,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "RITM",
+  "verdict": "COMPRAR",
+  "price": 9.39,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "LCII",
+  "verdict": "COMPRAR",
+  "price": 89.84,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "TCBK",
+  "verdict": "COMPRAR",
+  "price": 52.69,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CTSH",
+  "verdict": "COMPRAR",
+  "price": 66.22,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HLNE",
+  "verdict": "COMPRAR",
+  "price": 81.32,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "NXST",
+  "verdict": "COMPRAR",
+  "price": 166.26,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HBT",
+  "verdict": "COMPRAR",
+  "price": 36.75,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CPB",
+  "verdict": "COMPRAR",
+  "price": 20.68,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BCC",
+  "verdict": "COMPRAR",
+  "price": 76.02,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "FCF",
+  "verdict": "COMPRAR",
+  "price": 21.02,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "GPI",
+  "verdict": "COMPRAR",
+  "price": 254.2,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CHH",
+  "verdict": "COMPRAR",
+  "price": 109.19,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "APAM",
+  "verdict": "COMPRAR",
+  "price": 33.2,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CGBD",
+  "verdict": "COMPRAR",
+  "price": 10.49,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BPOP",
+  "verdict": "COMPRAR",
+  "price": 159.19,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AMR",
+  "verdict": "COMPRAR",
+  "price": 168.57,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HDSN",
+  "verdict": "COMPRAR",
+  "price": 5.26,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "WABC",
+  "verdict": "COMPRAR",
+  "price": 61.55,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "STC",
+  "verdict": "COMPRAR",
+  "price": 43.48,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ETD",
+  "verdict": "COMPRAR",
+  "price": 19.92,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "DVA",
+  "verdict": "COMPRAR",
+  "price": 181.69,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CATY",
+  "verdict": "COMPRAR",
+  "price": 64.69,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "IIPR",
+  "verdict": "COMPRAR",
+  "price": 52.96,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PNR",
+  "verdict": "COMPRAR",
+  "price": 62.29,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SBC",
+  "verdict": "COMPRAR",
+  "price": 5.21,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SF",
+  "verdict": "COMPRAR",
+  "price": 67.14,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BHF",
+  "verdict": "COMPRAR",
+  "price": 44.73,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ED",
+  "verdict": "COMPRAR",
+  "price": 115.03,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "APTV",
+  "verdict": "COMPRAR",
+  "price": 43.65,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "EVR",
+  "verdict": "COMPRAR",
+  "price": 259.86,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BRBR",
+  "verdict": "COMPRAR",
+  "price": 9.21,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CALM",
+  "verdict": "COMPRAR",
+  "price": 62.37,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "EEFT",
+  "verdict": "COMPRAR",
+  "price": 59.01,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AOS",
+  "verdict": "COMPRAR",
+  "price": 62.06,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "GIII",
+  "verdict": "COMPRAR",
+  "price": 29.77,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "DKS",
+  "verdict": "COMPRAR",
+  "price": 141.5,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PAG",
+  "verdict": "COMPRAR",
+  "price": 212.15,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "FSUN",
+  "verdict": "COMPRAR",
+  "price": 40.09,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SB",
+  "verdict": "COMPRAR",
+  "price": 8.06,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ICFI",
+  "verdict": "COMPRAR",
+  "price": 95.39,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "NNN",
+  "verdict": "COMPRAR",
+  "price": 41.74,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BAC",
+  "verdict": "COMPRAR",
+  "price": 50.68,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HFWA",
+  "verdict": "COMPRAR",
+  "price": 29.11,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HCA",
+  "verdict": "COMPRAR",
+  "price": 449.96,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "INTU",
+  "verdict": "COMPRAR",
+  "price": 328.45,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "NSLR",
+  "verdict": "COMPRAR",
+  "price": 5.83,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ABCB",
+  "verdict": "COMPRAR",
+  "price": 82.56,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "NBBK",
+  "verdict": "COMPRAR",
+  "price": 22.63,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SAIC",
+  "verdict": "COMPRAR",
+  "price": 149.52,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PFG",
+  "verdict": "COMPRAR",
+  "price": 111.98,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SSB",
+  "verdict": "COMPRAR",
+  "price": 105.68,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CLMB",
+  "verdict": "COMPRAR",
+  "price": 32.16,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AXP",
+  "verdict": "COMPRAR",
+  "price": 312.91,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "WSFS",
+  "verdict": "COMPRAR",
+  "price": 78.85,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CRH",
+  "verdict": "COMPRAR",
+  "price": 85.77,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PSN",
+  "verdict": "COMPRAR",
+  "price": 50.73,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SPG",
+  "verdict": "COMPRAR",
+  "price": 212.28,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CBSH",
+  "verdict": "COMPRAR",
+  "price": 55.34,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AMRZ",
+  "verdict": "COMPRAR",
+  "price": 40.23,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "JLL",
+  "verdict": "COMPRAR",
+  "price": 299.93,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "COF",
+  "verdict": "COMPRAR",
+  "price": 203.44,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AYI",
+  "verdict": "COMPRAR",
+  "price": 323.11,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CSL",
+  "verdict": "COMPRAR",
+  "price": 348.57,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SCHW",
+  "verdict": "COMPRAR",
+  "price": 89.3,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CHCO",
+  "verdict": "COMPRAR",
+  "price": 141.67,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "HMN",
+  "verdict": "COMPRAR",
+  "price": 46.27,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "LII",
+  "verdict": "COMPRAR",
+  "price": 372.05,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BOKF",
+  "verdict": "COMPRAR",
+  "price": 129.69,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PANL",
+  "verdict": "COMPRAR",
+  "price": 7.98,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "RUSHA",
+  "verdict": "COMPRAR",
+  "price": 45.48,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BRX",
+  "verdict": "COMPRAR",
+  "price": 28.71,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PNFP",
+  "verdict": "COMPRAR",
+  "price": 99.73,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "RNR",
+  "verdict": "COMPRAR",
+  "price": 341.22,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CLB",
+  "verdict": "COMPRAR",
+  "price": 10.33,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SMPL",
+  "verdict": "COMPRAR",
+  "price": 9.75,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AEP",
+  "verdict": "COMPRAR",
+  "price": 130.3,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "BR",
+  "verdict": "COMPRAR",
+  "price": 177.09,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "TRMK",
+  "verdict": "COMPRAR",
+  "price": 46.12,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "NEE",
+  "verdict": "COMPRAR",
+  "price": 82.42,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CFR",
+  "verdict": "COMPRAR",
+  "price": 157.58,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PRDO",
+  "verdict": "COMPRAR",
+  "price": 32.23,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AXTA",
+  "verdict": "COMPRAR",
+  "price": 34.52,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AFG",
+  "verdict": "COMPRAR",
+  "price": 151.36,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "MWA",
+  "verdict": "COMPRAR",
+  "price": 22.44,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "VNT",
+  "verdict": "COMPRAR",
+  "price": 34.73,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "GLPI",
+  "verdict": "COMPRAR",
+  "price": 38.81,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "PCAR",
+  "verdict": "COMPRAR",
+  "price": 103.73,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CHKP",
+  "verdict": "COMPRAR",
+  "price": 159.84,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "UMBF",
+  "verdict": "COMPRAR",
+  "price": 133.8,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "WAFD",
+  "verdict": "COMPRAR",
+  "price": 29.36,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "SNA",
+  "verdict": "COMPRAR",
+  "price": 357.51,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "CMS",
+  "verdict": "COMPRAR",
+  "price": 69,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "AON",
+  "verdict": "COMPRAR",
+  "price": 302.5,
+  "spy": 769.66
  }
 ]
