@@ -29,6 +29,21 @@ def verdict(mg, health=None):
     return "ESPERAR" if mg >= 0 else "CARO"
 
 
+FINANCIAL_TAGS = {"Deposits", "InterestExpenseDeposits", "LoansAndLeasesReceivableNetReportedAmount", "PremiumsEarnedNet",
+                  "InvestmentOwnedAtFairValue", "InterestAndDividendIncomeOperating",
+                  "RealEstateInvestmentPropertyNet", "RealEstateInvestmentPropertyAtCost"}
+
+
+def is_financial(facts):
+    """Bancos, aseguradoras, fondos e inmobiliarias: DCF y Graham no son adecuados."""
+    return bool(FINANCIAL_TAGS & set(facts.get("us-gaap", {})))
+
+
+def rank(mg, health=None, cyc=False):
+    """Orden de las oportunidades: margen (máx. 50) ajustado por calidad."""
+    return min(mg, 50) * (1.0 if health == "Sólida" else 0.75) * (0.85 if cyc else 1.0)
+
+
 def get(url, headers=None, timeout=30):
     req = urllib.request.Request(url, headers=headers or {"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -151,6 +166,8 @@ def dcf(fcfps, g):
 
 
 def value_stock(t, cyc, facts, hist, price):
+    if is_financial(facts):
+        return "banco, aseguradora, fondo o inmobiliaria: necesitan otro método de valoración"
     eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
     cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], "USD")
     cap, _ = annual(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], "USD")
@@ -415,7 +432,7 @@ def main():
         iv, mg = e.pop("_iv", None), e.pop("_mg", None)
         if iv is not None and verdict(mg, e.get("health")) == "COMPRAR":
             buys.append((mg, t, e, iv))
-    buys.sort(reverse=True)
+    buys.sort(key=lambda x: rank(x[0], x[2].get("health"), x[2].get("cyclical")), reverse=True)
     (DATA / "valuations.json").write_text(json.dumps({"updated": TODAY, "items": items}, ensure_ascii=False), encoding="utf-8")
 
     # Historial de señales: solo se añaden filas nuevas, nunca se editan
