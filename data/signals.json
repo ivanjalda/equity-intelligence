@@ -1,0 +1,16 @@
+[
+ {
+  "date": "2026-10-28",
+  "ticker": "T",
+  "verdict": "COMPRAR",
+  "price": 20.85,
+  "spy": 765.37
+ },
+ {
+  "date": "2026-10-28",
+  "ticker": "ADBE",
+  "verdict": "COMPRAR",
+  "price": 258.62,
+  "spy": 765.37
+ }
+]
