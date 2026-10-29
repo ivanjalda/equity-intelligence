@@ -187,5 +187,40 @@
   "verdict": "COMPRAR",
   "price": 64.41,
   "spy": 769.66
+ },
+ {
+  "date": "2026-10-29",
+  "ticker": "EVTC",
+  "verdict": "COMPRAR",
+  "price": 30.72,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-29",
+  "ticker": "ALSN",
+  "verdict": "COMPRAR",
+  "price": 107.67,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-29",
+  "ticker": "KFY",
+  "verdict": "COMPRAR",
+  "price": 76.07,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-29",
+  "ticker": "CNM",
+  "verdict": "COMPRAR",
+  "price": 42.35,
+  "spy": 769.66
+ },
+ {
+  "date": "2026-10-29",
+  "ticker": "KTB",
+  "verdict": "COMPRAR",
+  "price": 74.86,
+  "spy": 769.66
  }
 ]
