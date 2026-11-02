@@ -5,7 +5,7 @@
 import json, os, re, sys, time, urllib.error
 from datetime import date, timedelta
 from statistics import mean, pstdev
-from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, get_sic, is_finance_sic, telegram, prices_polygon, downsample,
+from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, is_finance_sic, telegram, prices_polygon, downsample,
                     DATA, FUND, HIST, TODAY, POLY, SEC_UA, YIELD_AAA, read_universe)
 
 MODELS = DATA / "models.json"
@@ -82,8 +82,10 @@ def basic_models(facts):
             "review_reason": "próximos resultados trimestrales (fecha estimada)",
             "ratios": {"Crecimiento beneficio (5 años)": f"{cagr * 100:.1f} %"},
             **{a: round(b, 2) for a, b in m.items()}}
+    chk = base_checks(eps, ni, shs)
     if shares and shares > 0:
         res["sh"] = round(shares)
+    res["chk"] = [{"t": a, "x": c} for a, c in chk]
     res["eps"] = round(v[-1], 2)
     return res
 
@@ -155,17 +157,20 @@ def daily():
         if not b or t in core:
             continue
         market[t] = {"c": round(b["c"], 2), "o": round(b["o"], 2), "h": round(b["h"], 2), "l": round(b["l"], 2), "v": int(b["v"]), "type": "ACCIONES"}
-        vals["items"][t] = dict(m)
+        item = {k: v for k, v in m.items() if k != "chk"}
+        vals["items"][t] = item
         nums = [m[k] for k in ("dcf", "graham") if k in m]
         if not nums:
             continue
         iv = sum(nums) / len(nums)
         mg = (iv - b["c"]) / iv * 100
-        if verdict(mg, m.get("health")) == "COMPRAR":
-            buys.append((mg, t, iv, m))
+        fiab, warns, n = finalize(m, b["c"], mg)
+        item.update(fiab=fiab, checks=warns, nchk=n)
+        if verdict(mg, m.get("health"), fiab) == "COMPRAR":
+            buys.append((mg, t, iv, item))
     mp.write_text(json.dumps(market), encoding="utf-8")
     vp.write_text(json.dumps({**vals, "updated": vals.get("updated", TODAY)}, ensure_ascii=False), encoding="utf-8")
-    buys.sort(key=lambda x: rank(x[0], x[3].get("health"), x[3].get("cyclical"), spread(x[3]), market[x[1]]["c"] / x[3]["eps"] if x[3].get("eps", 0) > 0 else None), reverse=True)
+    buys.sort(key=lambda x: rank(x[0], x[3].get("health"), x[3].get("cyclical"), spread(x[3]), x[3].get("fiab")), reverse=True)
     # histórico para el gráfico de las mejores oportunidades
     HIST.mkdir(exist_ok=True)
     made = 0
