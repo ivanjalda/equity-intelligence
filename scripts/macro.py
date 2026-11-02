@@ -3,7 +3,7 @@
  - Bonos: rentabilidad actual frente a los últimos 10 años (Reserva Federal, FRED).
  - Materias primas: precio ajustado a inflación frente a su historia.
  - Índices (S&P 500, Nasdaq 100, small caps): valor intrínseco agregado de nuestras empresas valoradas."""
-import bisect, csv, io, json
+import bisect, csv, io, json, os, urllib.error
 from datetime import date, timedelta
 from statistics import mean, median
 from engine import get, DATA, HIST, TODAY, SEC_UA, telegram, verdict
@@ -37,7 +37,7 @@ COMMS = {  # ticker: (fuente, descripción, ¿fondo de futuros?)
 }
 EQ = {"SPY": ("top500", "500 mayores empresas"), "VOO": ("top500", "500 mayores empresas"), "IVV": ("top500", "500 mayores empresas"),
       "VTI": ("top500", "500 mayores empresas"), "QQQ": ("nasdaq", "100 mayores empresas del Nasdaq"),
-      "IWM": ("small", "empresas pequeñas (puestos 1.001 a 3.000 por tamaño)")}
+      "IWM": ("small", "empresas fuera de las 500 mayores")}
 
 
 def load(p, default):
@@ -53,8 +53,17 @@ def pct(vals, x):
 
 
 def fred(sid, since="2000-01-01"):
-    txt = get(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}&cosd={since}", timeout=60)
+    key = os.environ.get("FRED_API_KEY")
     out = []
+    if key:  # vía oficial con clave gratuita (la más fiable desde GitHub)
+        url = f"https://api.stlouisfed.org/fred/series/observations?series_id={sid}&api_key={key}&file_type=json&observation_start={since}"
+        for o in json.loads(get(url, timeout=40))["observations"]:
+            try:
+                out.append((o["date"], float(o["value"])))
+            except ValueError:
+                pass
+        return out
+    txt = get(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={sid}&cosd={since}", timeout=30)
     for r in list(csv.reader(io.StringIO(txt)))[1:]:
         try:
             out.append((r[0], float(r[1])))
@@ -159,9 +168,20 @@ def main():
     market, vals = load(mp, {}), load(vp, {"items": {}})
     cache = {}
 
+    state = {"down": False}
+
     def F(sid, since="2000-01-01"):
+        if state["down"]:
+            raise ValueError("la Reserva Federal (FRED) no responde")
         if (sid, since) not in cache:
-            cache[(sid, since)] = fred(sid, since)
+            try:
+                cache[(sid, since)] = fred(sid, since)
+            except urllib.error.HTTPError:
+                raise
+            except Exception as e:
+                state["down"] = True
+                print(f"FRED no responde desde GitHub ({e}). Solución: crear una clave gratuita y guardarla como secreto FRED_API_KEY.")
+                raise
         return cache[(sid, since)]
     out = {}
     for t in BONDS:
@@ -183,7 +203,7 @@ def main():
     try:
         ex = {r[2].upper(): r[3] for r in json.loads(get("https://www.sec.gov/files/company_tickers_exchange.json", {"User-Agent": SEC_UA}))["data"]}
         uni = universe(market, vals, ex)
-        groups = {"top500": uni[:500], "nasdaq": [g for g in uni if g["ex"] == "Nasdaq"][:100], "small": uni[1000:3000]}
+        groups = {"top500": uni[:500], "nasdaq": [g for g in uni if g["ex"] == "Nasdaq"][:100], "small": uni[500:]}
         for t, (g, label) in EQ.items():
             if t in market:
                 try:
