@@ -26,7 +26,7 @@ input{width:100%;padding:9px 11px;background:var(--bg);border:1px solid var(--b)
 .flex{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .sm{font-size:12px;color:var(--m)}
 .badge{font-size:11px;padding:2px 8px;border-radius:4px;font-weight:700;color:#fff;white-space:nowrap}
-.COMPRAR{background:var(--g)}.ESPERAR{background:var(--y);color:#000}.CARO{background:var(--r)}.NA{background:var(--b);color:var(--m)}
+.COMPRAR{background:var(--g)}.ESPERAR{background:var(--y);color:#000}.CARO{background:var(--r)}.REVISAR{background:#7e57c2}.NA{background:var(--b);color:var(--m)}
 .box{background:var(--p);border:1px solid var(--b);border-radius:8px;padding:18px;margin-bottom:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}
 .m{background:var(--p2);border:1px solid var(--b);border-radius:6px;padding:10px;text-align:center}
@@ -73,11 +73,11 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 <script>
 const D={m:{},v:{items:{}},s:[],f:null,h:{}};
 let cat="TODOS",hor="TODOS",ver="COMPRAR",cic=false;
-const VERS=["COMPRAR","ESPERAR","CARO","TODAS"];
-const VT={COMPRAR:"Oportunidades de compra",ESPERAR:"Mejor esperar",CARO:"Caras ahora",TODAS:"Todos los activos"};
+const VERS=["COMPRAR","REVISAR","ESPERAR","CARO","TODAS"];
+const VT={COMPRAR:"Oportunidades de compra",REVISAR:"Baratas, pero con datos por revisar",ESPERAR:"Mejor esperar",CARO:"Caras ahora",TODAS:"Todos los activos"};
 const CATS=["TODOS","ACCIONES","ETFS","COMMODITIES","BONOS"];
 const HORS=["TODOS","corto","medio","largo"];
-const LBL={COMPRAR:"Comprar",ESPERAR:"Esperar",CARO:"Caro",TODAS:"Todas",TODOS:"Todo",ACCIONES:"Acciones",ETFS:"Índices / ETFs",COMMODITIES:"Materias primas",BONOS:"Bonos",corto:"Corto plazo",medio:"Medio plazo",largo:"Largo plazo"};
+const LBL={COMPRAR:"Comprar",REVISAR:"Revisar",ESPERAR:"Esperar",CARO:"Caro",TODAS:"Todas",TODOS:"Todo",ACCIONES:"Acciones",ETFS:"Índices / ETFs",COMMODITIES:"Materias primas",BONOS:"Bonos",corto:"Corto plazo",medio:"Medio plazo",largo:"Largo plazo"};
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const j=async u=>{try{const r=await fetch(u,{cache:"no-store"});return r.ok?await r.json():null}catch(e){return null}};
 const num=(x,d=2)=>typeof x==="number"?x.toLocaleString("es-ES",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
@@ -104,12 +104,12 @@ function calc(t){
   const ms=[v.dcf,v.graham,v.multiples].filter(x=>typeof x==="number"&&x>0);
   if(!ms.length)return null;
   const iv=ms.reduce((a,b)=>a+b,0)/ms.length,mg=(iv-p)/iv*100;
-  const weak=mg>=25&&v.health==="Frágil",odd=mg>70;
-  const verdict=mg>=25&&!weak&&!odd?"COMPRAR":mg>=0?"ESPERAR":"CARO";
+  const weak=mg>=25&&v.health==="Frágil",odd=false;
+  const verdict=mg>=25&&!weak?(v.fiab==="baja"?"REVISAR":"COMPRAR"):mg>=0?"ESPERAR":"CARO";
   const spr=Math.max(...ms)/Math.min(...ms),pe=v.eps>0?p/v.eps:null;
   return{iv,mg,verdict,entry:iv*0.75,n:ms.length,p,v,weak,odd,spr,pe};
 }
-const rkOf=c=>!c?-999:c.assess?c.assess.rank:Math.min(c.mg,50)*(c.v.health==="Sólida"?1:.75)*(c.spr<1.5?1:c.spr<2.2?.85:.65)*(c.v.cyclical?.85:1)*(c.pe&&c.pe<8?.8:1);
+const rkOf=c=>!c?-999:c.assess?c.assess.rank:Math.min(c.mg,50)*(c.v.health==="Sólida"?1:.75)*(c.spr<1.5?1:c.spr<2.2?.85:.65)*(c.v.cyclical?.85:1)*({alta:1,media:.85,baja:.5}[c.v.fiab]??1);
 function tickers(){return [...new Set([...Object.keys(D.m),...Object.keys(D.v.items||{})])].filter(t=>!t.startsWith("_"))}
 let LIM=40;
 function lista(keep){
@@ -161,12 +161,14 @@ function detalle(t){
   <div class="m"><small>Margen de seguridad</small><strong class="${c&&c.mg>=0?"up":"dn"}">${c?num(c.mg,1)+" %":"—"}</strong></div>
   ${c&&c.n>1?`<div class="m"><small>Acuerdo entre métodos</small><strong class="${c.spr<1.5?"up":c.spr<2.2?"":"dn"}">${c.spr<1.5?"Alto":c.spr<2.2?"Medio":"Bajo"}</strong><small>el más alto es ×${num(c.spr,1)} el más bajo</small></div>`:""}${c&&c.pe?`<div class="m"><small>PER (precio / beneficio)</small><strong>${num(c.pe,1)}x</strong></div>`:""}</div>`;
   if(c){
-    h+=`<div class="note"><strong>${c.verdict==="COMPRAR"?"Zona de compra.":c.verdict==="ESPERAR"?"Mejor esperar.":"Caro ahora."}</strong> `;
-    if(c.verdict==="COMPRAR")h+=`El precio ya ofrece un margen de seguridad suficiente.${c.pe&&c.pe<8?" Ojo: su PER es muy bajo ("+num(c.pe,1)+"x), lo que a veces indica un dato atípico o un negocio en declive: verifícalo antes de actuar.":""}`;
+    h+=`<div class="note"><strong>${c.verdict==="COMPRAR"?"Zona de compra.":c.verdict==="REVISAR"?"Datos por revisar.":c.verdict==="ESPERAR"?"Mejor esperar.":"Caro ahora."}</strong> `;
+    if(c.verdict==="COMPRAR")h+=`El precio ya ofrece un margen de seguridad suficiente.`;
+    else if(c.verdict==="REVISAR")h+=`Según las cuentas cotiza un ${num(c.mg,0)} % por debajo de su valor, pero hemos detectado datos dudosos (más abajo) y no la damos como oportunidad hasta resolverlos.`;
     else h+=`${c.weak?"Parece barata en números, pero su salud financiera es frágil. ":""}${c.odd?"La diferencia con su valor es tan grande que puede deberse a un dato atípico: verifícalo antes de actuar. ":""}Precio de entrada recomendado: <strong>$${num(c.entry)}</strong> (25 % bajo el valor intrínseco).${v.review?` Próxima revisión: <strong>${esc(v.review)}</strong>${v.review_reason?" ("+esc(v.review_reason)+")":""}.`:""}`;
     h+=` Valor calculado con ${c.n} de 3 métodos. No es asesoramiento financiero.</div>`;
   }
   if(!c&&v.kind==="financiera")h+=`<div class="note">Los bancos, aseguradoras, fondos e inmobiliarias se valoran con otros métodos (valor contable, dividendos…). Todavía no los incluimos, así que no damos veredicto para evitar un número engañoso.</div>`;
+  h+=fiabHTML(v);
   h+=`<div id="drop"></div>`;
   h+=`<div class="flex"><h3>Cotización</h3><div class="row" id="rng" style="margin:0"></div></div><div id="chart" class="chart"></div>`;
   if(c)h+=`<h3>Tres formas de calcular el valor intrínseco</h3><table>
@@ -230,6 +232,14 @@ async function fundamentos(t){
   ${f.insights.map(i=>`<div style="margin:4px 0">${ico[i.t]} ${esc(i.x)}</div>`).join("")}
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">${cards}</div>
   <div class="sm">Años: ${f.years.map(esc).join(" · ")}. Cifras anuales oficiales (SEC), en dólares. M = millones.</div>`;
+}
+function fiabHTML(v){
+  if(!v.fiab)return"";
+  const ic={warn:'<span style="color:var(--y)">⚠</span>',bad:'<span class="dn">✖</span>'};
+  const cls={alta:"COMPRAR",media:"ESPERAR",baja:"CARO"}[v.fiab],ok=(v.nchk||0)-(v.checks||[]).length;
+  return `<div class="note" style="border-color:var(--b)"><div class="flex"><strong>Fiabilidad de los datos</strong><span class="badge ${cls}">${v.fiab[0].toUpperCase()+v.fiab.slice(1)}</span></div>
+  <div class="sm" style="margin:4px 0">${ok} de ${v.nchk} comprobaciones superadas: antigüedad de las cuentas, beneficio frente a acciones, PER y coincidencia entre métodos.</div>
+  ${(v.checks||[]).map(i=>`<div style="margin:3px 0">${ic[i.t]||""} ${esc(i.x)}</div>`).join("")}</div>`;
 }
 function detalleAssess(t,c){
   const A=c.assess,v=c.v,ic={ok:'<span class="up">✔</span>',warn:'<span style="color:var(--y)">⚠</span>',bad:'<span class="dn">✖</span>'};
