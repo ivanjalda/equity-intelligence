@@ -74,7 +74,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 const D={m:{},v:{items:{}},s:[],f:null,h:{}};
 let cat="TODOS",hor="TODOS",ver="COMPRAR",cic=false;
 const VERS=["COMPRAR","ESPERAR","CARO","TODAS"];
-const VT={COMPRAR:"Oportunidades de compra",ESPERAR:"Mejor esperar",CARO:"Caras ahora",TODAS:"Todas las acciones"};
+const VT={COMPRAR:"Oportunidades de compra",ESPERAR:"Mejor esperar",CARO:"Caras ahora",TODAS:"Todos los activos"};
 const CATS=["TODOS","ACCIONES","ETFS","COMMODITIES","BONOS"];
 const HORS=["TODOS","corto","medio","largo"];
 const LBL={COMPRAR:"Comprar",ESPERAR:"Esperar",CARO:"Caro",TODAS:"Todas",TODOS:"Todo",ACCIONES:"Acciones",ETFS:"Índices / ETFs",COMMODITIES:"Materias primas",BONOS:"Bonos",corto:"Corto plazo",medio:"Medio plazo",largo:"Largo plazo"};
@@ -106,10 +106,10 @@ function calc(t){
   const iv=ms.reduce((a,b)=>a+b,0)/ms.length,mg=(iv-p)/iv*100;
   const weak=mg>=25&&v.health==="Frágil",odd=mg>70;
   const verdict=mg>=25&&!weak&&!odd?"COMPRAR":mg>=0?"ESPERAR":"CARO";
-  const spr=Math.max(...ms)/Math.min(...ms);
-  return{iv,mg,verdict,entry:iv*0.75,n:ms.length,p,v,weak,odd,spr};
+  const spr=Math.max(...ms)/Math.min(...ms),pe=v.eps>0?p/v.eps:null;
+  return{iv,mg,verdict,entry:iv*0.75,n:ms.length,p,v,weak,odd,spr,pe};
 }
-const rkOf=c=>!c?-999:c.assess?c.assess.rank:Math.min(c.mg,50)*(c.v.health==="Sólida"?1:.75)*(c.spr<1.5?1:c.spr<2.2?.85:.65)*(c.v.cyclical?.85:1);
+const rkOf=c=>!c?-999:c.assess?c.assess.rank:Math.min(c.mg,50)*(c.v.health==="Sólida"?1:.75)*(c.spr<1.5?1:c.spr<2.2?.85:.65)*(c.v.cyclical?.85:1)*(c.pe&&c.pe<8?.8:1);
 function tickers(){return [...new Set([...Object.keys(D.m),...Object.keys(D.v.items||{})])].filter(t=>!t.startsWith("_"))}
 let LIM=40;
 function lista(keep){
@@ -159,10 +159,10 @@ function detalle(t){
   <div class="grid"><div class="m"><small>Precio</small><strong>${p?"$"+num(p):"—"}</strong></div>
   <div class="m"><small>Valor intrínseco</small><strong style="color:var(--gold)">${c?"$"+num(c.iv):"—"}</strong></div>
   <div class="m"><small>Margen de seguridad</small><strong class="${c&&c.mg>=0?"up":"dn"}">${c?num(c.mg,1)+" %":"—"}</strong></div>
-  ${c&&c.n>1?`<div class="m"><small>Acuerdo entre métodos</small><strong class="${c.spr<1.5?"up":c.spr<2.2?"":"dn"}">${c.spr<1.5?"Alto":c.spr<2.2?"Medio":"Bajo"}</strong><small>el más alto es ×${num(c.spr,1)} el más bajo</small></div>`:""}</div>`;
+  ${c&&c.n>1?`<div class="m"><small>Acuerdo entre métodos</small><strong class="${c.spr<1.5?"up":c.spr<2.2?"":"dn"}">${c.spr<1.5?"Alto":c.spr<2.2?"Medio":"Bajo"}</strong><small>el más alto es ×${num(c.spr,1)} el más bajo</small></div>`:""}${c&&c.pe?`<div class="m"><small>PER (precio / beneficio)</small><strong>${num(c.pe,1)}x</strong></div>`:""}</div>`;
   if(c){
     h+=`<div class="note"><strong>${c.verdict==="COMPRAR"?"Zona de compra.":c.verdict==="ESPERAR"?"Mejor esperar.":"Caro ahora."}</strong> `;
-    if(c.verdict==="COMPRAR")h+=`El precio ya ofrece un margen de seguridad suficiente.`;
+    if(c.verdict==="COMPRAR")h+=`El precio ya ofrece un margen de seguridad suficiente.${c.pe&&c.pe<8?" Ojo: su PER es muy bajo ("+num(c.pe,1)+"x), lo que a veces indica un dato atípico o un negocio en declive: verifícalo antes de actuar.":""}`;
     else h+=`${c.weak?"Parece barata en números, pero su salud financiera es frágil. ":""}${c.odd?"La diferencia con su valor es tan grande que puede deberse a un dato atípico: verifícalo antes de actuar. ":""}Precio de entrada recomendado: <strong>$${num(c.entry)}</strong> (25 % bajo el valor intrínseco).${v.review?` Próxima revisión: <strong>${esc(v.review)}</strong>${v.review_reason?" ("+esc(v.review_reason)+")":""}.`:""}`;
     h+=` Valor calculado con ${c.n} de 3 métodos. No es asesoramiento financiero.</div>`;
   }
