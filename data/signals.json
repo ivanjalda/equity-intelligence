@@ -229,5 +229,82 @@
   "verdict": "COMPRAR",
   "price": 62.52,
   "spy": 769.36
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "TLT",
+  "verdict": "COMPRAR",
+  "price": 81.84,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "TIPX",
+  "verdict": "COMPRAR",
+  "price": 18.55,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "TIP",
+  "verdict": "COMPRAR",
+  "price": 106.69,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "IEF",
+  "verdict": "COMPRAR",
+  "price": 91.76,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "GOVT",
+  "verdict": "COMPRAR",
+  "price": 22.31,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "BND",
+  "verdict": "COMPRAR",
+  "price": 71.56,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "AGG",
+  "verdict": "COMPRAR",
+  "price": 96.36,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "PALL",
+  "verdict": "COMPRAR",
+  "price": 17.78,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "SHY",
+  "verdict": "COMPRAR",
+  "price": 81.7,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "UNG",
+  "verdict": "COMPRAR",
+  "price": 9.08,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "HYG",
+  "verdict": "COMPRAR",
+  "price": 77.43,
+  "spy": 755.72
  }
 ]
