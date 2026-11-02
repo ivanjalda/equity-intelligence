@@ -306,5 +306,33 @@
   "verdict": "COMPRAR",
   "price": 77.43,
   "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "BBDC",
+  "verdict": "COMPRAR",
+  "price": 8.65,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "EBF",
+  "verdict": "COMPRAR",
+  "price": 21.38,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "DHI",
+  "verdict": "COMPRAR",
+  "price": 146,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-02",
+  "ticker": "FISV",
+  "verdict": "COMPRAR",
+  "price": 50.02,
+  "spy": 755.72
  }
 ]
