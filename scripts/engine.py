@@ -29,14 +29,18 @@ def verdict(mg, health=None):
     return "ESPERAR" if mg >= 0 else "CARO"
 
 
-FINANCIAL_TAGS = {"Deposits", "InterestExpenseDeposits", "LoansAndLeasesReceivableNetReportedAmount", "PremiumsEarnedNet",
-                  "InvestmentOwnedAtFairValue", "InterestAndDividendIncomeOperating",
-                  "RealEstateInvestmentPropertyNet", "RealEstateInvestmentPropertyAtCost"}
+def get_sic(cik):
+    """Código SIC oficial de la SEC (sector). 6000-6799 = finanzas, seguros e inmobiliarias."""
+    try:
+        d = json.loads(get(f"https://data.sec.gov/submissions/CIK{int(cik):010d}.json", {"User-Agent": SEC_UA}, 60))
+        time.sleep(0.12)
+        return int(d.get("sic") or 0)
+    except Exception:
+        return 0
 
 
-def is_financial(facts):
-    """Bancos, aseguradoras, fondos e inmobiliarias: DCF y Graham no son adecuados."""
-    return bool(FINANCIAL_TAGS & set(facts.get("us-gaap", {})))
+def is_finance_sic(sic):
+    return 6000 <= sic <= 6799
 
 
 def spread(item):
@@ -45,10 +49,10 @@ def spread(item):
     return max(v) / min(v) if len(v) > 1 else 1.0
 
 
-def rank(mg, health=None, cyc=False, spr=1.0):
+def rank(mg, health=None, cyc=False, spr=1.0, pe=None):
     """Orden de las oportunidades: margen (máx. 50) ajustado por calidad y por acuerdo entre métodos."""
     agree = 1.0 if spr < 1.5 else 0.85 if spr < 2.2 else 0.65
-    return min(mg, 50) * (1.0 if health == "Sólida" else 0.75) * agree * (0.85 if cyc else 1.0)
+    return min(mg, 50) * (1.0 if health == "Sólida" else 0.75) * agree * (0.85 if cyc else 1.0) * (0.8 if pe is not None and pe < 8 else 1.0)
 
 
 def get(url, headers=None, timeout=30):
@@ -173,8 +177,6 @@ def dcf(fcfps, g):
 
 
 def value_stock(t, cyc, facts, hist, price):
-    if is_financial(facts):
-        return "banco, aseguradora, fondo o inmobiliaria: necesitan otro método de valoración"
     eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
     cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], "USD")
     cap, _ = annual(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], "USD")
@@ -243,6 +245,7 @@ def value_stock(t, cyc, facts, hist, price):
             item[key] = round(models[key], 2)
     if shares and shares > 0:
         item["sh"] = round(shares)
+    item["eps"] = round(e_last, 2)
     return item, iv, mg
 
 
@@ -410,6 +413,10 @@ def main():
             try:
                 n = cik[t.replace(".", "-")][0]
                 facts = json.loads(get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{int(n):010d}.json", {"User-Agent": SEC_UA}, 60))["facts"]
+                if is_finance_sic(get_sic(n)):
+                    entry["kind"] = "financiera"
+                    print(f"{t}: sin valorar (banco, aseguradora, fondo o inmobiliaria: necesitan otro método)")
+                    continue
                 try:
                     fd = fundamentals(facts)
                     if fd:
@@ -441,7 +448,7 @@ def main():
         iv, mg = e.pop("_iv", None), e.pop("_mg", None)
         if iv is not None and verdict(mg, e.get("health")) == "COMPRAR":
             buys.append((mg, t, e, iv))
-    buys.sort(key=lambda x: rank(x[0], x[2].get("health"), x[2].get("cyclical"), spread(x[2])), reverse=True)
+    buys.sort(key=lambda x: rank(x[0], x[2].get("health"), x[2].get("cyclical"), spread(x[2]), market[x[1]]["c"] / x[2]["eps"] if x[2].get("eps", 0) > 0 else None), reverse=True)
     (DATA / "valuations.json").write_text(json.dumps({"updated": TODAY, "items": items}, ensure_ascii=False), encoding="utf-8")
 
     # Historial de señales: solo se añaden filas nuevas, nunca se editan
