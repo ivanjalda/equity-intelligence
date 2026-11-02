@@ -20,12 +20,12 @@ TERMINAL = 0.025     # crecimiento a perpetuidad del DCF
 MIN_MARGIN = 25.0    # margen de seguridad mínimo para COMPRAR (%)
 
 
-def verdict(mg, health=None):
-    """Regla común: margen de seguridad entre 25 % y 70 % y salud financiera no frágil."""
+def verdict(mg, health=None, fiab=None):
+    """COMPRAR: margen de seguridad >= 25 %, salud no frágil y datos no dudosos. Si los datos son dudosos: REVISAR."""
     if mg is None:
         return None
-    if MIN_MARGIN <= mg <= 70 and health != "Frágil":
-        return "COMPRAR"
+    if mg >= MIN_MARGIN and health != "Frágil":
+        return "REVISAR" if fiab == "baja" else "COMPRAR"
     return "ESPERAR" if mg >= 0 else "CARO"
 
 
@@ -49,10 +49,67 @@ def spread(item):
     return max(v) / min(v) if len(v) > 1 else 1.0
 
 
-def rank(mg, health=None, cyc=False, spr=1.0, pe=None):
-    """Orden de las oportunidades: margen (máx. 50) ajustado por calidad y por acuerdo entre métodos."""
+FIAB = {"alta": 1.0, "media": 0.85, "baja": 0.5}
+
+
+def rank(mg, health=None, cyc=False, spr=1.0, fiab=None):
+    """Orden de las oportunidades: margen (máx. 50) ajustado por calidad, acuerdo entre métodos y fiabilidad."""
     agree = 1.0 if spr < 1.5 else 0.85 if spr < 2.2 else 0.65
-    return min(mg, 50) * (1.0 if health == "Sólida" else 0.75) * agree * (0.85 if cyc else 1.0) * (0.8 if pe is not None and pe < 8 else 1.0)
+    return min(mg, 50) * (1.0 if health == "Sólida" else 0.75) * agree * (0.85 if cyc else 1.0) * FIAB.get(fiab, 1.0)
+
+
+def base_checks(eps, ni, shs):
+    """Comprobaciones de los datos que no dependen del precio."""
+    out, ends = [], list(eps)
+    last = ends[-1]
+    months = (date.today() - date.fromisoformat(last)).days / 30.4
+    if months <= 15:
+        out.append(("ok", f"Las últimas cuentas anuales son recientes ({last[:7]})."))
+    elif months <= 21:
+        out.append(("warn", f"Las últimas cuentas anuales son de {last[:7]}: algo antiguas."))
+    else:
+        out.append(("bad", f"Las últimas cuentas anuales que tenemos son de {last[:7]}: demasiado antiguas para valorar hoy."))
+    out.append(("ok", "Hay 5 o más años de historial.") if len(eps) >= 5 else ("warn", f"Solo hay {len(eps)} años de historial."))
+    if last in ni and shs.get(last) and eps[last]:
+        d = abs(ni[last] / shs[last] - eps[last]) / max(abs(eps[last]), 1e-9)
+        if d <= .15:
+            out.append(("ok", "El beneficio por acción coincide con beneficio neto ÷ acciones."))
+        elif d <= .35:
+            out.append(("warn", f"El beneficio por acción difiere un {d * 100:.0f} % de beneficio neto ÷ acciones."))
+        else:
+            out.append(("bad", f"El beneficio por acción no cuadra con beneficio neto ÷ acciones (difiere un {d * 100:.0f} %)."))
+    return out
+
+
+def finalize(item, price, mg):
+    """Une las comprobaciones sin precio con las que dependen del precio.
+    Devuelve (fiabilidad, avisos, número de comprobaciones)."""
+    checks = [(c["t"], c["x"]) for c in item.get("chk", [])]
+    eps = item.get("eps")
+    if eps is not None:
+        if eps <= 0:
+            checks.append(("warn", "No tuvo beneficio por acción positivo en el último año."))
+        else:
+            pe = price / eps
+            if 5 <= pe <= 60:
+                checks.append(("ok", f"El PER actual ({pe:.1f}x) está en un rango normal."))
+            elif 3 <= pe < 5 or 60 < pe <= 120:
+                checks.append(("warn", f"El PER actual ({pe:.1f}x) se sale de lo habitual."))
+            else:
+                checks.append(("bad", f"El PER actual ({pe:.1f}x) es extremo."))
+    if mg is not None and mg >= MIN_MARGIN:
+        if mg > 90:
+            checks.append(("bad", f"El descuento ({mg:.0f} %) es tan grande que probablemente haya un dato erróneo."))
+        elif mg > 70:
+            checks.append(("warn", f"El descuento ({mg:.0f} %) es extremo: conviene verificarlo."))
+        else:
+            checks.append(("ok", "El descuento sobre el valor intrínseco es razonable."))
+    spr = spread(item)
+    checks.append(("warn", f"Los métodos de valoración difieren ×{spr:.1f} entre sí.") if spr >= 2.2 else ("ok", f"Los métodos de valoración coinciden entre sí (×{spr:.1f})."))
+    bad = sum(1 for t, _ in checks if t == "bad")
+    warn = sum(1 for t, _ in checks if t == "warn")
+    fiab = "baja" if bad or warn >= 2 else ("media" if warn else "alta")
+    return fiab, [{"t": t, "x": x} for t, x in checks if t != "ok"], len(checks)
 
 
 def get(url, headers=None, timeout=30):
@@ -202,6 +259,7 @@ def value_stock(t, cyc, facts, hist, price):
     k = ends[-1]
     sh, _ = annual(facts, ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"], "shares")
     shares = sh.get(k) or (ni[k] / eps[k] if k in ni and eps[k] > 0 else None)
+    chk = base_checks(eps, ni, sh)
     fcf = [cfo[x] - abs(cap.get(x, 0)) for x in list(cfo)[-(7 if cyc else 3):]]
     fcfps = None
     if shares and shares > 0 and fcf and mean(fcf) > 0:
@@ -246,6 +304,7 @@ def value_stock(t, cyc, facts, hist, price):
     if shares and shares > 0:
         item["sh"] = round(shares)
     item["eps"] = round(e_last, 2)
+    item["chk"] = [{"t": a, "x": b} for a, b in chk]
     return item, iv, mg
 
 
@@ -446,9 +505,13 @@ def main():
     buys = []
     for t, e in items.items():
         iv, mg = e.pop("_iv", None), e.pop("_mg", None)
-        if iv is not None and verdict(mg, e.get("health")) == "COMPRAR":
-            buys.append((mg, t, e, iv))
-    buys.sort(key=lambda x: rank(x[0], x[2].get("health"), x[2].get("cyclical"), spread(x[2]), market[x[1]]["c"] / x[2]["eps"] if x[2].get("eps", 0) > 0 else None), reverse=True)
+        if iv is not None:
+            fiab, warns, n = finalize(e, market[t]["c"], mg)
+            e["fiab"], e["checks"], e["nchk"] = fiab, warns, n
+            e.pop("chk", None)
+            if verdict(mg, e.get("health"), fiab) == "COMPRAR":
+                buys.append((mg, t, e, iv))
+    buys.sort(key=lambda x: rank(x[0], x[2].get("health"), x[2].get("cyclical"), spread(x[2]), x[2].get("fiab")), reverse=True)
     (DATA / "valuations.json").write_text(json.dumps({"updated": TODAY, "items": items}, ensure_ascii=False), encoding="utf-8")
 
     # Historial de señales: solo se añaden filas nuevas, nunca se editan
