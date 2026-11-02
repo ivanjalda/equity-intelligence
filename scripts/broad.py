@@ -5,7 +5,7 @@
 import json, os, re, sys, time, urllib.error
 from datetime import date, timedelta
 from statistics import mean, pstdev
-from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, is_financial, telegram, prices_polygon, downsample,
+from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, get_sic, is_finance_sic, telegram, prices_polygon, downsample,
                     DATA, FUND, HIST, TODAY, POLY, SEC_UA, YIELD_AAA, read_universe)
 
 MODELS = DATA / "models.json"
@@ -84,6 +84,7 @@ def basic_models(facts):
             **{a: round(b, 2) for a, b in m.items()}}
     if shares and shares > 0:
         res["sh"] = round(shares)
+    res["eps"] = round(v[-1], 2)
     return res
 
 
@@ -117,7 +118,7 @@ def weekly():
         except Exception:
             continue
         try:
-            if is_financial(facts):
+            if is_finance_sic(get_sic(cik)):
                 items[tk] = {"type": "ACCIONES", "name": name.title(), "kind": "financiera"}
                 continue
             m = basic_models(facts)
@@ -164,7 +165,7 @@ def daily():
             buys.append((mg, t, iv, m))
     mp.write_text(json.dumps(market), encoding="utf-8")
     vp.write_text(json.dumps({**vals, "updated": vals.get("updated", TODAY)}, ensure_ascii=False), encoding="utf-8")
-    buys.sort(key=lambda x: rank(x[0], x[3].get("health"), x[3].get("cyclical"), spread(x[3])), reverse=True)
+    buys.sort(key=lambda x: rank(x[0], x[3].get("health"), x[3].get("cyclical"), spread(x[3]), market[x[1]]["c"] / x[3]["eps"] if x[3].get("eps", 0) > 0 else None), reverse=True)
     # histórico para el gráfico de las mejores oportunidades
     HIST.mkdir(exist_ok=True)
     made = 0
