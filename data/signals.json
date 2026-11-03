@@ -334,5 +334,33 @@
   "verdict": "COMPRAR",
   "price": 50.02,
   "spy": 755.72
+ },
+ {
+  "date": "2026-11-03",
+  "ticker": "HDSN",
+  "verdict": "COMPRAR",
+  "price": 4.31,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-03",
+  "ticker": "VCSH",
+  "verdict": "COMPRAR",
+  "price": 77.89,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-03",
+  "ticker": "VCIT",
+  "verdict": "COMPRAR",
+  "price": 79.69,
+  "spy": 755.72
+ },
+ {
+  "date": "2026-11-03",
+  "ticker": "LQD",
+  "verdict": "COMPRAR",
+  "price": 104.27,
+  "spy": 755.72
  }
 ]
