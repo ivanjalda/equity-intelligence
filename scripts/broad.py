@@ -5,7 +5,7 @@
 import json, os, re, sys, time, urllib.error
 from datetime import date, timedelta
 from statistics import mean, pstdev
-from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, is_finance_sic, telegram, prices_polygon, downsample,
+from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, is_finance_sic, is_investment_company, normalize_facts, telegram, prices_polygon, downsample,
                     DATA, FUND, HIST, TODAY, POLY, SEC_UA, YIELD_AAA, read_universe)
 
 MODELS = DATA / "models.json"
@@ -96,7 +96,7 @@ def weekly():
         sys.exit("No se pudo obtener la lista de acciones. Fin.")
     ex = get("https://www.sec.gov/files/company_tickers_exchange.json", {"User-Agent": SEC_UA})
     rows = json.loads(ex)["data"]
-    skip = re.compile(r"\b(ETF|FUND|TRUST|ETN|NOTES|ACQUISITION|WARRANT)\b", re.I)
+    skip = re.compile(r"\b(ETF|FUND|TRUST|ETN|NOTES|ACQUISITION|WARRANT|BDC)\b", re.I)
     core = {u["t"] for u in read_universe()}
     cands = []
     for cik, name, tk, exch in rows:
@@ -120,9 +120,13 @@ def weekly():
         except Exception:
             continue
         try:
-            if is_finance_sic(get_sic(cik)):
+            sic = get_sic(cik)
+            if sic is None:
+                continue  # sin poder confirmar el sector, mejor no valorarla esta semana
+            if is_finance_sic(sic) or is_investment_company(facts):
                 items[tk] = {"type": "ACCIONES", "name": name.title(), "kind": "financiera"}
                 continue
+            facts = normalize_facts(facts)
             m = basic_models(facts)
             if m:
                 fd = fundamentals(facts)
