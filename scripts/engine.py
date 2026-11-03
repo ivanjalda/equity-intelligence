@@ -30,17 +30,65 @@ def verdict(mg, health=None, fiab=None):
 
 
 def get_sic(cik):
-    """Código SIC oficial de la SEC (sector). 6000-6799 = finanzas, seguros e inmobiliarias."""
-    try:
-        d = json.loads(get(f"https://data.sec.gov/submissions/CIK{int(cik):010d}.json", {"User-Agent": SEC_UA}, 60))
-        time.sleep(0.12)
-        return int(d.get("sic") or 0)
-    except Exception:
-        return 0
+    """Código SIC oficial de la SEC (sector). 6000-6799 = finanzas, seguros e inmobiliarias.
+    Devuelve None si no se pudo consultar (se reintenta 3 veces)."""
+    for intento in range(3):
+        try:
+            d = json.loads(get(f"https://data.sec.gov/submissions/CIK{int(cik):010d}.json", {"User-Agent": SEC_UA}, 60))
+            time.sleep(0.12)
+            return int(d.get("sic") or 0)
+        except Exception:
+            time.sleep(2 * (intento + 1))
+    return None
 
 
 def is_finance_sic(sic):
-    return 6000 <= sic <= 6799
+    return sic is not None and 6000 <= sic <= 6799
+
+
+def is_investment_company(facts):
+    """Fondos y BDC (sociedades de inversión): informan de un valor liquidativo por acción, y DCF/Graham no les valen."""
+    return bool({"NetAssetValuePerShare", "InvestmentOwnedPercentOfNetAssets"} & set(facts.get("us-gaap", {})))
+
+
+# Empresas que informan con normas IFRS (p. ej. Alcon): se traducen a los nombres US GAAP que ya usamos.
+IFRS_MAP = {
+    "DilutedEarningsLossPerShare": "EarningsPerShareDiluted", "BasicEarningsLossPerShare": "EarningsPerShareBasic",
+    "ProfitLoss": "NetIncomeLoss", "ProfitLossAttributableToOwnersOfParent": "NetIncomeLoss",
+    "CashFlowsFromUsedInOperatingActivities": "NetCashProvidedByUsedInOperatingActivities",
+    "PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities": "PaymentsToAcquirePropertyPlantAndEquipment",
+    "WeightedAverageShares": "WeightedAverageNumberOfDilutedSharesOutstanding",
+    "Assets": "Assets", "CurrentAssets": "AssetsCurrent", "Liabilities": "Liabilities", "CurrentLiabilities": "LiabilitiesCurrent",
+    "Equity": "StockholdersEquity", "EquityAttributableToOwnersOfParent": "StockholdersEquity",
+    "CashAndCashEquivalents": "CashAndCashEquivalentsAtCarryingValue", "Revenue": "Revenues",
+}
+
+
+def _latest_end(tax, names):
+    ends = [r["end"] for n in names for rows in tax.get(n, {}).get("units", {}).values() for r in rows if "end" in r]
+    return max(ends) if ends else ""
+
+
+def normalize_facts(facts):
+    """Si los datos IFRS (en dólares) son más recientes que los US GAAP, se usan los IFRS."""
+    ifrs = facts.get("ifrs-full")
+    if not ifrs:
+        return facts
+    g_last = _latest_end(facts.get("us-gaap", {}), ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"])
+    i_last = _latest_end(ifrs, ["DilutedEarningsLossPerShare", "BasicEarningsLossPerShare"])
+    if not i_last or i_last <= g_last:
+        return facts
+    mapped = {}
+    for k, v in IFRS_MAP.items():
+        if k in ifrs:
+            units = {u: rows for u, rows in ifrs[k]["units"].items() if u.startswith("USD") or u == "shares"}
+            if units:
+                mapped[v] = {"units": units}
+    if "EarningsPerShareDiluted" not in mapped and "EarningsPerShareBasic" not in mapped:
+        return facts
+    out = dict(facts)
+    out["us-gaap"] = mapped
+    return out
 
 
 def spread(item):
@@ -100,8 +148,8 @@ def finalize(item, price, mg):
     if mg is not None and mg >= MIN_MARGIN:
         if mg > 90:
             checks.append(("bad", f"El descuento ({mg:.0f} %) es tan grande que probablemente haya un dato erróneo."))
-        elif mg > 70:
-            checks.append(("warn", f"El descuento ({mg:.0f} %) es extremo: conviene verificarlo."))
+        elif mg > 60:
+            checks.append(("warn", f"El descuento ({mg:.0f} %) es muy grande: conviene verificarlo."))
         else:
             checks.append(("ok", "El descuento sobre el valor intrínseco es razonable."))
     spr = spread(item)
@@ -472,10 +520,15 @@ def main():
             try:
                 n = cik[t.replace(".", "-")][0]
                 facts = json.loads(get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{int(n):010d}.json", {"User-Agent": SEC_UA}, 60))["facts"]
-                if is_finance_sic(get_sic(n)):
+                sic = get_sic(n)
+                if sic is None:
+                    print(f"{t}: sin valorar (no se pudo confirmar su sector)")
+                    continue
+                if is_finance_sic(sic) or is_investment_company(facts):
                     entry["kind"] = "financiera"
                     print(f"{t}: sin valorar (banco, aseguradora, fondo o inmobiliaria: necesitan otro método)")
                     continue
+                facts = normalize_facts(facts)
                 try:
                     fd = fundamentals(facts)
                     if fd:
