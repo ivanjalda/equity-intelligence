@@ -362,5 +362,19 @@
   "verdict": "COMPRAR",
   "price": 104.27,
   "spy": 755.72
+ },
+ {
+  "date": "2026-11-04",
+  "ticker": "GLOB",
+  "verdict": "COMPRAR",
+  "price": 45.77,
+  "spy": 754.35
+ },
+ {
+  "date": "2026-11-04",
+  "ticker": "SIGA",
+  "verdict": "COMPRAR",
+  "price": 3.11,
+  "spy": 754.35
  }
 ]
