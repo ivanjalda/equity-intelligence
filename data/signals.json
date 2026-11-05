@@ -425,5 +425,19 @@
   "verdict": "COMPRAR",
   "price": 163.34,
   "spy": 754.35
+ },
+ {
+  "date": "2026-11-05",
+  "ticker": "ALG",
+  "verdict": "COMPRAR",
+  "price": 144.12,
+  "spy": 766.81
+ },
+ {
+  "date": "2026-11-05",
+  "ticker": "IESC",
+  "verdict": "COMPRAR",
+  "price": 169.07,
+  "spy": 766.81
  }
 ]
