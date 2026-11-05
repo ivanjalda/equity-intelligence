@@ -4,8 +4,8 @@
   python scripts/broad.py daily   -> actualiza precios de todas con UNA consulta y avisa de oportunidades"""
 import json, os, re, sys, time, urllib.error
 from datetime import date, timedelta
-from statistics import mean, pstdev
-from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, is_finance_sic, is_investment_company, normalize_facts, telegram, prices_polygon, downsample,
+from statistics import mean, median, pstdev
+from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, is_finance_sic, is_investment_company, normalize_facts, hist_series, pick, TERMINAL, DISCOUNT, telegram, prices_polygon, downsample,
                     DATA, FUND, HIST, TODAY, POLY, SEC_UA, YIELD_AAA, read_universe)
 
 MODELS = DATA / "models.json"
@@ -44,6 +44,63 @@ def grouped():
     return None, {}
 
 
+def is_cyclical(v):
+    """Cíclica = beneficios que suben y bajan de forma repetida (no basta un solo mal año)."""
+    w = v[-8:]
+    nonpos = sum(1 for x in w if x <= 0)
+    drops = sum(1 for a, c in zip(w, w[1:]) if a > 0 and c < a * 0.75)
+    cv = pstdev(w) / max(abs(mean(w)), 1e-9)
+    return len(v) >= 6 and (nonpos >= 2 or (cv > .35 and drops >= 2))
+
+
+def bank_sic(sic):
+    return 6000 <= sic <= 6199 or 6300 <= sic <= 6411
+
+
+def bank_models(facts):
+    """Bancos y aseguradoras: valor contable justificado por su rentabilidad (ROE) y número de Graham."""
+    eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
+    ni, _ = annual(facts, ["NetIncomeLoss"], "USD")
+    shs, _ = annual(facts, ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"], "shares")
+    eq = hist_series(facts, ["StockholdersEquity"], False)
+    pref = hist_series(facts, ["PreferredStockValue"], False)
+    if len(eps) < 3 or not eq:
+        return None
+    ends = list(eps)
+    roes = []
+    for e in ends[-5:]:
+        q = pick(eq, e)
+        if q is not None and e in ni and q - (pick(pref, e) or 0) > 0:
+            roes.append(ni[e] / (q - (pick(pref, e) or 0)))
+    if len(roes) < 3:
+        return None
+    roe = clamp(median(roes), 0.0, 0.25)
+    k = ends[-1]
+    q, s = pick(eq, k), shs.get(k)
+    if q is None or not s:
+        return None
+    bvps = (q - (pick(pref, k) or 0)) / s
+    if bvps <= 0 or roe <= TERMINAL:
+        return None
+    m = {"pb": bvps * (roe - TERMINAL) / (DISCOUNT - TERMINAL)}
+    eps_use = mean(eps[x] for x in ends[-3:])
+    if eps_use > 0:
+        m["gnum"] = (22.5 * eps_use * bvps) ** 0.5
+    while len(m) >= 2 and max(m.values()) > 3 * min(m.values()):
+        m.pop(max(m, key=m.get))
+    if len(m) < 2:
+        return None
+    rev = date.fromisoformat(f1 or TODAY) + timedelta(days=91)
+    while rev <= date.today():
+        rev += timedelta(days=91)
+    return {"kind": "banco", "cyclical": False, "horizon": "largo", "review": rev.isoformat(),
+            "review_reason": "próximos resultados trimestrales (fecha estimada)",
+            "ratios": {"ROE medio (5 años)": f"{roe * 100:.1f} %", "Valor contable por acción": f"${bvps:.2f}"},
+            "eps": round(eps[k], 2), "sh": round(s),
+            "chk": [{"t": a, "x": c} for a, c in base_checks(eps, ni, shs)],
+            **{a: round(c, 2) for a, c in m.items()}}
+
+
 def basic_models(facts):
     eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
     cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], "USD")
@@ -56,7 +113,7 @@ def basic_models(facts):
         return None
     ends = list(eps)
     v = [eps[k] for k in ends]
-    cyc = len(v) >= 6 and (min(v[-8:]) <= 0 or pstdev(v[-8:]) / max(abs(mean(v[-8:])), 1e-9) > .5)
+    cyc = is_cyclical(v)
     e_use = mean(v[-7:]) if cyc else v[-1]
     win = v[-6:]
     cagr = (win[-1] / win[0]) ** (1 / (len(win) - 1)) - 1 if len(win) > 2 and win[0] > 0 and win[-1] > 0 else 0.0
@@ -123,8 +180,16 @@ def weekly():
             sic = get_sic(cik)
             if sic is None:
                 continue  # sin poder confirmar el sector, mejor no valorarla esta semana
-            if is_finance_sic(sic) or is_investment_company(facts):
+            if is_investment_company(facts):
                 items[tk] = {"type": "ACCIONES", "name": name.title(), "kind": "financiera"}
+                continue
+            if is_finance_sic(sic):
+                bm = bank_models(facts) if bank_sic(sic) else None
+                if bm:
+                    items[tk] = {"type": "ACCIONES", "name": name.title(), **bm}
+                    ok += 1
+                else:
+                    items[tk] = {"type": "ACCIONES", "name": name.title(), "kind": "financiera"}
                 continue
             facts = normalize_facts(facts)
             m = basic_models(facts)
@@ -163,7 +228,7 @@ def daily():
         market[t] = {"c": round(b["c"], 2), "o": round(b["o"], 2), "h": round(b["h"], 2), "l": round(b["l"], 2), "v": int(b["v"]), "type": "ACCIONES"}
         item = {k: v for k, v in m.items() if k != "chk"}
         vals["items"][t] = item
-        nums = [m[k] for k in ("dcf", "graham") if k in m]
+        nums = [m[k] for k in ("dcf", "graham", "pb", "gnum") if k in m]
         if not nums:
             continue
         iv = sum(nums) / len(nums)
