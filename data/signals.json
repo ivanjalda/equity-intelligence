@@ -376,5 +376,54 @@
   "verdict": "COMPRAR",
   "price": 3.11,
   "spy": 754.35
+ },
+ {
+  "date": "2026-11-05",
+  "ticker": "QCOM",
+  "verdict": "COMPRAR",
+  "price": 164.43,
+  "spy": 754.35
+ },
+ {
+  "date": "2026-11-05",
+  "ticker": "AMP",
+  "verdict": "COMPRAR",
+  "price": 504.88,
+  "spy": 754.35
+ },
+ {
+  "date": "2026-11-05",
+  "ticker": "LDOS",
+  "verdict": "COMPRAR",
+  "price": 134.72,
+  "spy": 754.35
+ },
+ {
+  "date": "2026-11-05",
+  "ticker": "NICE",
+  "verdict": "COMPRAR",
+  "price": 106.27,
+  "spy": 754.35
+ },
+ {
+  "date": "2026-11-05",
+  "ticker": "PLAB",
+  "verdict": "COMPRAR",
+  "price": 28,
+  "spy": 754.35
+ },
+ {
+  "date": "2026-11-05",
+  "ticker": "LRN",
+  "verdict": "COMPRAR",
+  "price": 75.05,
+  "spy": 754.35
+ },
+ {
+  "date": "2026-11-05",
+  "ticker": "POWL",
+  "verdict": "COMPRAR",
+  "price": 163.34,
+  "spy": 754.35
  }
 ]
