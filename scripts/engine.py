@@ -30,7 +30,7 @@ def verdict(mg, health=None, fiab=None):
 
 
 def get_sic(cik):
-    """Código SIC oficial de la SEC (sector). 6000-6799 = finanzas, seguros e inmobiliarias.
+    """Código SIC oficial de la SEC (sector). Bancos y prestamistas (6000-6199), seguros e inmobiliarias (6300-6799).
     Devuelve None si no se pudo consultar (se reintenta 3 veces)."""
     for intento in range(3):
         try:
@@ -43,7 +43,7 @@ def get_sic(cik):
 
 
 def is_finance_sic(sic):
-    return sic is not None and 6000 <= sic <= 6799
+    return sic is not None and (6000 <= sic <= 6199 or 6300 <= sic <= 6799)
 
 
 def is_investment_company(facts):
@@ -93,7 +93,7 @@ def normalize_facts(facts):
 
 def spread(item):
     """Cuántas veces difiere el método más alto del más bajo (1 = coinciden)."""
-    v = [item[k] for k in ("dcf", "graham", "multiples") if isinstance(item.get(k), (int, float)) and item[k] > 0]
+    v = [item[k] for k in ("dcf", "graham", "multiples", "pb", "gnum") if isinstance(item.get(k), (int, float)) and item[k] > 0]
     return max(v) / min(v) if len(v) > 1 else 1.0
 
 
