@@ -131,9 +131,9 @@ def universe(market, vals, ex):
     rows = {}
     for t, v in vals["items"].items():
         m = market.get(t)
-        if not m or not v.get("sh") or v.get("kind") or v.get("type", "ACCIONES") != "ACCIONES":
+        if not m or not v.get("sh") or v.get("kind") == "financiera" or v.get("type", "ACCIONES") != "ACCIONES":
             continue
-        nums = [v[k] for k in ("dcf", "graham", "multiples") if isinstance(v.get(k), (int, float)) and v[k] > 0]
+        nums = [v[k] for k in ("dcf", "graham", "multiples", "pb", "gnum") if isinstance(v.get(k), (int, float)) and v[k] > 0]
         if len(nums) < 2 or v.get("fiab") == "baja":
             continue
         iv, pr = mean(nums), m["c"]
@@ -155,7 +155,7 @@ def equity(group, label):
     cheap = 100 * sum(1 for g in group if g["mg"] > 0) / len(group)
     pts = [{"t": tone(v), "x": f"Las {len(group)} {label}, ponderadas por tamaño, cotizan un {abs(mg):.0f} % {'por debajo' if mg >= 0 else 'por encima'} de su valor intrínseco."},
            {"t": "ok" if buy >= 15 else "warn", "x": f"El {buy:.0f} % de ellas sale como COMPRAR y el {cheap:.0f} % cotiza por debajo de su valor."},
-           {"t": "warn", "x": "Se calcula con nuestro propio universo de empresas valorables: no incluye bancos ni aseguradoras (necesitan otro método) y no usa la lista oficial del índice."}]
+           {"t": "warn", "x": "Se calcula con nuestro propio universo de empresas valorables: incluye bancos y aseguradoras (valorados por su valor contable), pero no inmobiliarias ni fondos, y no usa la lista oficial del índice."}]
     return {"verdict": v, "rank": round(25 + min(mg, 30) / 3, 1) if v == "COMPRAR" else 0,
             "method": "Índice: valor intrínseco agregado de sus mayores empresas valoradas",
             "summary": f"Sus mayores empresas cotizan un {abs(mg):.0f} % {'por debajo' if mg >= 0 else 'por encima'} de su valor intrínseco agregado.",
