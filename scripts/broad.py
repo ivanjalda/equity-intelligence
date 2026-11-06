@@ -5,7 +5,7 @@
 import json, os, re, sys, time, urllib.error
 from datetime import date, timedelta
 from statistics import mean, median, pstdev
-from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, is_finance_sic, is_investment_company, normalize_facts, hist_series, pick, TERMINAL, DISCOUNT, telegram, prices_polygon, downsample,
+from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, eps_growth, is_finance_sic, is_investment_company, normalize_facts, hist_series, pick, TERMINAL, DISCOUNT, telegram, prices_polygon, downsample,
                     DATA, FUND, HIST, TODAY, POLY, SEC_UA, YIELD_AAA, read_universe)
 
 MODELS = DATA / "models.json"
@@ -45,12 +45,14 @@ def grouped():
 
 
 def is_cyclical(v):
-    """Cíclica = beneficios que suben y bajan de forma repetida (no basta un solo mal año)."""
+    """Cíclica = beneficios que suben y bajan de forma repetida.
+    Un bache antiguo seguido de una recuperación sostenida (p. ej. Alcon) no cuenta."""
     w = v[-8:]
-    nonpos = sum(1 for x in w if x <= 0)
+    nonpos8 = sum(1 for x in w if x <= 0)
+    nonpos5 = sum(1 for x in v[-5:] if x <= 0)
     drops = sum(1 for a, c in zip(w, w[1:]) if a > 0 and c < a * 0.75)
     cv = pstdev(w) / max(abs(mean(w)), 1e-9)
-    return len(v) >= 6 and (nonpos >= 2 or (cv > .35 and drops >= 2))
+    return len(v) >= 5 and (nonpos8 >= 3 or (nonpos5 >= 1 and drops >= 1) or (cv > .35 and drops >= 2))
 
 
 def bank_sic(sic):
@@ -115,8 +117,7 @@ def basic_models(facts):
     v = [eps[k] for k in ends]
     cyc = is_cyclical(v)
     e_use = mean(v[-7:]) if cyc else v[-1]
-    win = v[-6:]
-    cagr = (win[-1] / win[0]) ** (1 / (len(win) - 1)) - 1 if len(win) > 2 and win[0] > 0 and win[-1] > 0 else 0.0
+    cagr = eps_growth(v)
     g = .03 if cyc else clamp(cagr, 0.0, 0.12)
     m = {}
     if e_use > 0:
@@ -255,6 +256,25 @@ def daily():
         except Exception as e:
             print(f"{t}: sin histórico ({e})")
         time.sleep(12.5)
+    # gráficos de las empresas más grandes que aún no tienen (20 por ejecución)
+    big = sorted((t for t in mods if t in market and mods[t].get("sh") and t not in core),
+                 key=lambda t: -market[t]["c"] * mods[t]["sh"])
+    extra = 0
+    for t in big:
+        if extra >= 20:
+            break
+        f = HIST / f"{t}.json"
+        if f.exists():
+            continue
+        try:
+            rows = prices_polygon(t)
+            if len(rows) > 30:
+                f.write_text(json.dumps(downsample(rows)), encoding="utf-8")
+                extra += 1
+        except Exception as e:
+            print(f"{t}: sin histórico ({e})")
+        time.sleep(12.5)
+    made += extra
     # señales y aviso
     sig = load(sp, [])
     recent = {s["ticker"] for s in sig if s["date"] >= (date.today() - timedelta(days=90)).isoformat()}
