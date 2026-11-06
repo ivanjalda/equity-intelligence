@@ -460,5 +460,12 @@
   "verdict": "COMPRAR",
   "price": 75.1,
   "spy": 766.81
+ },
+ {
+  "date": "2026-11-06",
+  "ticker": "NEU",
+  "verdict": "COMPRAR",
+  "price": 693.08,
+  "spy": 733
  }
 ]
