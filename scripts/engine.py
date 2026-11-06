@@ -91,6 +91,16 @@ def normalize_facts(facts):
     return out
 
 
+def eps_growth(v):
+    """Crecimiento anual del beneficio por acción desde el primer año con beneficio positivo (últimos 6 años)."""
+    w = v[-6:]
+    for i, x in enumerate(w):
+        if x > 0:
+            n = len(w) - 1 - i
+            return (w[-1] / x) ** (1 / n) - 1 if n >= 2 and w[-1] > 0 else 0.0
+    return 0.0
+
+
 def spread(item):
     """Cuántas veces difiere el método más alto del más bajo (1 = coinciden)."""
     v = [item[k] for k in ("dcf", "graham", "multiples", "pb", "gnum") if isinstance(item.get(k), (int, float)) and item[k] > 0]
@@ -296,8 +306,7 @@ def value_stock(t, cyc, facts, hist, price):
     n_norm = 7 if cyc else 3
     e_use = mean(eps[k] for k in ends[-n_norm:]) if cyc else e_last
     # crecimiento del beneficio (5 años), acotado
-    win = [eps[k] for k in ends[-6:]]
-    cagr = (win[-1] / win[0]) ** (1 / (len(win) - 1)) - 1 if win[0] > 0 and win[-1] > 0 and len(win) > 2 else 0.0
+    cagr = eps_growth([eps[k] for k in ends])
     g = 0.03 if cyc else clamp(cagr, 0.0, 0.12)
     models = {}
     # Graham
