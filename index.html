@@ -219,10 +219,10 @@ async function fundamentos(t){
   const ico={ok:'<span class="up">✔</span>',warn:'<span style="color:var(--y)">⚠</span>',bad:'<span class="dn">✖</span>'};
   const col={"Sólida":"COMPRAR","Aceptable":"ESPERAR","Frágil":"CARO"}[f.health]||"NA";
   const cards=Object.entries(f.series).map(([k,a])=>{
-    const nn=a.filter(x=>x!=null),first=nn[0],last=nn[nn.length-1];
+    const nn=a.filter(x=>x!=null),first=nn[0],last=nn[nn.length-1],span=a.length-1-a.findIndex(x=>x!=null);
     const ch=first>0&&last!=null?(last/first-1)*100:null,good=ch==null?null:(bad.has(k)?ch<=0:ch>=0);
     return `<div class="m" style="text-align:left"><small>${esc(k)}</small><strong style="font-size:16px">${fmt(last)}</strong>
-    ${ch!==null?`<div class="${good?"up":"dn"}" style="font-size:12px">${ch>=0?"▲":"▼"} ${num(Math.abs(ch),0)} % en ${f.years.length-1} años</div>`:""}
+    ${ch!==null?`<div class="${good?"up":"dn"}" style="font-size:12px">${ch>=0?"▲":"▼"} ${num(Math.abs(ch),0)} % en ${span} años</div>`:""}
     ${spark(a)}<div class="sm" style="font-size:11px">${esc(f.hints[k]||"")}</div></div>`}).join("");
   el.innerHTML=`<div class="flex" style="margin-bottom:8px"><span>Lectura rápida</span><span class="badge ${col}">Salud: ${esc(f.health)}</span></div>
   ${f.insights.map(i=>`<div style="margin:4px 0">${ico[i.t]} ${esc(i.x)}</div>`).join("")}
