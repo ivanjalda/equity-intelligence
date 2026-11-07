@@ -467,5 +467,19 @@
   "verdict": "COMPRAR",
   "price": 693.08,
   "spy": 733
+ },
+ {
+  "date": "2026-11-07",
+  "ticker": "STRA",
+  "verdict": "COMPRAR",
+  "price": 52.2,
+  "spy": 735.29
+ },
+ {
+  "date": "2026-11-07",
+  "ticker": "ICFI",
+  "verdict": "COMPRAR",
+  "price": 79.68,
+  "spy": 735.29
  }
 ]
