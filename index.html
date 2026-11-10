@@ -6,16 +6,21 @@
 <title>Equity Intelligence | Valor intrínseco y plazos de inversión</title>
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <script>window.LightweightCharts||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/lightweight-charts/4.1.3/lightweight-charts.standalone.production.js"><\/script>')</script>
+<link rel="stylesheet" href="estilo.css">
+<script src="tema.js"></script>
 <style>
-:root{--bg:#0b0e14;--p:#131722;--p2:#1e222d;--gold:#d4af37;--t:#d1d4dc;--w:#fff;--m:#8a8d98;--b:#2a2e39;--g:#089981;--r:#f23645;--y:#c58b00}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--t);font:14px/1.5 -apple-system,Roboto,"Segoe UI",sans-serif}
-header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 20px;background:var(--p);border-bottom:1px solid var(--b)}
+body{margin:0;background:var(--bg);color:var(--t);font:14px/1.5 -apple-system,Roboto,"Segoe UI",sans-serif;display:flex;flex-direction:column;height:100vh}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;padding:10px 20px;background:var(--p);border-bottom:1px solid var(--b)}
 .brand{color:var(--gold);font-weight:800;letter-spacing:1px}
 .brand small{display:block;color:var(--m);font-weight:400;letter-spacing:0;font-size:11px}
 .btn{background:var(--bg);border:1px solid var(--b);color:var(--m);padding:5px 11px;border-radius:5px;cursor:pointer;font-size:12px}
 .btn.on{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700}
-.layout{display:grid;grid-template-columns:310px 1fr 320px;height:calc(100vh - 54px)}
+.layout{display:grid;grid-template-columns:310px 1fr 320px;grid-template-rows:minmax(0,1fr);flex:1;min-height:0}
+#vHist,#vFund{flex:1;min-height:0}
+a.btn{text-decoration:none;display:inline-block}
+footer{flex:none;border-top:1px solid var(--b);background:var(--p);padding:7px 14px;font-size:12px;color:var(--m);text-align:center}
+footer a{color:var(--t);margin:0 6px;white-space:nowrap}
 aside,main{overflow-y:auto;padding:14px}
 aside{background:var(--p)}
 .l{border-right:1px solid var(--b)}.r{border-left:1px solid var(--b)}
@@ -38,7 +43,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 .up{color:var(--g)}.dn{color:var(--r)}
 .note{background:var(--p2);border-left:3px solid var(--gold);padding:10px 12px;border-radius:4px;margin:12px 0}
 @media(max-width:1100px){.layout{grid-template-columns:270px 1fr}.r{display:none}}
-@media(max-width:700px){.layout{grid-template-columns:1fr;height:auto}}
+@media(max-width:700px){body{display:block;height:auto}.layout{grid-template-columns:1fr;grid-template-rows:none;height:auto}.l{border-right:0}#vHist,#vFund{overflow:visible}}
 </style>
 </head>
 <body>
@@ -48,6 +53,8 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
     <button class="btn on" id="tTerm" onclick="vista('term')">Terminal</button>
     <button class="btn" id="tFund" onclick="vista('fund')">Grandes fondos</button>
     <button class="btn" id="tHist" onclick="vista('hist')">Historial de señales</button>
+    <a class="btn" href="como-funciona.html">Cómo funciona</a>
+    <button class="btn" type="button" data-tema-btn onclick="cambiarTema()" title="Cambiar entre modo claro y modo noche">☀ Modo claro</button>
   </div>
 </header>
 
@@ -70,6 +77,11 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 <main id="vHist" style="display:none"></main>
 <main id="vFund" style="display:none"></main>
 
+<footer>
+  <strong>Información, no asesoramiento financiero.</strong> Invertir conlleva riesgo de perder dinero. Precios al cierre de mercado, no en directo.<br>
+  <a href="aviso-legal.html">Aviso legal</a> <a href="privacidad.html">Privacidad</a> <a href="cookies.html">Cookies</a> <a href="riesgo.html">Aviso de riesgo</a> <a href="como-funciona.html">Cómo funciona</a>
+</footer>
+
 <script>
 const D={m:{},v:{items:{}},s:[],f:null,h:{}};
 let cat="TODOS",hor="TODOS",ver="COMPRAR",cic=false;
@@ -87,7 +99,7 @@ async function init(){
   D.v=await j("data/valuations.json")||{items:{}};
   D.s=await j("data/signals.json")||[];
   D.f=await j("data/13f.json");
-  document.getElementById("upd").textContent=D.v.updated?"Datos al cierre de mercado · actualizado "+D.v.updated:"Sin datos cargados todavía";
+  document.getElementById("upd").textContent=D.v.updated?"Precios al cierre de mercado (no en directo) · actualizado "+D.v.updated:"Sin datos cargados todavía";
   const mk=(id,arr,get,set)=>{const e=document.getElementById(id);e.innerHTML="";arr.forEach(k=>{const b=document.createElement("button");b.className="btn"+(get()===k?" on":"");b.textContent=LBL[k];b.onclick=()=>{set(k);mk(id,arr,get,set);lista()};e.appendChild(b)})};
   mk("fVer",VERS,()=>ver,k=>ver=k);mk("fCat",CATS,()=>cat,k=>cat=k);mk("fHor",HORS,()=>hor,k=>hor=k);
   document.getElementById("q").oninput=()=>lista();
@@ -150,7 +162,10 @@ function inicio(){
   <tr><td><span class="badge CARO">CARO</span></td><td>Cotiza por encima de su valor intrínseco.</td></tr></table></div>`;
 }
 
+let cur=null;
+window.addEventListener("tema",()=>{if(cur&&document.getElementById("vTerm").style.display!=="none")detalle(cur)});
 function detalle(t){
+  cur=t;
   const c=calc(t),v=D.v.items?.[t]||{},p=D.m[t]?.c,main=document.getElementById("main");
   if(c&&c.assess){detalleAssess(t,c);return}
   let h=`<div class="box"><div class="flex"><div><h2>${esc(t)} <span class="sm">${esc(v.name||"")}</span></h2>
@@ -178,7 +193,9 @@ function detalle(t){
   main.innerHTML=h+"</div>";
   grafico(t);if(v.kind!=="banco")fundamentos(t);
 }
+const TH=()=>{const s=getComputedStyle(document.documentElement),g=n=>s.getPropertyValue(n).trim();return{bg:g("--bg"),t:g("--t"),b:g("--b"),p2:g("--p2"),gold:g("--gold"),g:g("--g"),up:g("--up"),dn:g("--dn"),light:temaActual()==="light"}};
 async function grafico(t){
+  const th=TH();
   const el=document.getElementById("chart");
   if(typeof LightweightCharts==="undefined"){el.innerHTML='<p class="sm">No se pudo cargar la librería del gráfico. Recarga la página con Ctrl+F5.</p>';return}
   if(D.h[t]===undefined)D.h[t]=await j(`data/history/${t}.json`);
@@ -188,13 +205,13 @@ async function grafico(t){
   const lastT=new Date(data[data.length-1].time),yr=data.filter(x=>new Date(x.time)>=new Date(lastT-365*864e5));
   const drop=(1-data[data.length-1].value/Math.max(...yr.map(x=>x.value)))*100,wd=document.getElementById("drop");
   if(wd&&drop>=35)wd.innerHTML=`<div class="note" style="border-color:var(--y)">⚠ El precio ha caído un ${num(drop,0)} % desde su máximo del último año. A veces el mercado ve algo que las cuentas todavía no reflejan: conviene entender el motivo antes de actuar.</div>`;
-  const chart=LightweightCharts.createChart(el,{autoSize:true,layout:{background:{color:"#0b0e14"},textColor:"#d1d4dc"},grid:{vertLines:{visible:false},horzLines:{color:"#1e222d"}},rightPriceScale:{borderColor:"#2a2e39"},timeScale:{borderColor:"#2a2e39"},crosshair:{mode:0}});
-  const up=data[data.length-1].value>=data[0].value,col=up?"#81c995":"#f28b82";
+  const chart=LightweightCharts.createChart(el,{autoSize:true,layout:{background:{color:th.bg},textColor:th.t},grid:{vertLines:{visible:false},horzLines:{color:th.p2}},rightPriceScale:{borderColor:th.b},timeScale:{borderColor:th.b},crosshair:{mode:0}});
+  const up=data[data.length-1].value>=data[0].value,col=up?th.up:th.dn;
   const cv=calc(t);
-  const s=chart.addAreaSeries({autoscaleInfoProvider:o=>{const r=o();if(r&&cv&&cv.iv){r.priceRange.maxValue=Math.max(r.priceRange.maxValue,cv.iv*1.03);r.priceRange.minValue=Math.min(r.priceRange.minValue,cv.entry*0.97)}return r},lineColor:col,topColor:up?"rgba(129,201,149,.30)":"rgba(242,139,130,.30)",bottomColor:"rgba(0,0,0,0)",lineWidth:2});
+  const s=chart.addAreaSeries({autoscaleInfoProvider:o=>{const r=o();if(r&&cv&&cv.iv){r.priceRange.maxValue=Math.max(r.priceRange.maxValue,cv.iv*1.03);r.priceRange.minValue=Math.min(r.priceRange.minValue,cv.entry*0.97)}return r},lineColor:col,topColor:up?(th.light?"rgba(11,128,67,.22)":"rgba(129,201,149,.30)"):(th.light?"rgba(197,34,31,.22)":"rgba(242,139,130,.30)"),bottomColor:"rgba(0,0,0,0)",lineWidth:2});
   if(cv&&cv.iv){
-    s.createPriceLine({price:cv.iv,color:"#d4af37",lineWidth:1,lineStyle:2,axisLabelVisible:true,title:"Valor intrínseco"});
-    s.createPriceLine({price:cv.entry,color:"#089981",lineWidth:1,lineStyle:2,axisLabelVisible:true,title:"Entrada (-25 %)"});
+    s.createPriceLine({price:cv.iv,color:th.gold,lineWidth:1,lineStyle:2,axisLabelVisible:true,title:"Valor intrínseco"});
+    s.createPriceLine({price:cv.entry,color:th.g,lineWidth:1,lineStyle:2,axisLabelVisible:true,title:"Entrada (-25 %)"});
   }
   const R={"1M":30,"6M":182,"YTD":0,"1A":365,"5A":1826,"Máx.":99999};
   const set=k=>{
@@ -306,9 +323,11 @@ function historial(){
   const c=x=>x===null?"—":`<span class="${x>=0?"up":"dn"}">${num(x,1)} %</span>`;
   el.innerHTML=`<div class="box"><h2>Historial de señales</h2>
   <p class="sm">Cada señal se registró el día que se emitió. Los resultados no se editan.</p>
-  <div class="grid"><div class="m"><small>Señales</small><strong>${S.length}</strong></div>
-  <div class="m"><small>Rend. medio</small><strong>${num(avg,1)} %</strong></div>
+  <div class="grid"><div class="m"><small>Señales registradas</small><strong>${S.length}</strong></div>
+  <div class="m"><small>Con resultado medido</small><strong>${ok.length}</strong><small>de ${S.length}</small></div>
+  <div class="m"><small>Rend. medio (de las medidas)</small><strong>${ok.length?num(avg,1)+" %":"—"}</strong></div>
   <div class="m"><small>S&amp;P 500, mismas fechas</small><strong>${okb.length?num(avgb,1)+" %":"—"}</strong></div></div>
+  ${ok.length<30?`<div class="note"><strong>Muestra todavía muy pequeña.</strong> Solo ${ok.length} de ${S.length} señales tienen ya un precio actual con el que medirlas, así que estos porcentajes <strong>no demuestran nada</strong> todavía. Los mostramos tal cual, sin retocarlos. Resultados pasados no garantizan resultados futuros.</div>`:""}
   <div style="overflow-x:auto"><table><tr><th>Fecha</th><th>Activo</th><th>Veredicto</th><th>Precio entonces</th><th>Precio hoy</th><th>Rendimiento</th><th>S&amp;P 500</th></tr>
   ${rows.map(x=>`<tr><td>${esc(x.date)}</td><td><strong>${esc(x.ticker)}</strong></td><td><span class="badge ${esc(x.verdict)}">${esc(x.verdict)}</span></td><td>$${num(x.price)}</td><td>${x.p?"$"+num(x.p):"—"}</td><td>${c(x.r)}</td><td>${c(x.b)}</td></tr>`).join("")}</table></div></div>`;
 }

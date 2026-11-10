@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cómo funciona | Equity Intelligence</title>
+<meta name="description" content="Cómo calculamos el valor intrínseco, los veredictos, la fiabilidad y de dónde salen los datos.">
+<link rel="stylesheet" href="estilo.css">
+<script src="tema.js"></script>
+</head>
+<body class="texto">
+<header class="cab">
+  <a class="marca" href="./">Equity Intelligence</a>
+  <div class="acc">
+    <a class="bt" href="./">← Volver a la web</a>
+    <button class="bt" type="button" data-tema-btn onclick="cambiarTema()" title="Cambiar entre modo claro y modo noche">☀ Modo claro</button>
+  </div>
+</header>
+<main class="pag">
+<h1>Cómo funciona</h1>
+<p class="fecha">Última actualización: 10 de noviembre de 2026</p>
+
+<p>Aquí te explicamos, sin tecnicismos, qué hace Equity Intelligence y dónde están sus límites. Si algo no se puede calcular con datos reales y fiables, lo mostramos como <strong>«Sin valorar»</strong> en lugar de inventar un número.</p>
+<div class="aviso">Información, no asesoramiento financiero. Lee el <a href="riesgo.html">aviso de riesgo</a>.</div>
+
+<h2>La idea en una frase</h2>
+<p>Estimamos cuánto <strong>vale</strong> una empresa por lo que gana y lo que tiene, y lo comparamos con lo que <strong>cuesta</strong> hoy en bolsa. Si cuesta bastante menos de lo que vale, puede ser una oportunidad.</p>
+
+<h2>Tres formas de calcular lo que vale (valor intrínseco)</h2>
+<ol>
+<li><strong>Flujo de caja descontado.</strong> Calculamos cuánto dinero libre podría generar la empresa en el futuro y lo traemos a valor de hoy (porque un euro de mañana vale menos que uno de hoy). Supuestos: descontamos al 10 % anual, crecimiento a largo plazo del 2,5 %, crecimiento propio entre 0 % y 12 %, y la media de la caja libre de los últimos 3 años (7 años en cíclicas).</li>
+<li><strong>Fórmula de Graham.</strong> Un método clásico que combina el beneficio por acción con su crecimiento esperado y el rendimiento de los bonos de alta calidad.</li>
+<li><strong>Múltiplos históricos.</strong> Mira cuántas veces el beneficio pagaba el mercado por esta empresa en el pasado (el PER mediano, acotado entre 8 y 30) y lo aplica al beneficio actual.</li>
+</ol>
+<p>El <strong>valor intrínseco</strong> que ves es la media de los métodos disponibles. Si uno se aleja más de 3 veces de otro, descartamos el más optimista. También te mostramos cuánto <strong>coinciden</strong> los métodos: si coinciden, hay más confianza.</p>
+<p><strong>Bancos y aseguradoras</strong> se valoran de otra forma, con dos métodos: su valor contable ajustado por la rentabilidad que obtienen (ROE) y el número de Graham. Los fondos de inversión, las inmobiliarias y otros intermediarios financieros todavía no se valoran.</p>
+
+<h2>Margen de seguridad y veredicto</h2>
+<p>El <strong>margen de seguridad</strong> es cuánto por debajo del valor está el precio. Cuanto mayor, más colchón si nos hemos equivocado en algo.</p>
+<table>
+<tr><td><span class="ins i-c">COMPRAR</span></td><td>El precio está al menos un 25 % por debajo del valor, la salud de la empresa no es frágil y los datos son fiables.</td></tr>
+<tr><td><span class="ins i-r">REVISAR</span></td><td>Parece barata, pero hemos detectado datos dudosos. No la damos como oportunidad hasta resolverlo.</td></tr>
+<tr><td><span class="ins i-e">ESPERAR</span></td><td>Está entre su valor justo y un 25 % por debajo. Te damos un precio de entrada (el 75 % del valor) y una fecha estimada de revisión.</td></tr>
+<tr><td><span class="ins i-x">CARO</span></td><td>Cotiza por encima de su valor calculado.</td></tr>
+</table>
+
+<h2>Corto, medio y largo plazo</h2>
+<ul>
+<li><strong>Corto plazo:</strong> está en zona de compra y además su precio está al menos un 10 % por debajo de su media de las últimas 200 sesiones.</li>
+<li><strong>Largo plazo:</strong> empresas no cíclicas con beneficios positivos en cada uno de los últimos 5 años y crecimiento sostenido.</li>
+<li><strong>Medio plazo:</strong> el resto, incluidas las cíclicas.</li>
+</ul>
+<p>Es una orientación, no una promesa de cuánto tardará en cumplirse.</p>
+
+<h2>Salud de la empresa</h2>
+<p>Revisamos 5 años de cuentas oficiales (ingresos, beneficio, caja, deuda, patrimonio) y lo traducimos a frases sencillas, con la etiqueta <em>Sólida</em>, <em>Aceptable</em> o <em>Frágil</em>. Una empresa barata pero frágil no sale como COMPRAR.</p>
+
+<h2>Empresas cíclicas</h2>
+<p>Las que ganan mucho en las buenas épocas y poco en las malas (por ejemplo, materias primas o construcción). Para no engañarnos con un año excepcional, usamos la media de 7 años.</p>
+
+<h2>Sello de fiabilidad (Alta, Media, Baja)</h2>
+<p>Comprobamos si los datos tienen sentido: que las cuentas sean recientes, que haya al menos 5 años de historial, que el beneficio por acción cuadre con el beneficio neto, que el PER esté en un rango normal y que el descuento no sea tan enorme que parezca un error. Cuantas más comprobaciones pasa, mayor es el sello. Con fiabilidad baja, el veredicto pasa a REVISAR.</p>
+
+<h2>Bonos, materias primas e índices</h2>
+<ul>
+<li><strong>Bonos:</strong> comparamos su rentabilidad actual con la de los últimos 10 años. Si está en el 25 % más alto de ese periodo, sale COMPRAR. Los fondos de bonos de empresas se miden por el «diferencial de crédito» (el extra que pagan sobre el Tesoro).</li>
+<li><strong>Materias primas:</strong> comparamos su precio, ajustado a la inflación, con toda su historia. En el 25 % más bajo, COMPRAR; en el 25 % más alto, CARO.</li>
+<li><strong>Índices:</strong> (S&amp;P 500, Nasdaq 100, empresas pequeñas) los valoramos agregando el valor de las empresas que sí hemos valorado. Con un descuento del 15 % o más, COMPRAR.</li>
+</ul>
+
+<h2>Grandes fondos</h2>
+<p>Los grandes gestores de EE. UU. están obligados a informar cada trimestre de lo que tienen en cartera (informe 13F). Los mostramos junto a nuestro veredicto de cada empresa. Estos informes llegan con hasta 45 días de retraso, solo incluyen acciones de EE. UU. y no reflejan ventas en corto.</p>
+
+<h2>Historial de señales: sin trampas</h2>
+<p>Cada veredicto se guarda el día que se emite, con su precio, y <strong>nunca se edita</strong>. Lo comparamos con el S&amp;P 500 en las mismas fechas. Hemos empezado hace poco, así que con pocas señales medidas <strong>todavía no podemos demostrar que el método funcione mejor que el azar</strong>. Lo iremos mostrando con honestidad, sea bueno o malo.</p>
+
+<h2>Qué NO hacemos</h2>
+<ul>
+<li>No predecimos el precio de mañana.</li>
+<li>No prometemos rentabilidades.</li>
+<li>No inventamos datos: si falta algo, lo decimos.</li>
+<li>No damos consejos personalizados.</li>
+</ul>
+
+<h2>De dónde salen los datos y cuándo se actualizan</h2>
+<ul>
+<li>Cuentas de las empresas: SEC (EDGAR), oficiales.</li>
+<li>Precios: cierre de sesión, no en directo.</li>
+<li>Tipos de interés, inflación y crédito: FRED (Reserva Federal de St. Louis).</li>
+<li>Grandes fondos: informes 13F de la SEC.</li>
+</ul>
+<p>Los precios y valoraciones se actualizan de martes a sábado de madrugada (hora de España), con el cierre del día anterior. La valoración de todo el mercado se recalcula cada domingo. Los informes 13F se actualizan cada lunes. La fecha de la última actualización aparece arriba en la web.</p>
+
+</main>
+<footer class="pie">
+  <p><strong>Información, no asesoramiento financiero.</strong> Invertir conlleva riesgo de perder dinero.</p>
+  <p><a href="aviso-legal.html">Aviso legal</a> <a href="privacidad.html">Privacidad</a> <a href="cookies.html">Cookies</a> <a href="riesgo.html">Aviso de riesgo</a> <a href="como-funciona.html">Cómo funciona</a></p>
+  <p>© Community16 LLC. Nuevo México, EE. UU.</p>
+</footer>
+</body>
+</html>

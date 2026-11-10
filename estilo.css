@@ -1,0 +1,35 @@
+/* Equity Intelligence · estilos compartidos y temas (noche por defecto, claro opcional) */
+:root{--bg:#0b0e14;--p:#131722;--p2:#1e222d;--gold:#d4af37;--t:#d1d4dc;--w:#fff;--m:#8a8d98;--b:#2a2e39;--g:#089981;--r:#f23645;--y:#c58b00;--up:#81c995;--dn:#f28b82;color-scheme:dark}
+:root[data-theme="light"]{--bg:#f4f5f7;--p:#ffffff;--p2:#eef0f4;--gold:#8a6d06;--t:#2a2e39;--w:#0b0e14;--m:#5d6270;--b:#d3d7df;--g:#067a67;--r:#c9202e;--y:#d99a00;--up:#0b8043;--dn:#c5221f;color-scheme:light}
+
+/* Páginas de texto (legales y "Cómo funciona") */
+body.texto{margin:0;background:var(--bg);color:var(--t);font:16px/1.65 -apple-system,Roboto,"Segoe UI",sans-serif}
+body.texto *{box-sizing:border-box}
+.cab{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;background:var(--p);border-bottom:1px solid var(--b)}
+.cab a.marca{color:var(--gold);font-weight:800;letter-spacing:1px;text-decoration:none}
+.cab .acc{display:flex;flex-wrap:wrap;gap:8px}
+.cab .bt{background:var(--bg);border:1px solid var(--b);color:var(--t);padding:7px 12px;border-radius:6px;cursor:pointer;font:inherit;font-size:14px;text-decoration:none}
+.cab .bt:hover{border-color:var(--gold)}
+.pag{max-width:800px;margin:0 auto;padding:24px 16px 40px}
+.pag h1{color:var(--gold);font-size:28px;line-height:1.25;margin:8px 0 6px}
+.pag h2{color:var(--gold);font-size:20px;margin:30px 0 8px}
+.pag h3{color:var(--w);font-size:16px;margin:20px 0 4px}
+.pag p,.pag li{color:var(--t)}
+.pag ul,.pag ol{padding-left:22px}
+.pag li{margin:5px 0}
+.pag a{color:var(--gold)}
+.pag .fecha{color:var(--m);font-size:14px;margin:0 0 18px}
+.pag .aviso{background:var(--p2);border-left:4px solid var(--gold);padding:12px 14px;border-radius:6px;margin:16px 0}
+.pag table{width:100%;border-collapse:collapse;font-size:15px;margin:10px 0}
+.pag td,.pag th{padding:8px;border-bottom:1px solid var(--b);text-align:left;vertical-align:top}
+.pag th{color:var(--m);font-weight:600}
+.pag .ins{display:inline-block;font-size:13px;font-weight:700;padding:2px 9px;border-radius:4px;color:#fff;white-space:nowrap}
+.pag .i-c{background:var(--g)}.pag .i-e{background:var(--y);color:#000}.pag .i-x{background:var(--r)}.pag .i-r{background:#7e57c2}
+.pie{border-top:1px solid var(--b);background:var(--p);padding:14px 16px;font-size:13px;color:var(--m);text-align:center}
+.pie a{color:var(--t);margin:0 7px;white-space:nowrap}
+.pie p{margin:4px 0}
+@media(max-width:600px){.pag h1{font-size:23px}.pag{padding:18px 14px 32px}}
+.pag td,.pag th,.pag code{overflow-wrap:anywhere}
+.pag code{background:var(--p2);padding:1px 5px;border-radius:4px;font-size:.92em}
+@media(max-width:600px){.pag table{font-size:13.5px}.pag td,.pag th{padding:6px 5px}}
+:root[data-theme="light"] .btn.on{color:#fff}
