@@ -5,6 +5,7 @@
 import json, os, re, sys, time, urllib.error
 from datetime import date, timedelta
 from statistics import mean, median, pstdev
+from mensajes import build_broad
 from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, eps_growth, is_finance_sic, is_investment_company, normalize_facts, hist_series, pick, TERMINAL, DISCOUNT, telegram, prices_polygon, downsample,
                     DATA, FUND, HIST, TODAY, POLY, SEC_UA, YIELD_AAA, read_universe)
 
@@ -167,15 +168,27 @@ def weekly():
     cands = cands[:4500]
     print(f"Empresas a analizar: {len(cands)}")
     FUND.mkdir(exist_ok=True)
-    items, ok = {}, 0
+    items, ok, fails, seguidos = {}, 0, {}, 0
     for i, (_, tk, cik, name) in enumerate(cands):
-        try:
-            facts = json.loads(get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{int(cik):010d}.json", {"User-Agent": SEC_UA}, 90))["facts"]
-        except urllib.error.HTTPError as e:
-            if e.code == 429:
-                time.sleep(30)
-            continue
-        except Exception:
+        facts, frenado = None, False
+        for intento in range(3):  # la SEC pide ir despacio: si nos frena (403/429) esperamos y reintentamos
+            try:
+                facts = json.loads(get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{int(cik):010d}.json", {"User-Agent": SEC_UA}, 90))["facts"]
+                break
+            except urllib.error.HTTPError as e:
+                fails[e.code] = fails.get(e.code, 0) + 1
+                if e.code == 404:  # esa empresa no tiene cuentas en formato estándar
+                    break
+                frenado = frenado or e.code in (403, 429)
+                time.sleep(60 if e.code in (403, 429) else 5)
+            except Exception as e:
+                fails[type(e).__name__] = fails.get(type(e).__name__, 0) + 1
+                time.sleep(5)
+        time.sleep(0.15)
+        seguidos = seguidos + 1 if (facts is None and frenado) else 0
+        if seguidos >= 8:
+            sys.exit(f"La SEC nos está frenando (8 empresas seguidas rechazadas). Se detiene sin guardar. Incidencias: {fails}")
+        if facts is None:
             continue
         try:
             sic = get_sic(cik)
@@ -204,8 +217,12 @@ def weekly():
         except Exception as e:
             print(f"{tk}: error ({e})")
         if i % 200 == 0:
-            print(f"  {i}/{len(cands)} revisadas, {ok} valoradas")
+            print(f"  {i}/{len(cands)} revisadas, {ok} valoradas, incidencias de la SEC: {fails or 'ninguna'}")
         time.sleep(0.12)
+    prev = len(load(MODELS, {"items": {}})["items"])
+    print(f"Incidencias de la SEC en total: {fails or 'ninguna'}")
+    if len(items) < 500 or (prev >= 500 and len(items) < prev * 0.5):
+        sys.exit(f"Resultado sospechosamente pequeño ({len(items)} empresas; la vez anterior {prev}). No se guarda para no perder las valoraciones buenas.")
     MODELS.write_text(json.dumps({"updated": TODAY, "items": items}, ensure_ascii=False), encoding="utf-8")
     print(f"Listo: {ok} empresas valoradas de {len(cands)}.")
 
@@ -288,13 +305,11 @@ def daily():
             sig.append(row)
             new.append(t)
     sp.write_text(json.dumps(sig, ensure_ascii=False, indent=1), encoding="utf-8")
-    lines = [f"Mercado amplio · {TODAY}", f"{len(buys)} oportunidades entre {len(mods)} acciones analizadas.", ""]
-    for mg, t, iv, m in buys[:15]:
-        lines.append(f"{t}{' (nueva)' if t in new else ''}: ${market[t]['c']} · valor ${iv:.2f} · margen {mg:.0f} % · salud {str(m.get('health', '—')).lower()}")
-    if len(buys) > 15:
-        lines.append(f"…y {len(buys) - 15} más en la web.")
-    lines += ["", "Información, no asesoramiento financiero."]
-    telegram("\n".join(lines))
+    if len(mods) < 500:
+        telegram(f"⚠️ <b>Aviso técnico · mercado amplio</b>\nLa valoración semanal solo tiene {len(mods)} empresas (debería tener miles). "
+                 f"No se envía el resumen del mercado amplio hasta repetirla (Actions → Valoración semanal → Run workflow).")
+    else:
+        telegram(build_broad(buys, new, len(mods), market, sig, TODAY))
     print(f"Mercado amplio listo: {len(buys)} oportunidades, {made} gráficos nuevos.")
 
 

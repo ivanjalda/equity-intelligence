@@ -6,6 +6,7 @@
 import bisect, csv, io, json, os, urllib.error
 from datetime import date, timedelta
 from statistics import mean, median
+from mensajes import build_macro
 from engine import get, DATA, HIST, TODAY, SEC_UA, telegram, verdict
 
 SRC = "Datos: Reserva Federal de EE. UU. (FRED) y precios de mercado. Información, no asesoramiento financiero."
@@ -232,11 +233,25 @@ def main():
     sp.write_text(json.dumps(sig, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"Listo: {len(out)} activos valorados, {len(buys)} en COMPRAR.")
     if buys:
-        lines = [f"Bonos, índices y materias primas · {TODAY}", ""]
-        for _, t, a in buys:
-            lines.append(f"{t}{' (nuevo)' if t in new else ''}: {a['summary']}")
-        lines += ["", "Información, no asesoramiento financiero."]
-        telegram("\n".join(lines))
+        grupos, idx = [], {}
+        for _, t, a in buys:  # los fondos que miden lo mismo se juntan en una sola línea
+            if t in BONDS:
+                tipo, clave = "Bonos", BONDS[t][0]
+            elif t in COMMS:
+                tipo, clave = "Materias primas", COMMS[t][0] if COMMS[t][0] != "etf" else COMMS[t][1]
+            else:
+                tipo, clave = "Índices", EQ[t][0]
+            if (tipo, clave) not in idx:
+                resumen = a["summary"]
+                if tipo == "Índices":
+                    d = EQ[t][1]
+                    resumen = f"{d[0].upper() + d[1:]}: margen de seguridad agregado del {a['metrics'][0]['v']}"
+                idx[(tipo, clave)] = {"tipo": tipo, "tickers": [], "resumen": resumen, "nuevo": False}
+                grupos.append(idx[(tipo, clave)])
+            g = idx[(tipo, clave)]
+            g["tickers"].append(t)
+            g["nuevo"] = g["nuevo"] or t in new
+        telegram(build_macro(grupos, sig, market, TODAY))
 
 
 if __name__ == "__main__":

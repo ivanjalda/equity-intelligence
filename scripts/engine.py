@@ -491,13 +491,23 @@ def fundamentals(facts):
 
 
 # ---------- TELEGRAM ----------
+from mensajes import build_main  # noqa: E402
+
+
 def telegram(text):
     tok, chat = os.environ.get("TELEGRAM_BOT_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID")
     if not tok or not chat:
         print("Telegram no configurado: se omite el aviso.")
         return
-    body = urllib.parse.urlencode({"chat_id": chat, "text": text[:4000]}).encode()
-    urllib.request.urlopen(urllib.request.Request(f"https://api.telegram.org/bot{tok}/sendMessage", data=body), timeout=30)
+    if len(text) > 4000:  # el límite de Telegram es 4096; se corta siempre por líneas completas
+        text = text[:3990].rsplit("\n", 1)[0]
+    body = urllib.parse.urlencode({"chat_id": chat, "text": text, "parse_mode": "HTML", "disable_web_page_preview": "true"}).encode()
+    try:
+        urllib.request.urlopen(urllib.request.Request(f"https://api.telegram.org/bot{tok}/sendMessage", data=body), timeout=30)
+    except urllib.error.HTTPError as e:
+        print(f"Telegram rechazó el mensaje (código {e.code}): {e.read()[:300]!r}")
+    except Exception as e:
+        print(f"Telegram no respondió: {e}")
 
 
 def main():
@@ -592,14 +602,7 @@ def main():
     sp.write_text(json.dumps(sig, ensure_ascii=False, indent=1), encoding="utf-8")
 
     # Aviso diario
-    if buys:
-        lines = [f"Lista principal · {TODAY}", ""]
-        for mg, t, e, iv in buys[:15]:
-            lines.append(f"{t}{' (nueva)' if t in new else ''}: ${market[t]['c']} · valor ${iv:.2f} · margen {mg:.0f} % · plazo {e['horizon']}{' · cíclica' if e['cyclical'] else ''}")
-        lines += ["", "Información, no asesoramiento financiero."]
-    else:
-        lines = [f"Lista principal · {TODAY}", "", "Hoy no hay oportunidades con margen de seguridad suficiente."]
-    telegram("\n".join(lines))
+    telegram(build_main(buys, new, market, sig, TODAY))
     print(f"Listo: {len(market)} activos, {len(buys)} oportunidades.")
 
 
