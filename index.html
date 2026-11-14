@@ -17,7 +17,7 @@ header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:cen
 .btn{background:var(--bg);border:1px solid var(--b);color:var(--m);padding:5px 11px;border-radius:5px;cursor:pointer;font-size:12px}
 .btn.on{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700}
 .layout{display:grid;grid-template-columns:310px 1fr 320px;grid-template-rows:minmax(0,1fr);flex:1;min-height:0}
-#vHist,#vFund,#vTools{flex:1;min-height:0}
+#vHist,#vFund,#vTools,#vFicha{flex:1;min-height:0}
 a.btn{text-decoration:none;display:inline-block}
 footer{flex:none;border-top:1px solid var(--b);background:var(--p);padding:7px 14px;font-size:12px;color:var(--m);text-align:center}
 footer a{color:var(--t);margin:0 6px;white-space:nowrap}
@@ -43,7 +43,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 .up{color:var(--g)}.dn{color:var(--r)}
 .note{background:var(--p2);border-left:3px solid var(--gold);padding:10px 12px;border-radius:4px;margin:12px 0}
 @media(max-width:1100px){.layout{grid-template-columns:270px 1fr}.r{display:none}}
-@media(max-width:700px){body{display:block;height:auto}.layout{grid-template-columns:1fr;grid-template-rows:none;height:auto}.l{border-right:0}#vHist,#vFund,#vTools{overflow:visible}}
+@media(max-width:700px){body{display:block;height:auto}.layout{grid-template-columns:1fr;grid-template-rows:none;height:auto}.l{border-right:0}#vHist,#vFund,#vTools,#vFicha{overflow:visible}}
 .tick{flex:none;position:relative;overflow:hidden;white-space:nowrap;background:var(--p2);border-bottom:1px solid var(--b);height:30px;font-size:12px;line-height:30px}
 .tick .lb{position:absolute;left:0;top:0;z-index:2;background:var(--gold);color:#000;font-weight:700;padding:0 12px;box-shadow:6px 0 8px -4px rgba(0,0,0,.35)}
 .tick .trk{display:inline-flex;padding-left:130px;animation:tk var(--dur,90s) linear infinite}
@@ -72,7 +72,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 .promo:hover{border-color:var(--gold)}
 .promo small{color:var(--m);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:1100px){#vHome{display:flex!important;flex-direction:column;overflow-y:auto}#hC{order:-1}#vHome aside,#vHome main{overflow:visible}#vHome .r{display:block;border-left:0;border-top:1px solid var(--b)}#vHome .l{border-right:0;border-top:1px solid var(--b)}}
+@media(max-width:1100px){#vHome[style*="grid"]{display:flex!important;flex-direction:column;overflow-y:auto}#hC{order:-1}#vHome aside,#vHome main{overflow:visible}#vHome .r{display:block;border-left:0;border-top:1px solid var(--b)}#vHome .l{border-right:0;border-top:1px solid var(--b)}}
 @media(max-width:700px){.ck .hr{font-size:22px}.ck{padding:8px 10px}#vHome{overflow:visible}.two{grid-template-columns:1fr}.tick .lb{padding:0 8px}}
 
 .subnav{flex:none;display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:6px 20px 0;background:var(--p);border-bottom:1px solid var(--b)}
@@ -104,6 +104,15 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 .nwf{border:1px solid var(--b);border-left:4px solid hsl(var(--h) 55% 52%);border-radius:8px;padding:10px 12px;margin:8px 0;background:var(--p2);font-size:15px;line-height:1.3}.nwf em{display:block;font-style:normal;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:hsl(var(--h) 60% 62%);font-weight:700;margin-bottom:4px}.nwf span{display:block;font-weight:600}.nwf small{display:block;margin-top:4px;color:var(--m)}
 
 .nwf .ic{display:flex;align-items:center;justify-content:center;height:60px;margin:-2px 0 8px;border-radius:6px;background:linear-gradient(135deg,hsl(var(--h) 45% 24%),hsl(var(--h) 45% 13%))}.nwf .ic svg{height:44px;width:auto}
+.sug{position:absolute;left:0;right:0;top:100%;z-index:30;background:var(--p);border:1px solid var(--b);border-radius:8px;margin-top:2px;box-shadow:0 8px 24px rgba(0,0,0,.25);overflow:hidden}
+.sugi{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--p2)}.sugi:hover{background:var(--p2)}
+.fsc.base{border:1px solid var(--gold)}
+.pill{font-size:11px;padding:2px 7px;border-radius:10px;background:var(--p2);color:var(--t)}.pill.up{color:var(--up)}.pill.dn{color:var(--dn)}
+table.fs{min-width:100%;border-collapse:collapse}table.fs th,table.fs td{text-align:right;padding:6px 10px;white-space:nowrap}
+table.fs td.stk,table.fs th:first-child{text-align:left;position:sticky;left:0;background:var(--p);z-index:1}
+table.fs tr.calc td{color:var(--g)}
+a.gl{color:inherit;text-decoration:none;border-bottom:1px dotted var(--g)}a.gl:hover{color:var(--gold)}
+#vFicha{padding:0 0 30px}#vFicha>.box,#vFicha #fbody>.box,#vFicha #fbody>.note{margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -112,6 +121,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
   <div class="row" style="margin:0">
     <button class="btn on" id="tHome" onclick="vista('home')">Inicio</button>
     <button class="btn" id="tAn" onclick="vista('term')">Análisis de mercado</button>
+    <button class="btn" id="tFicha" onclick="vista('ficha')">Ficha de empresa</button>
     <button class="btn" id="tTools" onclick="vista('tools')">Herramientas</button>
     <button class="btn" id="tFund" onclick="vista('fund')">Grandes fondos</button>
     <button class="btn" id="tHist" onclick="vista('hist')">Historial</button>
@@ -146,6 +156,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 <main id="vHist" style="display:none"></main>
 <main id="vFund" style="display:none"></main>
 <main id="vTools" style="display:none"></main>
+<main id="vFicha" style="display:none"></main>
 
 <footer>
   <strong>Información, no asesoramiento financiero.</strong> Invertir conlleva riesgo de perder dinero. Precios al cierre de mercado, no en directo.<br>
@@ -333,9 +344,9 @@ function noticias(lang,n,ads){
   const hue=s=>{let k=0;for(const c of s)k=(k*31+c.charCodeAt(0))%360;return k};
   const meta=x=>`<small>${esc(x.s)}${x.d?" · "+hace(x.d):""}</small>`;
   const h=a.map((x,n)=>{
-    const foto=x.i&&/^https:\/\//i.test(x.i);
+    const foto=x.i&&/^https:\/\//i.test(x.i)&&n%4===0;
     if(foto)return `<a class="nw nwi" href="${esc(x.u)}" target="_blank" rel="noopener nofollow"><span class="ph"><img src="${esc(x.i)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.nwi').classList.remove('nwi');this.parentNode.remove()"></span><span class="tx">${esc(x.t)}${meta(x)}</span></a>`;
-    if(n%3===1)return `<a class="nw nwf" style="--h:${hue(x.s)}" href="${esc(x.u)}" target="_blank" rel="noopener nofollow"><em>${esc(x.s)}</em><span>${esc(x.t)}</span>${x.d?`<small>${hace(x.d)}</small>`:""}</a>`;
+    if(n%4===2||n%4===0)return `<a class="nw nwf" style="--h:${hue(x.s)}" href="${esc(x.u)}" target="_blank" rel="noopener nofollow"><em>${esc(x.s)}</em><span>${esc(x.t)}</span>${x.d?`<small>${hace(x.d)}</small>`:""}</a>`;
     return `<a class="nw" href="${esc(x.u)}" target="_blank" rel="noopener nofollow">${esc(x.t)}${meta(x)}</a>`});
   if(!a.length)return '<p class="sm">Todavía no hay titulares cargados. Aparecerán aquí en cuanto se actualicen.</p>'+(ads||[]).join("");
   (ads||[]).forEach((ad,i)=>h.splice(Math.min(3+i*4,h.length),0,ad));
@@ -379,6 +390,7 @@ function homeRender(){
    <a class="sc" onclick="irCat('ETFS')"><strong>Índices y ETFs</strong><span class="sm">Si el mercado entero está caro o barato.</span></a>
    <a class="sc" onclick="irCat('COMMODITIES')"><strong>Materias primas</strong><span class="sm">Oro, petróleo y más, ajustados por inflación.</span></a>
    <a class="sc" onclick="irCat('BONOS')"><strong>Bonos</strong><span class="sm">Rentabilidad actual frente a los últimos 10 años.</span></a>
+   <a class="sc" onclick="vista('ficha')"><strong>Ficha de empresa</strong><span class="sm">Busca una empresa y mira todo: valor, cuentas, parecidas y directivos.</span></a>
    <a class="sc" onclick="vista('tools')"><strong>Herramientas</strong><span class="sm">Comparador, calculadoras, mapa de valor, resultados y directivos.</span></a>
    <a class="sc" onclick="vista('fund')"><strong>Grandes fondos</strong><span class="sm">Qué compran y venden los grandes inversores.</span></a>
    <a class="sc" onclick="vista('hist')"><strong>Historial</strong><span class="sm">Cada señal, con su fecha y su resultado real.</span></a>
@@ -405,8 +417,8 @@ function subnav(){
 }
 function navOn(on){
   const v=on||window._vista;
-  ["tHome","tAn","tTools","tFund","tHist"].forEach(i=>document.getElementById(i).classList.remove("on"));
-  const id={home:"tHome",term:"tAn",tools:"tTools",fund:"tFund",hist:"tHist"}[v];
+  ["tHome","tAn","tFicha","tTools","tFund","tHist"].forEach(i=>document.getElementById(i).classList.remove("on"));
+  const id={home:"tHome",term:"tAn",ficha:"tFicha",tools:"tTools",fund:"tFund",hist:"tHist"}[v];
   if(id)document.getElementById(id).classList.add("on");
   document.getElementById("subnav").style.display=v==="term"?"flex":"none";
   if(v==="term")subnav();
@@ -451,14 +463,14 @@ async function historial(){
 
 /* Qué descuenta el mercado + sensibilidad (solo si el motor guardó el flujo de caja y el crecimiento) */
 function dcfJS(f0,g,r){let v=0,f=f0;for(let y=1;y<=10;y++){f*=1+(y<=5?g:g/2);v+=f/Math.pow(1+r,y)}return v+f*1.025/(r-.025)/Math.pow(1+r,10)}
-function gImplicito(f0,p){let lo=-.15,hi=.35;if(dcfJS(f0,lo,.1)>p)return null;if(dcfJS(f0,hi,.1)<p)return null;for(let i=0;i<50;i++){const m=(lo+hi)/2;if(dcfJS(f0,m,.1)<p)lo=m;else hi=m}return(lo+hi)/2}
+function gImplicito(f0,p,r0){r0=r0||.1;let lo=-.15,hi=.35;if(dcfJS(f0,lo,r0)>p)return null;if(dcfJS(f0,hi,r0)<p)return null;for(let i=0;i<50;i++){const m=(lo+hi)/2;if(dcfJS(f0,m,r0)<p)lo=m;else hi=m}return(lo+hi)/2}
 function sensHTML(v,p){
   if(!v||!v.fcfps||v.g==null||!p)return"";
-  const gi=gImplicito(v.fcfps,p),pc=x=>(x*100).toFixed(1).replace(".",",")+" %";
-  const gs=[0,v.g,Math.min(v.g+.03,.2)].filter((x,i,a)=>a.indexOf(x)===i).sort((a,b)=>a-b),rs=[.09,.10,.11];
+  const R0=v.r||.1,gi=gImplicito(v.fcfps,p,R0),pc=x=>(x*100).toFixed(1).replace(".",",")+" %";
+  const gs=[0,v.g,Math.min(v.g+.03,.2)].filter((x,i,a)=>a.indexOf(x)===i).sort((a,b)=>a-b),rs=[R0-.01,R0,R0+.01];
   let h=`<h3 style="margin-top:18px">Qué descuenta el mercado</h3><p class="sm">Solo con el método de flujo de caja descontado: el precio de hoy equivale a que la empresa crezca <strong>${gi==null?"un ritmo fuera de lo razonable":pc(gi)+" al año"}</strong> (años 1 a 5). Nosotros usamos <strong>${pc(v.g)}</strong>, el que ha tenido en los últimos 5 años. `;
   if(gi!=null)h+=gi<v.g?"El mercado espera <strong>menos</strong> crecimiento que el histórico: o está equivocado, o ve riesgos que las cuentas pasadas no muestran.":"El mercado ya cuenta con <strong>más</strong> crecimiento que el histórico.";
-  h+=`</p><table><tr><td class="sm">Valor por acción (flujo de caja)</td>${rs.map(r=>`<td class="sm"><b>descuento ${(r*100).toFixed(0)} %</b></td>`).join("")}</tr>${gs.map(g=>`<tr><td class="sm">crecimiento ${pc(g)}${g===v.g?" (el nuestro)":""}</td>${rs.map(r=>{const x=dcfJS(v.fcfps,g,r);return`<td class="${x>=p?"up":"dn"}">$${num(x)}</td>`}).join("")}</tr>`).join("")}</table><p class="sm">Verde: vale más que el precio actual. Rojo: vale menos. Si el resultado cambia mucho con pequeños cambios de supuestos, desconfía del valor intrínseco.</p>`;
+  h+=`</p><table><tr><td class="sm">Valor por acción (flujo de caja)</td>${rs.map(r=>`<td class="sm"><b>descuento ${pc(r)}</b></td>`).join("")}</tr>${gs.map(g=>`<tr><td class="sm">crecimiento ${pc(g)}${g===v.g?" (el nuestro)":""}</td>${rs.map(r=>{const x=dcfJS(v.fcfps,g,r);return`<td class="${x>=p?"up":"dn"}">$${num(x)}</td>`}).join("")}</tr>`).join("")}</table><p class="sm">Verde: vale más que el precio actual. Rojo: vale menos. Si el resultado cambia mucho con pequeños cambios de supuestos, desconfía del valor intrínseco.</p>`;
   return h;
 }
 
@@ -488,6 +500,7 @@ function detalle(t){
   h+=`<div class="flex"><h3>Cotización</h3><div class="row" id="rng" style="margin:0"></div></div><div id="chart" class="chart"></div>`;
   if(c)h+=methodsHTML(v);
   if(v.kind!=="banco")h+=`<h3 style="margin-top:18px">Salud de la empresa · últimos 5 años</h3><div id="fund" class="sm">Cargando cuentas…</div>`;
+  h+=`<p style="margin:12px 0"><button class="btn on" onclick="fichaIr('${esc(t)}')">Ver la ficha completa de ${esc(t)}</button></p>`;
   h+=holders(t);
   if(v.ratios&&Object.keys(v.ratios).length)h+=`<h3 style="margin-top:16px">Ratios</h3><table>${Object.entries(v.ratios).map(([k,x])=>`<tr><td class="sm">${esc(k)}</td><td>${esc(x)}</td></tr>`).join("")}</table>`;
   main.innerHTML=h+"</div>";
@@ -615,8 +628,9 @@ function vista(v){
   document.getElementById("vHist").style.display=v==="hist"?"block":"none";
   document.getElementById("vFund").style.display=v==="fund"?"block":"none";
   document.getElementById("vTools").style.display=v==="tools"?"block":"none";
+  document.getElementById("vFicha").style.display=v==="ficha"?"block":"none";
   navOn(v);
-  if(v==="home")relojes();if(v==="hist")historial();if(v==="fund")fondos();if(v==="tools")tools();window.scrollTo(0,0);
+  if(v==="home")relojes();if(v==="hist")historial();if(v==="fund")fondos();if(v==="tools")tools();if(v==="ficha")ficha();window.scrollTo(0,0);
 }
 function historialViejo(){
   const el=document.getElementById("vHist"),S=D.s||[];
@@ -715,7 +729,7 @@ function calcRun(){
   if(e>0&&bv>0){h+=`<p class="sm">Número de Graham (√(22,5 × beneficio × valor contable)): <strong>${u(Math.sqrt(22.5*e*bv))}</strong></p>`}
   set("g_out",h||'<p class="sm">Pon un beneficio positivo.</p>');
   const dp=n("d_p"),dd=n("d_d"),dn=n("d_n"),dg=n("d_g")/100;
-  if(dp>0){let s=dd*dn,t=0;const f5=[];for(let k=1;k<=10;k++){t+=s;if(k===5||k===10)f5.push(`año ${k}: ${u(s)} al año`);s*=1+dg}
+  if(dp>0&&dd<=0)set("d_out",'<p class="sm">Escribe el dividendo anual por acción para ver el resultado.</p>');else if(dp>0){let s=dd*dn,t=0;const f5=[];for(let k=1;k<=10;k++){t+=s;if(k===5||k===10)f5.push(`año ${k}: ${u(s)} al año`);s*=1+dg}
    set("d_out",`<div class="m"><small>Rentabilidad por dividendo</small><strong>${num(dd/dp*100,2)} %</strong></div><p class="sm">Cobras ${u(dd*dn)} al año con ${num(dn,0)} acciones (invertido: ${u(dp*dn)}).<br>${f5.join(" · ")}<br>Cobrado en 10 años: ${u(t)}</p>`)}else set("d_out","");
   const i0=n("i_i"),mm=n("i_m"),ir=n("i_r")/100/12,yy=Math.min(n("i_y"),80);let a=i0;for(let k=0;k<yy*12;k++)a=a*(1+ir)+mm;const ap=i0+mm*yy*12;
   set("i_out",`<div class="m"><small>Valor final</small><strong>${u(a)}</strong></div><p class="sm">Aportado: ${u(ap)} · Ganancia: <strong class="${a>=ap?"up":"dn"}">${u(a-ap)}</strong></p>`);
@@ -776,14 +790,233 @@ async function autoCalc(k,t){
   if(!p&&!v.name){note.textContent="Ese símbolo no está en nuestra lista.";return}
   const nm=(v.name||t),faltan=[];
   if(k==="c"){set("c_p",p);if(v.fcfps)set("c_f",v.fcfps);else faltan.push("la caja libre por acción");if(v.g!=null)set("c_g",v.g*100)}
-  if(k==="g"){set("g_p",p);if(v.eps)set("g_e",v.eps);else faltan.push("el beneficio por acción");if(v.g!=null)set("g_g",Math.min(v.g*100,15));faltan.push("el valor contable (si quieres el número de Graham)")}
-  if(k==="d"){set("d_p",p);faltan.push("el dividendo anual por acción")}
+  if(k==="g"){set("g_p",p);if(v.eps)set("g_e",v.eps);else faltan.push("el beneficio por acción");if(v.g!=null)set("g_g",Math.min(v.g*100,15));faltan.push("el valor contable (si quieres el número de Graham)");document.getElementById("g_b").value=""}
+  if(k==="d"){set("d_p",p);faltan.push("el dividendo anual por acción");document.getElementById("d_d").value=""}
   if(k==="i"){
     const h=await j("data/history/"+t+".json");
     if(h&&h.length>50){const a=h[0],b=h[h.length-1],yrs=(new Date(b[0])-new Date(a[0]))/(365.25*864e5);if(yrs>=1&&a[1]>0){const r=(Math.pow(b[1]/a[1],1/yrs)-1)*100;set("i_r",r);note.innerHTML=`${esc(nm)}: ha rendido de media un <strong>${num(r,1)} % anual</strong> en los últimos ${num(yrs,1)} años (solo pasado, sin dividendos; no garantiza el futuro).`;calcRun();return}}
     note.textContent="No hay suficiente histórico de precios de este activo.";return}
   note.innerHTML=`Cargado: <strong>${esc(nm)}</strong>${p?" · precio $"+num(p):""}.${faltan.length?" Falta que lo escribas tú: "+faltan.join(", ")+".":""}`;
   calcRun();
+}
+/* ===== FICHA DE EMPRESA: buscador + desglose completo ===== */
+const EMAIL_FORM="",EMAIL_FIELD="email";
+const GLN={"Ingresos": "ingresos", "Coste de ventas": "coste-ventas", "Beneficio bruto": "beneficio-bruto", "Investigación y desarrollo": "id", "Gastos comerciales y generales": "gastos-generales", "Resultado operativo": "resultado-operativo", "Gastos por intereses": "intereses", "Beneficio antes de impuestos": "bai", "Impuestos": "impuestos", "Beneficio neto": "beneficio-neto", "Beneficio por acción": "bpa", "Acciones (millones)": "acciones", "Caja": "caja", "Inversiones a corto plazo": "inversiones-cp", "Cuentas por cobrar": "cobrar", "Inventarios": "inventarios", "Activo corriente": "activo-corriente", "Inmovilizado material": "inmovilizado", "Fondo de comercio": "fondo-comercio", "Activos totales": "activos-totales", "Cuentas por pagar": "pagar", "Deuda a corto plazo": "deuda-cp", "Pasivo corriente": "pasivo-corriente", "Deuda a largo plazo": "deuda-lp", "Pasivos totales": "pasivos-totales", "Patrimonio neto": "patrimonio", "Flujo de caja operativo": "fco", "Inversión en activos (capex)": "capex", "Flujo de inversión": "flujo-inversion", "Dividendos pagados": "dividendos", "Recompra de acciones": "recompras", "Flujo de financiación": "flujo-financiacion", "Flujo de caja libre": "fcl", "Margen bruto": "margen-bruto", "Margen operativo": "margen-operativo", "Margen neto": "margen-neto", "ROE (rentabilidad sobre recursos propios)": "roe", "Liquidez corriente": "liquidez", "Deuda sobre patrimonio": "deuda-patrimonio", "Cobertura de intereses": "cobertura", "Puntuaciones de rentabilidad y solvencia": "puntuacion", "Crecimiento a 3, 5 y 10 años": "crecimiento", "Escenarios bajista, base y alcista": "escenarios", "Tasa de descuento propia": "tasa"};
+const SIC2={"01":"Agricultura","02":"Agricultura","07":"Servicios agrícolas","08":"Silvicultura","09":"Pesca","10":"Minería de metales","12":"Minería de carbón","13":"Petróleo y gas","14":"Minerales no metálicos","15":"Construcción","16":"Obras públicas","17":"Construcción especializada","20":"Alimentación","21":"Tabaco","22":"Textil","23":"Confección","24":"Madera","25":"Muebles","26":"Papel","27":"Imprenta y edición","28":"Química y farmacia","29":"Refino de petróleo","30":"Caucho, plásticos y calzado","31":"Cuero","32":"Piedra, vidrio y cemento","33":"Metales primarios","34":"Productos metálicos","35":"Maquinaria y equipos informáticos","36":"Electrónica y material eléctrico","37":"Equipos de transporte","38":"Instrumentos y material médico","39":"Industrias diversas","40":"Ferrocarril","41":"Transporte de pasajeros","42":"Transporte por carretera","44":"Transporte marítimo","45":"Transporte aéreo","46":"Oleoductos","47":"Servicios de transporte","48":"Telecomunicaciones y medios","49":"Energía, gas y agua","50":"Comercio mayorista de bienes duraderos","51":"Comercio mayorista de bienes no duraderos","52":"Comercio minorista de construcción","53":"Grandes almacenes","54":"Alimentación minorista","55":"Automoción minorista","56":"Moda minorista","57":"Muebles y electrónica minorista","58":"Restauración","59":"Otro comercio minorista","60":"Bancos","61":"Crédito","62":"Bolsa e inversión","63":"Seguros","64":"Agentes de seguros","65":"Inmobiliario","67":"Holdings e inversión","70":"Hoteles","72":"Servicios personales","73":"Servicios a empresas y software","75":"Reparación de automóviles","78":"Cine y producción audiovisual","79":"Ocio y entretenimiento","80":"Salud y servicios sanitarios","82":"Educación","83":"Servicios sociales","87":"Ingeniería y consultoría"};
+const sicName=s=>s?SIC2[String(s).padStart(4,"0").slice(0,2)]||null:null;
+const gl=n=>GLN[n]?`<a href="aprender.html#g-${GLN[n]}" target="_blank" rel="noopener" class="gl" title="Qué significa esta línea">${esc(n)}</a>`:esc(n);
+let FT=null,FD=null,FTAB="is";
+const fN=(x,d=0)=>typeof x==="number"?x.toLocaleString("de-DE",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
+const pc1=x=>num(x*100,1)+" %";
+const fStore=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+function fichaIr(t){FT=t;vista("ficha")}
+
+function fMatches(q){
+  q=q.trim().toUpperCase();if(!q)return[];
+  const a=[],b=[];
+  tickers().forEach(t=>{const v=D.v.items?.[t];if(!v||!D.m[t]||(v.type||"ACCIONES")!=="ACCIONES")return;
+    const n=(v.name||"").toUpperCase();if(t===q)a.unshift(t);else if(t.startsWith(q))a.push(t);else if(n.includes(q))b.push(t)});
+  return[...a,...b].slice(0,8);
+}
+function fSug(q){
+  const el=document.getElementById("fsug");if(!el)return;
+  const L=fMatches(q||"");
+  el.innerHTML=L.map(t=>`<div class="sugi" onclick="fichaIr('${esc(t)}')"><b>${esc(t)}</b> <span class="sm">${esc(D.v.items[t].name||"")}</span></div>`).join("");
+  el.style.display=L.length?"block":"none";
+}
+function fEnter(e){if(e.key==="Enter"){const L=fMatches(e.target.value);if(L.length)fichaIr(L[0])}}
+
+async function ficha(){
+  const el=document.getElementById("vFicha");
+  if(!el.querySelector("#fq")){
+    el.innerHTML=`<div class="box"><h2>Ficha de empresa</h2><p class="sm">Escribe el nombre o el símbolo de una empresa de EE. UU. y verás en una sola página cuánto vale, si está cara o barata, cómo son sus cuentas, qué empresas se le parecen y qué hacen los directivos y los grandes fondos. Todo con datos oficiales y explicado en sencillo.</p>
+    <div style="position:relative;max-width:520px"><input class="in" id="fq" autocomplete="off" placeholder="Ej.: Nike, NKE, Apple…" style="width:100%;font-size:16px;padding:10px" oninput="fSug(this.value)" onkeydown="fEnter(event)"><div id="fsug" class="sug" style="display:none"></div></div></div><div id="fbody"></div>`;
+    document.addEventListener("click",e=>{const s=document.getElementById("fsug");if(s&&!e.target.closest("#fsug,#fq"))s.style.display="none"});
+  }
+  const sg=document.getElementById("fsug");if(sg)sg.style.display="none";
+  const body=document.getElementById("fbody");
+  if(!FT){body.innerHTML=fLanding();return}
+  const t=FT,v=D.v.items?.[t],p=D.m[t]?.c;
+  const q=document.getElementById("fq");if(q&&document.activeElement!==q)q.value="";
+  if(!v||!p){body.innerHTML=`<div class="box"><p>No tenemos la ficha de «${esc(t)}». Solo hay fichas de las acciones de EE. UU. que valoramos.</p></div>`;return}
+  body.innerHTML=`<div class="box"><p class="sm">Cargando la ficha de ${esc(t)}…</p></div>`;
+  if(D.h[t]===undefined)D.h[t]=await j(`data/history/${t}.json`);
+  if(D.ins===undefined)D.ins=await j("data/insiders.json");
+  const fd=(v.kind==="banco"||v.kind==="financiera")?null:await j(`data/fundamentals/${t}.json`);
+  if(FT!==t)return;
+  FD=fd;
+  const n=(+fStore("ei_fv")||0)+1;fStore("ei_fv",String(n));
+  const c=calc(t);
+  body.innerHTML=[fEmailTop(n),fHead(t,v,c,p),fValor(t,v,c,p),fBarata(D.h[t],p),`<div class="box"><div class="flex"><h3>Cotización y valor</h3><div class="row" id="frng" style="margin:0"></div></div><div id="fch" class="chart"></div></div>`,
+    fMetodos(v,c,p),fCalidad(fd),fFinanzas(fd),fPeers(t,v),fDirect(t),`<div class="box">${holders(t)||"<p class='sm'>Ningún gran fondo de nuestra lista la tiene en cartera.</p>"}</div>`,fEmail(),
+    `<p class="sm" style="margin:14px 4px">Información y cálculos con datos oficiales (SEC) y precios de cierre; no es asesoramiento financiero. No mostramos precios objetivo ni previsiones de analistas porque son datos de pago: preferimos no inventarlos.</p>`].join("");
+  fGrafico(t,D.h[t],c,v);
+  if(fd&&fd.st)fTabs();
+}
+function fLanding(){
+  const val=tickers().map(t=>[t,calc(t)]).filter(x=>x[1]&&x[1].v&&(x[1].v.type||"ACCIONES")==="ACCIONES"&&D.v.items[x[0]].name);
+  const best=val.filter(x=>x[1].verdict==="COMPRAR").sort((a,b)=>rkOf(b[1])-rkOf(a[1])).slice(0,8);
+  const big=val.filter(x=>x[1].v.sh).sort((a,b)=>b[1].p*b[1].v.sh-a[1].p*a[1].v.sh).slice(0,8);
+  const chips=L=>`<div class="row" style="flex-wrap:wrap;gap:8px">${L.map(x=>`<button class="btn" onclick="fichaIr('${esc(x[0])}')">${esc(x[0])} <span class="sm">${esc((D.v.items[x[0]].name||"").slice(0,22))}</span></button>`).join("")}</div>`;
+  return `<div class="box"><h3>Mejores oportunidades ahora</h3>${chips(best)}<h3 style="margin-top:14px">Las más grandes</h3>${chips(big)}</div>`;
+}
+function fHead(t,v,c,p){
+  const mc=v.sh?p*v.sh:null,sec=sicName(v.sic);
+  const mcs=mc?(mc>=1e9?"$"+num(mc/1e9,1)+" mil M":"$"+num(mc/1e6,0)+" M"):null;
+  return `<div class="box"><div class="flex"><div><h2 style="margin:0">${esc(v.name||t)} <span class="sm">${esc(t)}</span></h2>
+  <div class="sm">${[sec,mcs?"Capitalización "+mcs:null,v.horizon?"Plazo ideal: "+v.horizon:null].filter(Boolean).map(esc).join(" · ")}</div></div>
+  <div class="row" style="margin:0"><span class="badge ${c?c.verdict:"NA"}" style="font-size:13px;padding:5px 12px">${c?c.verdict:"Sin valorar"}</span>
+  <button class="btn" onclick="vista('term');detalle('${esc(t)}')">Análisis completo</button>
+  <button class="btn" onclick="window._cmp=['${esc(t)}'];TOOL='comp';vista('tools')">Comparar</button></div></div>
+  <div class="grid" style="margin-top:10px"><div class="m"><small>Precio (cierre)</small><strong>$${num(p)}</strong></div>
+  <div class="m"><small>Valor intrínseco</small><strong style="color:var(--gold)">${c?"$"+num(c.iv):"—"}</strong></div>
+  <div class="m"><small>Margen de seguridad</small><strong class="${c&&c.mg>=0?"up":"dn"}">${c?num(c.mg,1)+" %":"—"}</strong></div>
+  <div class="m"><small>Precio de entrada</small><strong>${c?"$"+num(c.entry):"—"}</strong><small>25 % bajo el valor</small></div>
+  ${c&&c.pe?`<div class="m"><small>PER</small><strong>${num(c.pe,1)}x</strong></div>`:""}</div></div>`;
+}
+function fValor(t,v,c,p){
+  if(!c)return `<div class="box"><div class="note">${v.kind==="financiera"?"Los fondos, las inmobiliarias y otros intermediarios financieros necesitan métodos propios que todavía no incluimos; por eso no damos veredicto.":"No tenemos datos suficientes para valorar esta empresa con fiabilidad."}</div></div>`;
+  const E=v.esc,nm=["Bajista","Base","Alcista"];
+  const card=(i,x)=>{const m=(x-p)/x*100;return `<div class="m fsc${i===1?" base":""}"><small>Escenario ${nm[i].toLowerCase()}</small><strong>$${num(x)}</strong><div class="${m>=0?"up":"dn"}" style="font-size:12px">${m>=0?"Cotiza un "+num(m,0)+" % por debajo":"Cotiza un "+num(Math.abs(m),0)+" % por encima"}</div></div>`};
+  const sc=E&&E.length===3?`<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:8px">${E.map((x,i)=>card(i,x)).join("")}</div>
+   <p class="sm" style="margin-top:8px">El <strong>bajista</strong> supone menos crecimiento y más exigencia; el <strong>alcista</strong>, lo contrario. El veredicto se basa en el escenario base. <a href="aprender.html#g-escenarios" target="_blank" rel="noopener">Cómo se calculan</a>.</p>`:"";
+  const r=v.r?`<p class="sm" style="margin-top:6px">Tasa de descuento de esta empresa: <strong>${pc1(v.r)}</strong>${v.beta?` (bono del Tesoro a 10 años + beta ${num(v.beta,2)} × 5,5 %). Una beta mayor que 1 significa que se mueve más que el mercado.`:" (tasa estándar: aún no hay precios suficientes para medir su beta)."} <a href="aprender.html#g-tasa" target="_blank" rel="noopener">Qué es</a></p>`:"";
+  const txt=c.verdict==="COMPRAR"?`El precio de hoy ya deja margen de seguridad suficiente.`:c.verdict==="REVISAR"?"Parece barata en números, pero hay datos dudosos que conviene revisar.":c.verdict==="ESPERAR"?"Está por debajo de su valor, pero sin margen suficiente: mejor esperar a un precio más bajo.":"Cotiza por encima de lo que estimamos que vale.";
+  return `<div class="box"><h3>Valor intrínseco</h3><div class="note"><strong>${c.verdict==="COMPRAR"?"Zona de compra.":c.verdict==="REVISAR"?"Datos por revisar.":c.verdict==="ESPERAR"?"Mejor esperar.":"Cara ahora."}</strong> ${txt} Valor calculado con ${c.n} método${c.n>1?"s":""}.</div>${sc}${r}${fiabHTML(v)}</div>`;
+}
+function fBarata(h,p){
+  if(!h||h.length<30)return"";
+  const last=new Date(h[h.length-1][0]),from=new Date(last-1826*864e5);
+  const xs=h.filter(r=>new Date(r[0])>=from).map(r=>r[1]);if(xs.length<30)return"";
+  const sh=xs.filter(x=>x<=p).length/xs.length*100;
+  const txt=sh<=35?`<strong class="up">Está más barata de lo habitual.</strong> Solo el ${num(sh,0)} % de los días de los últimos 5 años cotizó igual o más barata.`:sh>=65?`<strong class="dn">Está más cara de lo habitual.</strong> El ${num(100-sh,0)} % de los días de los últimos 5 años cotizó más cara.`:`<strong>Cotiza en la zona habitual de su propio historial</strong> (más barata que el ${num(100-sh,0)} % de los días y más cara que el ${num(sh,0)} % de los últimos 5 años).`;
+  return `<div class="box"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:240px">${txt}<div class="sm">Compara el precio de hoy solo con su propio pasado, no con su valor.</div></div>
+  <div style="flex:1;min-width:200px"><div style="position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,var(--up),var(--p2) 50%,var(--dn))"><div style="position:absolute;top:-4px;left:calc(${sh.toFixed(0)}% - 4px);width:8px;height:18px;border-radius:3px;background:var(--t);border:2px solid var(--bg)"></div></div><div class="flex sm" style="margin-top:4px"><span>más barata</span><span>más cara</span></div></div></div></div>`;
+}
+function fGrafico(t,raw,c,v){
+  const el=document.getElementById("fch");if(!el)return;
+  if(typeof LightweightCharts==="undefined"){el.innerHTML='<p class="sm">No se pudo cargar la librería del gráfico. Recarga la página con Ctrl+F5.</p>';return}
+  if(!raw||!raw.length){el.innerHTML='<p class="sm">Histórico de precios no disponible todavía para esta empresa.</p>';return}
+  const th=TH(),data=raw.map(([d,x])=>({time:d,value:x}));
+  const chart=LightweightCharts.createChart(el,{autoSize:true,layout:{background:{color:th.bg},textColor:th.t},grid:{vertLines:{visible:false},horzLines:{color:th.p2}},rightPriceScale:{borderColor:th.b},timeScale:{borderColor:th.b},crosshair:{mode:0}});
+  const up=data[data.length-1].value>=data[0].value,col=up?th.up:th.dn;
+  const s=chart.addAreaSeries({autoscaleInfoProvider:o=>{const r=o();if(r&&c&&c.iv){const hi=Math.max(c.iv,...(v.esc||[0]));r.priceRange.maxValue=Math.max(r.priceRange.maxValue,hi*1.03);r.priceRange.minValue=Math.min(r.priceRange.minValue,c.entry*0.97)}return r},lineColor:col,topColor:up?(th.light?"rgba(11,128,67,.22)":"rgba(129,201,149,.30)"):(th.light?"rgba(197,34,31,.22)":"rgba(242,139,130,.30)"),bottomColor:"rgba(0,0,0,0)",lineWidth:2});
+  if(c&&c.iv){
+    s.createPriceLine({price:c.iv,color:th.gold,lineWidth:1,lineStyle:2,axisLabelVisible:true,title:"Valor base"});
+    s.createPriceLine({price:c.entry,color:th.g,lineWidth:1,lineStyle:2,axisLabelVisible:true,title:"Entrada (-25 %)"});
+    if(v.esc&&v.esc.length===3){s.createPriceLine({price:v.esc[0],color:th.dn,lineWidth:1,lineStyle:3,axisLabelVisible:true,title:"Bajista"});s.createPriceLine({price:v.esc[2],color:th.up,lineWidth:1,lineStyle:3,axisLabelVisible:true,title:"Alcista"})}
+  }
+  const R={"6M":182,"1A":365,"5A":1826,"Máx.":99999},rng=document.getElementById("frng");
+  const set=k=>{const last=new Date(data[data.length-1].time),f=data.filter(x=>new Date(x.time)>=new Date(last-R[k]*864e5));s.setData(f.length>1?f:data);chart.timeScale().fitContent();[...rng.children].forEach(b=>b.classList.toggle("on",b.textContent===k))};
+  Object.keys(R).forEach(k=>{const b=document.createElement("button");b.className="btn";b.textContent=k;b.onclick=()=>set(k);rng.appendChild(b)});
+  set("5A");
+}
+function fMetodos(v,c,p){
+  if(!c)return"";
+  return `<div class="box">${methodsHTML(v)}${sensHTML(v,p)}</div>`;
+}
+/* --- series y cuentas --- */
+const fAvg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+const fLastN=(a,n)=>(a||[]).filter(x=>x!=null).slice(-n);
+function fRat(num_,den_,f){const a=[];for(let i=0;i<num_.length;i++){const x=num_[i],y=den_?.[i];a.push(x==null||y==null||y===0?null:f?f(x,y):x/y)}return a}
+function fCalidad(fd){
+  const st=fd&&fd.st;if(!st)return"";
+  const I=st.is||{},B=st.bs||{},C=st.cf||{};
+  const ni=I["Beneficio neto"],eq=B["Patrimonio neto"],rev=I["Ingresos"],op=I["Resultado operativo"],fcl=C["Flujo de caja libre"];
+  const ok=(c,x)=>({t:"ok",x}),wr=(x)=>({t:"warn",x}),bd=x=>({t:"bad",x});
+  const rent=[],sol=[];
+  if(ni&&eq){const r=fLastN(fRat(ni,eq,(a,b)=>b>0?a/b:null),3);if(r.length){const m=fAvg(r);rent.push(m>=.15?ok(0,`ROE medio de 3 años de ${pc1(m)}: rinde muy bien el dinero de los accionistas.`):m>0?wr(`ROE medio de 3 años de ${pc1(m)}: positivo, pero moderado.`):bd(`ROE medio de 3 años de ${pc1(m)}: no está rindiendo el dinero de los accionistas.`))}}
+  if(ni){const l=fLastN(ni,5);if(l.length>=3)rent.push(l.every(x=>x>0)?ok(0,"Ha ganado dinero todos los últimos años."):l.filter(x=>x<=0).length===1?wr("Tuvo pérdidas en alguno de los últimos años."):bd("Ha tenido pérdidas en varios de los últimos años."))}
+  if(op&&rev){const r=fLastN(fRat(op,rev),3);if(r.length){const m=fAvg(r);rent.push(m>=.15?ok(0,`Margen operativo medio de ${pc1(m)}: el negocio es muy rentable.`):m>=.07?wr(`Margen operativo medio de ${pc1(m)}: rentabilidad media.`):bd(`Margen operativo medio de ${pc1(m)}: el negocio deja poco margen.`))}}
+  if(fcl&&rev){const r=fLastN(fRat(fcl,rev),3);if(r.length){const m=fAvg(r);rent.push(m>=.10?ok(0,`Margen de caja libre medio de ${pc1(m)}: genera mucho dinero real.`):m>=.04?wr(`Margen de caja libre medio de ${pc1(m)}: genera algo de dinero real.`):bd(`Margen de caja libre medio de ${pc1(m)}: apenas le sobra dinero.`))}}
+  const dcp=B["Deuda a corto plazo"],dlp=B["Deuda a largo plazo"];
+  if(eq&&(dcp||dlp)){const d=eq.map((_,i)=>(dcp?.[i]??0)+(dlp?.[i]??0));const r=fLastN(fRat(d,eq,(a,b)=>b>0?a/b:null),1);if(r.length){const x=r[0];sol.push(x<=.5?ok(0,`Deuda de ${num(x,2)} veces su patrimonio: poca deuda.`):x<=1.2?wr(`Deuda de ${num(x,2)} veces su patrimonio: nivel medio.`):bd(`Deuda de ${num(x,2)} veces su patrimonio: bastante endeudada.`))}}
+  const ac=B["Activo corriente"],pcor=B["Pasivo corriente"];
+  if(ac&&pcor){const r=fLastN(fRat(ac,pcor),1);if(r.length){const x=r[0];sol.push(x>=1.5?ok(0,`Liquidez de ${num(x,1)}: cubre con holgura lo que debe a menos de un año.`):x>=1?wr(`Liquidez de ${num(x,2)}: justa a corto plazo.`):bd(`Liquidez de ${num(x,2)}: lo que debe a menos de un año supera lo que tiene disponible.`))}}
+  const it=I["Gastos por intereses"];
+  if(op&&it){const r=fLastN(fRat(op,it,(a,b)=>b>0?a/b:null),1);if(r.length){const x=r[0];sol.push(x>=8?ok(0,`Cobertura de intereses de ${num(x,1)} veces: paga sus intereses con mucha holgura.`):x>=3?wr(`Cobertura de intereses de ${num(x,1)} veces: cómoda, sin exceso.`):bd(`Cobertura de intereses de ${num(x,1)} veces: los intereses se llevan buena parte de lo que gana.`))}}
+  if(fcl&&(dcp||dlp)){const d=fLastN(eq?eq.map((_,i)=>(dcp?.[i]??0)+(dlp?.[i]??0)):[],1)[0],f=fLastN(fcl,1)[0];if(d!=null&&f!=null){sol.push(d<=0?ok(0,"No tiene deuda financiera relevante."):f<=0?bd("Genera poca caja libre para pagar su deuda."):d/f<=3?ok(0,`Podría pagar toda su deuda con ${num(d/f,1)} años de caja libre.`):d/f<=6?wr(`Necesitaría ${num(d/f,1)} años de caja libre para pagar su deuda.`):bd(`Necesitaría ${num(d/f,1)} años de caja libre para pagar su deuda.`))}}
+  const sc=L=>L.length?Math.round(L.reduce((s,x)=>s+({ok:2,warn:1,bad:0}[x.t]),0)/(2*L.length)*100):null;
+  const ico={ok:'<span class="up">✔</span>',warn:'<span style="color:var(--y)">⚠</span>',bad:'<span class="dn">✖</span>'};
+  const bx=(tit,L,s)=>L.length?`<div class="m" style="text-align:left;flex:1;min-width:260px"><div class="flex"><b>${tit}</b><span style="font-size:26px;font-weight:700;color:${s>=70?"var(--up)":s>=45?"var(--y)":"var(--dn)"}">${s}<small class="sm"> /100</small></span></div>${L.map(i=>`<div style="margin:5px 0;font-size:13px">${ico[i.t]} ${esc(i.x)}</div>`).join("")}</div>`:"";
+  if(!rent.length&&!sol.length)return"";
+  return `<div class="box"><h3>Calidad de la empresa</h3><div class="row" style="align-items:stretch;flex-wrap:wrap;gap:12px">${bx("Rentabilidad",rent,sc(rent))}${bx("Solvencia",sol,sc(sol))}</div><p class="sm" style="margin-top:8px">Puntuaciones nuestras, de 0 a 100, con reglas fijas iguales para todas las empresas y cuentas oficiales. <a href="aprender.html#g-puntuacion" target="_blank" rel="noopener">Cómo se calculan</a>.</p></div>`;
+}
+function fMoney(v){return v==null?"—":Math.abs(v)>=1000?"$"+num(v/1000,2)+" mil M":"$"+fN(v,0)+" M"}
+function fFinanzas(fd){
+  const st=fd&&fd.st;
+  if(!fd)return `<div class="box"><h3>Cuentas de la empresa</h3><p class="sm">Para esta empresa no hay cuentas anuales disponibles en el formato que usamos (bancos, aseguradoras, fondos y algunas empresas extranjeras).</p></div>`;
+  if(!st)return `<div class="box"><h3>Cuentas de la empresa</h3><p class="sm">Los estados financieros completos se añadirán en la próxima actualización semanal.</p><div id="fund2"></div></div>`;
+  const I=st.is,C=st.cf,pick=[["Ingresos",I],["Resultado operativo",I],["Beneficio neto",I],["Beneficio por acción",I],["Flujo de caja operativo",C],["Flujo de caja libre",C]].filter(([k,s])=>s&&s[k]&&s[k].some(x=>x!=null));
+  const spark=a=>{const v=a.map(x=>x??0),mx=Math.max(...v.map(Math.abs),1),w=Math.max(10,Math.floor(190/v.length)-3);return `<svg width="${v.length*(w+3)}" height="34">${v.map((x,i)=>{const hh=Math.max(1.5,30*Math.abs(x)/mx);return `<rect x="${i*(w+3)}" y="${32-hh}" width="${w}" height="${hh}" rx="2" fill="${x<0?"#f23645":i===v.length-1?"var(--gold)":"#5b6b8c"}"/>`}).join("")}</svg>`};
+  const cagr=(a,n)=>{const i=a.length-1-n,l=a[a.length-1];if(i<0||a[i]==null||l==null||a[i]<=0||l<=0)return null;return Math.pow(l/a[i],1/n)-1};
+  const cards=pick.map(([k,s])=>{const a=s[k],last=fLastN(a,1)[0],isE=k==="Beneficio por acción";
+    return `<div class="m" style="text-align:left"><small>${gl(k)}</small><strong style="font-size:20px">${isE?"$"+num(last,2):fMoney(last)}</strong>
+    <div class="row" style="gap:5px;margin:4px 0">${[3,5,10].map(n=>{const g=cagr(a,n);return `<span class="pill ${g==null?"":g>=0?"up":"dn"}" title="Crecimiento medio anual a ${n} años">${n}A ${g==null?"—":(g>=0?"+":"")+num(g*100,1)+" %"}</span>`}).join("")}</div>${spark(a)}</div>`}).join("");
+  return `<div class="box"><h3>Finanzas</h3><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))">${cards}</div>
+  <p class="sm" style="margin:6px 0">Crecimiento medio anual a 3, 5 y 10 años (último ejercicio completo frente a hace 3, 5 o 10 años). Barras: ${st.y.join(", ")}. <a href="aprender.html#g-crecimiento" target="_blank" rel="noopener">Qué es</a></p>
+  <h3 style="margin-top:14px">Estados financieros</h3><div class="row" id="ftabs" style="margin:6px 0"></div><div id="ftab" style="overflow-x:auto"></div>
+  <p class="sm" style="margin-top:6px">Cuentas anuales oficiales (SEC), en millones de dólares salvo el beneficio por acción. Pulsa en cualquier línea para ver qué significa. Las líneas en cursiva las calculamos nosotros.</p></div>`;
+}
+function fTabs(){
+  const T=[["is","Cuenta de resultados"],["bs","Balance"],["cf","Flujo de caja"]];
+  document.getElementById("ftabs").innerHTML=T.map(([k,l])=>`<button class="btn${FTAB===k?" on":""}" onclick="FTAB='${k}';fTabs()">${l}</button>`).join("");
+  const st=FD.st,S=st[FTAB]||{},y=st.y;
+  const rows=[],f0=(a,e)=>a.map(x=>x==null?"—":fN(x,e)),pct=a=>a.map(x=>x==null?"—":num(x*100,1)+" %");
+  const add=(k,a,d=0)=>{if(a&&a.some(x=>x!=null))rows.push(`<tr><td class="stk">${gl(k)}</td>${f0(a,d).map(x=>`<td>${x}</td>`).join("")}</tr>`)};
+  const calcRow=(k,a,fmt)=>{if(a&&a.some(x=>x!=null))rows.push(`<tr class="calc"><td class="stk"><i>${gl(k)}</i></td>${fmt(a).map(x=>`<td><i>${x}</i></td>`).join("")}</tr>`)};
+  const I=st.is||{},B=st.bs||{},C=st.cf||{};
+  if(FTAB==="is"){
+    ["Ingresos","Coste de ventas","Beneficio bruto","Investigación y desarrollo","Gastos comerciales y generales","Resultado operativo","Gastos por intereses","Beneficio antes de impuestos","Impuestos","Beneficio neto"].forEach(k=>add(k,I[k]));
+    add("Beneficio por acción",I["Beneficio por acción"],2);add("Acciones (millones)",I["Acciones (millones)"],1);
+    calcRow("Margen bruto",fRat(I["Beneficio bruto"]||[],I["Ingresos"]),pct);calcRow("Margen operativo",fRat(I["Resultado operativo"]||[],I["Ingresos"]),pct);calcRow("Margen neto",fRat(I["Beneficio neto"]||[],I["Ingresos"]),pct);
+  }else if(FTAB==="bs"){
+    ["Caja","Inversiones a corto plazo","Cuentas por cobrar","Inventarios","Activo corriente","Inmovilizado material","Fondo de comercio","Activos totales","Cuentas por pagar","Deuda a corto plazo","Pasivo corriente","Deuda a largo plazo","Pasivos totales","Patrimonio neto"].forEach(k=>add(k,B[k]));
+    const eq=B["Patrimonio neto"];
+    if(eq&&(B["Deuda a corto plazo"]||B["Deuda a largo plazo"]))calcRow("Deuda sobre patrimonio",eq.map((e,i)=>e>0?((B["Deuda a corto plazo"]?.[i]??0)+(B["Deuda a largo plazo"]?.[i]??0))/e:null),a=>a.map(x=>x==null?"—":num(x,2)));
+    calcRow("Liquidez corriente",fRat(B["Activo corriente"]||[],B["Pasivo corriente"]),a=>a.map(x=>x==null?"—":num(x,2)));
+    calcRow("ROE",fRat(I["Beneficio neto"]||[],eq,(a,b)=>b>0?a/b:null),pct);
+  }else{
+    ["Flujo de caja operativo","Inversión en activos (capex)","Flujo de caja libre","Flujo de inversión","Dividendos pagados","Recompra de acciones","Flujo de financiación"].forEach(k=>add(k,C[k]));
+    calcRow("Margen de caja libre",fRat(C["Flujo de caja libre"]||[],I["Ingresos"]),pct);
+  }
+  document.getElementById("ftab").innerHTML=rows.length?`<table class="fs"><tr><th></th>${y.map(x=>`<th>${x}</th>`).join("")}</tr>${rows.join("")}</table>`:'<p class="sm">Sin datos de este informe para la empresa.</p>';
+}
+function fPeers(t,v){
+  if(!v.sic)return"";
+  const key=n=>x=>String(D.v.items[x].sic||"").padStart(4,"0").slice(0,n);
+  const all=tickers().filter(x=>x!==t&&D.v.items?.[x]?.sic&&D.m[x]&&(D.v.items[x].type||"ACCIONES")==="ACCIONES"&&calc(x));
+  let L=[],lvl=4;
+  for(const n of [4,3,2]){L=all.filter(x=>key(n)(x)===String(v.sic).padStart(4,"0").slice(0,n));lvl=n;if(L.length>=4)break}
+  if(!L.length)return"";
+  L=L.filter(x=>calc(x).v.fiab!=="baja").sort((a,b)=>calc(b).mg-calc(a).mg).slice(0,4);
+  if(!L.length)return"";
+  return `<div class="box"><h3>Empresas parecidas</h3><p class="sm">Del mismo sector oficial (${esc(sicName(v.sic)||"SEC")}), ordenadas de más a menos margen de seguridad. Ver una barata no significa que sea mejor: compara su salud y su fiabilidad.</p>
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">${L.map(x=>{const c=calc(x);return `<div class="m" style="text-align:left"><div class="flex"><b>${esc(x)}</b><span class="badge ${c.verdict}">${c.verdict}</span></div><div class="sm">${esc(D.v.items[x].name||"")}</div>
+  <div class="${c.mg>=0?"up":"dn"}" style="margin:4px 0">${c.mg>=0?"Margen "+num(c.mg,0)+" %":"Cara: "+num(c.mg,0)+" %"}</div><div class="row" style="margin:0"><button class="btn" onclick="fichaIr('${esc(x)}')">Ver ficha</button><button class="btn" onclick="window._cmp=['${esc(t)}','${esc(x)}'];TOOL='comp';vista('tools')">Comparar</button></div></div>`}).join("")}</div></div>`;
+}
+function fDirect(t){
+  if(!D.ins||!D.ins.items)return"";
+  const L=D.ins.items.filter(x=>x.t===t).slice(0,12);
+  const usd=x=>"$"+fN(x,0);
+  if(!L.length)return `<div class="box"><h3>Compras y ventas de directivos</h3><p class="sm">Sin operaciones de al menos 50.000 $ en el mercado en los últimos 45 días (datos del formulario 4 de la SEC).</p></div>`;
+  const b=L.filter(x=>x.k==="P"),s=L.filter(x=>x.k==="S");
+  return `<div class="box"><h3>Compras y ventas de directivos</h3><p class="sm">Últimos 45 días, operaciones en el mercado de al menos 50.000 $: ${b.length} compra${b.length===1?"":"s"} y ${s.length} venta${s.length===1?"":"s"}. Las compras suelen decir más que las ventas: un directivo puede vender por muchos motivos personales, pero comprar con su dinero normalmente significa confianza.</p>
+  <div style="overflow-x:auto"><table><tr><th>Fecha</th><th>Quién</th><th>Cargo</th><th>Operación</th><th>Acciones</th><th>Precio</th><th>Importe</th></tr>${L.map(x=>`<tr><td>${esc(x.d)}</td><td>${esc(x.w)}</td><td class="sm">${esc(x.r)}</td><td class="${x.k==="P"?"up":"dn"}">${x.k==="P"?"Compra":"Venta"}</td><td>${fN(x.sh,0)}</td><td>$${num(x.px)}</td><td>${usd(x.v)}</td></tr>`).join("")}</table></div></div>`;
+}
+/* --- correo electrónico --- */
+function fEmailForm(id){
+  return `<form action="${esc(EMAIL_FORM)}" method="post" target="_blank" onsubmit="fStore('ei_em','1');setTimeout(()=>{const b=document.getElementById('${id}');if(b)b.innerHTML='<p><strong>¡Gracias!</strong> Revisa tu correo para confirmar la suscripción.</p>'},300)">
+  <div class="row" style="flex-wrap:wrap;gap:8px"><input class="in" type="email" name="${esc(EMAIL_FIELD)}" required placeholder="tu@correo.com" style="flex:1;min-width:220px"><button class="btn on" type="submit">Quiero las alertas</button></div>
+  <label class="sm" style="display:block;margin-top:6px"><input type="checkbox" required> Acepto recibir por correo las oportunidades y novedades de Equity Intelligence y he leído la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. Puedo darme de baja cuando quiera.</label></form>`;
+}
+function fEmail(){
+  if(!EMAIL_FORM||fStore("ei_em"))return"";
+  return `<div class="box" id="fem"><h3>Recibe las alertas por correo</h3><p class="sm">Te avisamos cuando una empresa entre en zona de compra y cuando los grandes fondos o los directivos se muevan. Gratis, sin publicidad de terceros y sin compartir tu correo.</p>${fEmailForm("fem")}</div>`;
+}
+function fEmailTop(n){
+  if(!EMAIL_FORM||fStore("ei_em")||fStore("ei_hide")||n<3)return"";
+  return `<div class="note" id="femt" style="border-color:var(--gold)"><div class="flex"><strong>¿Te está sirviendo? Recibe las alertas por correo</strong><button class="btn" onclick="fStore('ei_hide','1');document.getElementById('femt').remove()">Ahora no</button></div>${fEmailForm("femt")}</div>`;
 }
 </script>
 </body>
