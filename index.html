@@ -113,6 +113,7 @@ table.fs td.stk,table.fs th:first-child{text-align:left;position:sticky;left:0;b
 table.fs tr.calc td{color:var(--g)}
 a.gl{color:inherit;text-decoration:none;border-bottom:1px dotted var(--g)}a.gl:hover{color:var(--gold)}
 #vFicha{padding:0 0 30px}#vFicha>.box,#vFicha #fbody>.box,#vFicha #fbody>.note{margin-bottom:12px}
+table.fs tr.tot td{font-weight:700;border-top:1px solid var(--line,#333)}
 </style>
 </head>
 <body>
@@ -778,7 +779,7 @@ async function toolDir(){
   const I=D.i;
   if(I.none||!I.items){b.innerHTML='<p class="sm">Todavía no hay datos de directivos. El robot que los lee de la SEC se ejecuta cada mañana; en cuanto termine su primera vuelta aparecerán aquí.</p>';return}
   const isAcc=x=>/Accionista/.test(x.r||"");
-  const ok=x=>/^[A-Z]{1,5}([.-][A-Z])?$/.test(x.t)&&!DJUNK.test(x.n||"");
+  const ok=x=>/^[A-Z]{1,5}([.-][A-Z])?$/.test(x.t)&&!DJUNK.test(x.n||"")&&(x.px<=20000||/^BRK/.test(x.t))&&(!D.m[x.t]?.c||(x.px/D.m[x.t].c>=0.25&&x.px/D.m[x.t].c<=4));
   const base=I.items.filter(ok);
   const cnt={dir:base.filter(x=>!isAcc(x)).length,acc:base.filter(isAcc).length};
   const g={};
@@ -796,7 +797,7 @@ async function toolDir(){
   <div style="overflow-x:auto"><table><tr><th>Empresa</th><th>Veredicto nuestro</th><th>Importe total</th><th>Personas</th><th>Precio medio de la operación</th><th>Precio hoy</th><th>Última</th><th></th></tr>${L.map(o=>{const px=o.ops.reduce((s,x)=>s+x.px*x.sh,0)/o.sh,p=D.m[o.t]?.c,df=p?(p/px-1)*100:null;
     return `<tr><td>${D.m[o.t]&&D.v.items?.[o.t]?`<a href="#" style="color:var(--gold)" onclick="fichaIr('${esc(o.t)}');return false"><b>${esc(o.t)}</b></a>`:`<b>${esc(o.t)}</b>`} <span class="sm">${esc(o.n)}</span>${o.ppl.size>=2?` <span class="badge COMPRAR" title="Varias personas operaron en la misma empresa">Varios a la vez</span>`:""}</td>
     <td>${tlv(calc(o.t))}</td><td>$${num(o.v,0)}</td><td>${o.ppl.size}</td><td>$${num(px)}</td><td>${p?"$"+num(p)+` <span class="${df>=0?"up":"dn"} sm">${df>=0?"+":""}${num(df,1)} %</span>`:"—"}</td><td>${esc(o.last)}</td>
-    <td><details><summary class="sm" style="cursor:pointer">Detalle</summary><table style="margin-top:6px"><tr><th>Fecha</th><th>Quién</th><th>Cargo</th><th>Acciones</th><th>Precio</th><th>Importe</th></tr>${o.ops.sort((a,c)=>c.d.localeCompare(a.d)).map(x=>`<tr><td>${esc(x.d)}</td><td>${esc(x.w)}</td><td class="sm">${esc(x.r)}</td><td>${num(x.sh,0)}</td><td>$${num(x.px)}</td><td>$${num(x.v,0)}</td></tr>`).join("")}</table></details></td></tr>`}).join("")}</table></div>`:`<p class="sm">No hay operaciones con estos filtros. Prueba con «Todas» o con otra pestaña.</p>`}
+    <td><details><summary class="sm" style="cursor:pointer">Detalle</summary><table style="margin-top:6px"><tr><th>Fecha</th><th>Quién</th><th>Cargo</th><th>Acciones</th><th>Precio</th><th>Importe</th><th>Cambio en su posición</th></tr>${o.ops.sort((a,c)=>c.d.localeCompare(a.d)).map(x=>`<tr><td>${esc(x.d)}</td><td>${esc(x.w)}</td><td class="sm">${esc(x.r)}${x.p?' · programada':''}</td><td>${num(x.sh,0)}</td><td>$${num(x.px)}</td><td>$${num(x.v,0)}</td><td>${dPos(x)}</td></tr>`).join("")}</table></details></td></tr>`}).join("")}</table></div>`:`<p class="sm">No hay operaciones con estos filtros. Prueba con «Todas» o con otra pestaña.</p>`}
   <p class="sm" style="margin-top:8px">Una compra de un directivo es una señal, no una garantía: puede equivocarse como cualquiera. Las ventas suelen estar programadas de antemano o responder a motivos personales (impuestos, compra de casa) y significan menos. Un gran accionista (más del 10 %) suele ser un fondo y no trabaja en la empresa: su compra dice menos sobre el negocio por dentro.</p>`;
 }
 
@@ -818,7 +819,7 @@ async function autoCalc(k,t){
 }
 /* ===== FICHA DE EMPRESA: buscador + desglose completo ===== */
 const EMAIL_FORM="",EMAIL_FIELD="email";
-const GLN={"Ingresos": "ingresos", "Coste de ventas": "coste-ventas", "Beneficio bruto": "beneficio-bruto", "Investigación y desarrollo": "id", "Gastos comerciales y generales": "gastos-generales", "Resultado operativo": "resultado-operativo", "Gastos por intereses": "intereses", "Beneficio antes de impuestos": "bai", "Impuestos": "impuestos", "Beneficio neto": "beneficio-neto", "Beneficio por acción": "bpa", "Acciones (millones)": "acciones", "Caja": "caja", "Inversiones a corto plazo": "inversiones-cp", "Cuentas por cobrar": "cobrar", "Inventarios": "inventarios", "Activo corriente": "activo-corriente", "Inmovilizado material": "inmovilizado", "Fondo de comercio": "fondo-comercio", "Activos totales": "activos-totales", "Cuentas por pagar": "pagar", "Deuda a corto plazo": "deuda-cp", "Pasivo corriente": "pasivo-corriente", "Deuda a largo plazo": "deuda-lp", "Pasivos totales": "pasivos-totales", "Patrimonio neto": "patrimonio", "Flujo de caja operativo": "fco", "Inversión en activos (capex)": "capex", "Flujo de inversión": "flujo-inversion", "Dividendos pagados": "dividendos", "Recompra de acciones": "recompras", "Flujo de financiación": "flujo-financiacion", "Flujo de caja libre": "fcl", "Margen bruto": "margen-bruto", "Margen operativo": "margen-operativo", "Margen neto": "margen-neto", "ROE (rentabilidad sobre recursos propios)": "roe", "Liquidez corriente": "liquidez", "Deuda sobre patrimonio": "deuda-patrimonio", "Cobertura de intereses": "cobertura", "Puntuaciones de rentabilidad y solvencia": "puntuacion", "Crecimiento a 3, 5 y 10 años": "crecimiento", "Escenarios bajista, base y alcista": "escenarios", "Tasa de descuento propia": "tasa", "Activo no corriente": "activo-no-corriente", "Pasivo no corriente": "pasivo-no-corriente", "Pasivos financieros corrientes y no corrientes": "pasivos-financieros", "Provisiones": "provisiones", "Capital circulante (fondo de maniobra)": "capital-circulante", "Amortización y depreciación": "amortizacion", "EBITDA": "ebitda", "Resultado financiero": "resultado-financiero", "Capital social": "capital-social", "Reservas y beneficios acumulados": "reservas", "Acciones propias (autocartera)": "acciones-propias", "Deuda neta": "deuda-neta", "Dividendo por acción": "dividendo-accion", "Pay-out (porcentaje de reparto)": "payout", "ROA (rentabilidad sobre activos)": "roa", "ROIC (rentabilidad sobre el capital invertido)": "roic", "Apalancamiento": "apalancamiento", "Activos intangibles": "intangibles", "Ingresos diferidos": "ingresos-diferidos", "Arrendamientos (leasing)": "arrendamientos", "Intereses minoritarios": "minoritarios", "Deterioro de valor": "deterioro", "Rotación de inventarios": "rotacion-inventarios", "Periodo medio de cobro": "periodo-cobro", "Ejercicio fiscal": "ejercicio"};
+const GLN={"Ingresos": "ingresos", "Coste de ventas": "coste-ventas", "Beneficio bruto": "beneficio-bruto", "Investigación y desarrollo": "id", "Gastos comerciales y generales": "gastos-generales", "Resultado operativo": "resultado-operativo", "Gastos por intereses": "intereses", "Beneficio antes de impuestos": "bai", "Impuestos": "impuestos", "Beneficio neto": "beneficio-neto", "Beneficio por acción": "bpa", "Acciones (millones)": "acciones", "Caja": "caja", "Inversiones a corto plazo": "inversiones-cp", "Cuentas por cobrar": "cobrar", "Inventarios": "inventarios", "Activo corriente": "activo-corriente", "Inmovilizado material": "inmovilizado", "Fondo de comercio": "fondo-comercio", "Activos totales": "activos-totales", "Cuentas por pagar": "pagar", "Deuda a corto plazo": "deuda-cp", "Pasivo corriente": "pasivo-corriente", "Deuda a largo plazo": "deuda-lp", "Pasivos totales": "pasivos-totales", "Patrimonio neto": "patrimonio", "Flujo de caja operativo": "fco", "Inversión en activos (capex)": "capex", "Flujo de inversión": "flujo-inversion", "Dividendos pagados": "dividendos", "Recompra de acciones": "recompras", "Flujo de financiación": "flujo-financiacion", "Flujo de caja libre": "fcl", "Margen bruto": "margen-bruto", "Margen operativo": "margen-operativo", "Margen neto": "margen-neto", "ROE (rentabilidad sobre recursos propios)": "roe", "Liquidez corriente": "liquidez", "Deuda sobre patrimonio": "deuda-patrimonio", "Cobertura de intereses": "cobertura", "Puntuaciones de rentabilidad y solvencia": "puntuacion", "Crecimiento a 3, 5 y 10 años": "crecimiento", "Escenarios bajista, base y alcista": "escenarios", "Tasa de descuento propia": "tasa", "Activo no corriente": "activo-no-corriente", "Pasivo no corriente": "pasivo-no-corriente", "Pasivos financieros corrientes y no corrientes": "pasivos-financieros", "Provisiones": "provisiones", "Capital circulante (fondo de maniobra)": "capital-circulante", "Amortización y depreciación": "amortizacion", "EBITDA": "ebitda", "Resultado financiero": "resultado-financiero", "Capital social": "capital-social", "Reservas y beneficios acumulados": "reservas", "Acciones propias (autocartera)": "acciones-propias", "Deuda neta": "deuda-neta", "Dividendo por acción": "dividendo-accion", "Pay-out (porcentaje de reparto)": "payout", "ROA (rentabilidad sobre activos)": "roa", "ROIC (rentabilidad sobre el capital invertido)": "roic", "Apalancamiento": "apalancamiento", "Activos intangibles": "intangibles", "Ingresos diferidos": "ingresos-diferidos", "Arrendamientos (leasing)": "arrendamientos", "Intereses minoritarios": "minoritarios", "Otros activos corrientes": "otros-ac", "Activos por derecho de uso": "derecho-uso", "Otros activos no corrientes": "otros-anc", "Arrendamientos a corto plazo": "arr-cp", "Arrendamientos a largo plazo": "arr-lp", "Impuestos diferidos": "imp-dif", "Otros pasivos corrientes": "otros-pc", "Otros pasivos no corrientes": "otros-pnc", "Patrimonio total": "patrimonio-total", "Patrimonio atribuible a los accionistas": "patrimonio-accionistas", "Deterioro de valor": "deterioro", "Rotación de inventarios": "rotacion-inventarios", "Periodo medio de cobro": "periodo-cobro", "Ejercicio fiscal": "ejercicio"};
 const SIC2={"01":"Agricultura","02":"Agricultura","07":"Servicios agrícolas","08":"Silvicultura","09":"Pesca","10":"Minería de metales","12":"Minería de carbón","13":"Petróleo y gas","14":"Minerales no metálicos","15":"Construcción","16":"Obras públicas","17":"Construcción especializada","20":"Alimentación","21":"Tabaco","22":"Textil","23":"Confección","24":"Madera","25":"Muebles","26":"Papel","27":"Imprenta y edición","28":"Química y farmacia","29":"Refino de petróleo","30":"Caucho, plásticos y calzado","31":"Cuero","32":"Piedra, vidrio y cemento","33":"Metales primarios","34":"Productos metálicos","35":"Maquinaria y equipos informáticos","36":"Electrónica y material eléctrico","37":"Equipos de transporte","38":"Instrumentos y material médico","39":"Industrias diversas","40":"Ferrocarril","41":"Transporte de pasajeros","42":"Transporte por carretera","44":"Transporte marítimo","45":"Transporte aéreo","46":"Oleoductos","47":"Servicios de transporte","48":"Telecomunicaciones y medios","49":"Energía, gas y agua","50":"Comercio mayorista de bienes duraderos","51":"Comercio mayorista de bienes no duraderos","52":"Comercio minorista de construcción","53":"Grandes almacenes","54":"Alimentación minorista","55":"Automoción minorista","56":"Moda minorista","57":"Muebles y electrónica minorista","58":"Restauración","59":"Otro comercio minorista","60":"Bancos","61":"Crédito","62":"Bolsa e inversión","63":"Seguros","64":"Agentes de seguros","65":"Inmobiliario","67":"Holdings e inversión","70":"Hoteles","72":"Servicios personales","73":"Servicios a empresas y software","75":"Reparación de automóviles","78":"Cine y producción audiovisual","79":"Ocio y entretenimiento","80":"Salud y servicios sanitarios","82":"Educación","83":"Servicios sociales","87":"Ingeniería y consultoría"};
 const sicName=s=>s?SIC2[String(s).padStart(4,"0").slice(0,2)]||null:null;
 const gl=n=>GLN[n]?`<a href="aprender.html#g-${GLN[n]}" target="_blank" rel="noopener" class="gl" title="Qué significa esta línea">${esc(n)}</a>`:esc(n);
@@ -990,7 +991,19 @@ function fFinanzas(fd){
   <h4 style="margin:12px 0 4px">De cada dólar que vende, adónde va</h4><div id="fsank"></div>
   <h4 style="margin:16px 0 4px">El balance: lo que tiene y lo que debe</h4><div id="fbal"></div></div>
   <div class="box"><h3>Estados financieros</h3><div class="row" id="ftabs" style="margin:6px 0"></div><div id="ftab" style="overflow-x:auto"></div>
-  <p class="sm" style="margin-top:6px">Cuentas anuales oficiales (SEC), en millones de dólares salvo el beneficio por acción. Pulsa en cualquier línea para ver qué significa. Las líneas en cursiva las calculamos nosotros.</p></div>`;
+  <p class="sm" style="margin-top:6px">Cuentas anuales oficiales (SEC), en millones de dólares salvo el beneficio por acción. Pulsa en cualquier línea para ver qué significa. Las líneas en cursiva las calculamos nosotros.</p>${fFuente(st)}</div>`;
+}
+function fFuente(st){
+  if(!st.src||!st.cik)return`<p class="sm">Fuente: informes anuales (formulario 10-K) presentados a la SEC. Todavía no incluimos los trimestrales (10-Q).</p>`;
+  const a=String(st.src.acc).replace(/-/g,""),base="https://www.sec.gov/Archives/edgar/data/"+st.cik+"/"+a+"/";
+  return`<p class="sm" style="margin-top:6px">Fuente: informe anual (formulario ${esc(st.src.form)}) presentado a la SEC el ${esc(st.src.filed)}, ejercicio cerrado el ${esc(st.src.end)}. Los datos son solo de los informes anuales; los trimestrales (10-Q) todavía no están incluidos. <a href="${base}" target="_blank" rel="noopener" style="color:var(--gold)">Ver el informe original</a> · <a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${st.cik}&type=10-K&dateb=&owner=include&count=40" target="_blank" rel="noopener" style="color:var(--gold)">Todos sus informes anuales</a></p>`;
+}
+function dPos(x){
+  if(x.ho==null)return"—";
+  const before=x.k==="P"?x.ho-x.sh:x.ho+x.sh;
+  if(before<=0)return x.k==="P"?"Primera compra":"—";
+  const p=(x.ho-before)/before*100;
+  return (p>=0?"+":"")+num(p,Math.abs(p)<10?1:0)+" %";
 }
 function fVis(){
   if(!FD||!FD.st)return;
@@ -1074,7 +1087,30 @@ function fTabs(){
     add("Beneficio por acción",I["Beneficio por acción"],2);add("Acciones (millones)",I["Acciones (millones)"],1);
     calcRow("Margen bruto",fRat(I["Beneficio bruto"]||[],I["Ingresos"]),pct);calcRow("Margen operativo",fRat(I["Resultado operativo"]||[],I["Ingresos"]),pct);calcRow("Margen neto",fRat(I["Beneficio neto"]||[],I["Ingresos"]),pct);
   }else if(FTAB==="bs"){
-    ["Caja","Inversiones a corto plazo","Cuentas por cobrar","Inventarios","Activo corriente","Inmovilizado material","Fondo de comercio","Activos totales","Cuentas por pagar","Deuda a corto plazo","Pasivo corriente","Deuda a largo plazo","Pasivos totales","Patrimonio neto"].forEach(k=>add(k,B[k]));
+    const g=k=>B[k]||null,n=y.length;
+    const sub=(tot,parts)=>tot?tot.map((v,i)=>{if(v==null)return null;let r=v,any=false;parts.forEach(p=>{const x=p&&p[i];if(x!=null){r-=x;any=true}});return any&&r>=0?r:null}):null;
+    const diff=(a,b)=>a&&b?a.map((v,i)=>v!=null&&b[i]!=null&&v-b[i]>=0?v-b[i]:null):null;
+    const AT=g("Activos totales"),AC=g("Activo corriente"),PT=g("Pasivos totales"),PC=g("Pasivo corriente");
+    const ANC=g("Activo no corriente")||diff(AT,AC),PNC=g("Pasivo no corriente")||diff(PT,PC);
+    const EQT=g("Patrimonio total")||diff(AT,PT);
+    const L=(k,a,lv,der)=>{if(a&&a.some(x=>x!=null))rows.push(`<tr class="${lv===0?"tot":""}${der?" calc":""}"><td class="stk" style="padding-left:${6+lv*16}px">${der?"<i>"+gl(k)+"</i>":gl(k)}</td>${f0(a,0).map(x=>`<td>${der?"<i>"+x+"</i>":x}</td>`).join("")}</tr>`)};
+    L("Activos totales",AT,0);
+    L("Activo corriente",AC,1);
+    ["Caja","Inversiones a corto plazo","Cuentas por cobrar","Inventarios"].forEach(k=>L(k,g(k),2));
+    const oac=g("Otros activos corrientes");L("Otros activos corrientes",oac||sub(AC,["Caja","Inversiones a corto plazo","Cuentas por cobrar","Inventarios"].map(g)),2,!oac);
+    L("Activo no corriente",ANC,1);
+    ["Inmovilizado material","Activos por derecho de uso","Fondo de comercio","Activos intangibles"].forEach(k=>L(k,g(k),2));
+    const oanc=g("Otros activos no corrientes");L("Otros activos no corrientes",oanc||sub(ANC,["Inmovilizado material","Activos por derecho de uso","Fondo de comercio","Activos intangibles"].map(g)),2,!oanc);
+    L("Pasivos totales",PT,0);
+    L("Pasivo corriente",PC,1);
+    ["Cuentas por pagar","Deuda a corto plazo","Arrendamientos a corto plazo","Ingresos diferidos"].forEach(k=>L(k,g(k),2));
+    const opc=g("Otros pasivos corrientes");L("Otros pasivos corrientes",opc||sub(PC,["Cuentas por pagar","Deuda a corto plazo","Arrendamientos a corto plazo","Ingresos diferidos"].map(g)),2,!opc);
+    L("Pasivo no corriente",PNC,1);
+    ["Deuda a largo plazo","Arrendamientos a largo plazo","Impuestos diferidos"].forEach(k=>L(k,g(k),2));
+    const opnc=g("Otros pasivos no corrientes");L("Otros pasivos no corrientes",opnc||sub(PNC,["Deuda a largo plazo","Arrendamientos a largo plazo","Impuestos diferidos"].map(g)),2,!opnc);
+    L("Patrimonio total",EQT,0,!g("Patrimonio total"));
+    L("Patrimonio atribuible a los accionistas",g("Patrimonio neto"),1);
+    L("Intereses minoritarios",g("Intereses minoritarios"),1);
     const eq=B["Patrimonio neto"];
     if(eq&&(B["Deuda a corto plazo"]||B["Deuda a largo plazo"]))calcRow("Deuda sobre patrimonio",eq.map((e,i)=>e>0?((B["Deuda a corto plazo"]?.[i]??0)+(B["Deuda a largo plazo"]?.[i]??0))/e:null),a=>a.map(x=>x==null?"—":num(x,2)));
     calcRow("Liquidez corriente",fRat(B["Activo corriente"]||[],B["Pasivo corriente"]),a=>a.map(x=>x==null?"—":num(x,2)));
@@ -1105,7 +1141,7 @@ function fDirect(t){
   if(!L.length)return `<div class="box"><h3>Compras y ventas de directivos</h3><p class="sm">Sin operaciones de al menos 50.000 $ en el mercado en los últimos 45 días (datos del formulario 4 de la SEC).</p></div>`;
   const b=L.filter(x=>x.k==="P"),s=L.filter(x=>x.k==="S");
   return `<div class="box"><h3>Compras y ventas de directivos</h3><p class="sm">Últimos 45 días, operaciones en el mercado de al menos 50.000 $: ${b.length} compra${b.length===1?"":"s"} y ${s.length} venta${s.length===1?"":"s"}. Las compras suelen decir más que las ventas: un directivo puede vender por muchos motivos personales, pero comprar con su dinero normalmente significa confianza.</p>
-  <div style="overflow-x:auto"><table><tr><th>Fecha</th><th>Quién</th><th>Cargo</th><th>Operación</th><th>Acciones</th><th>Precio</th><th>Importe</th></tr>${L.map(x=>`<tr><td>${esc(x.d)}</td><td>${esc(x.w)}</td><td class="sm">${esc(x.r)}</td><td class="${x.k==="P"?"up":"dn"}">${x.k==="P"?"Compra":"Venta"}</td><td>${fN(x.sh,0)}</td><td>$${num(x.px)}</td><td>${usd(x.v)}</td></tr>`).join("")}</table></div></div>`;
+  <div style="overflow-x:auto"><table><tr><th>Fecha</th><th>Quién</th><th>Cargo</th><th>Operación</th><th>Acciones</th><th>Precio</th><th>Importe</th><th>Cambio en su posición</th></tr>${L.map(x=>`<tr><td>${esc(x.d)}</td><td>${esc(x.w)}</td><td class="sm">${esc(x.r)}</td><td class="${x.k==="P"?"up":"dn"}">${x.k==="P"?"Compra":"Venta"}${x.p?' <span class="sm">· programada</span>':""}</td><td>${fN(x.sh,0)}</td><td>$${num(x.px)}</td><td>${usd(x.v)}</td><td>${dPos(x)}</td></tr>`).join("")}</table></div></div>`;
 }
 /* --- correo electrónico --- */
 function fEmailForm(id){
