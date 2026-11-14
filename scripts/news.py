@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "news.json"
 UA = os.environ.get("SEC_USER_AGENT", "EquityIntelligence community16jalda@gmail.com")
 NOW = datetime.now(timezone.utc)
-IMG_OK = {"SEC", "Reserva Federal"}
+PHOTO = set()  # medios con foto: los que llevan |foto al final de su línea en noticias-fuentes.txt
 MAX_PER_FEED, MAX_AGE_DAYS, MAX_TOTAL = 12, 3, 80
 
 
@@ -69,8 +69,8 @@ def read_feed(lang, name, url):
             continue
         if d and (NOW - d > timedelta(days=MAX_AGE_DAYS) or d > NOW + timedelta(hours=1)):
             continue
-        if name not in IMG_OK:
-            img = None  # solo guardamos fotos de organismos públicos
+        if name not in PHOTO:
+            img = None  # solo se guardan fotos de los medios marcados con |foto
         if img and (not img.startswith("https://") or re.search(r"pixel|1x1|spacer|feedburner|doubleclick", img, re.I)):
             img = None
         out.append({"t": t, "u": u, "s": name, "l": lang, "d": d.strftime("%Y-%m-%dT%H:%M:%SZ") if d else None, "i": img})
@@ -84,7 +84,10 @@ def main():
     for line in (ROOT / "noticias-fuentes.txt").read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if line and not line.startswith("#") and line.count("|") >= 2:
-            feeds.append(tuple(x.strip() for x in line.split("|", 2)))
+            p = [x.strip() for x in line.split("|")]
+            feeds.append((p[0], p[1], p[2]))
+            if "foto" in [y.lower() for y in p[3:]]:
+                PHOTO.add(p[1])
     new, ok, fail = {}, 0, []
     for lang, name, url in feeds:
         try:
