@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "news.json"
 UA = os.environ.get("SEC_USER_AGENT", "EquityIntelligence community16jalda@gmail.com")
 NOW = datetime.now(timezone.utc)
+IMG_OK = {"SEC", "Reserva Federal"}
 MAX_PER_FEED, MAX_AGE_DAYS, MAX_TOTAL = 12, 3, 80
 
 
@@ -68,6 +69,8 @@ def read_feed(lang, name, url):
             continue
         if d and (NOW - d > timedelta(days=MAX_AGE_DAYS) or d > NOW + timedelta(hours=1)):
             continue
+        if name not in IMG_OK:
+            img = None  # solo guardamos fotos de organismos públicos
         if img and (not img.startswith("https://") or re.search(r"pixel|1x1|spacer|feedburner|doubleclick", img, re.I)):
             img = None
         out.append({"t": t, "u": u, "s": name, "l": lang, "d": d.strftime("%Y-%m-%dT%H:%M:%SZ") if d else None, "i": img})
