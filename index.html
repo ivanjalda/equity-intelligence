@@ -692,14 +692,16 @@ function cmpSet(i,t){t=(t||"").toUpperCase().trim();const s=window._cmp;if(!t){s
 function dcf2(f0,g,r,tg){let v=0,f=f0;for(let y=1;y<=10;y++){f*=1+(y<=5?g:g/2);v+=f/Math.pow(1+r,y)}return v+f*(1+tg)/(r-tg)/Math.pow(1+r,10)}
 function toolCalc(){
   const fld=(id,l,val,st="any")=>`<label class="sm" style="display:block;margin:6px 0 2px">${l}</label><input class="in" id="${id}" type="number" step="${st}" value="${val}" style="width:100%" oninput="calcRun()">`;
-  document.getElementById("tlBody").innerHTML=`<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
-  <div class="box"><h3>Flujo de caja descontado</h3><p class="sm">Cuánto vale hoy el dinero que la empresa generará en 10 años.</p>
+  const dl2=tickers().sort().map(t=>`<option value="${esc(t)}">${esc(D.v.items?.[t]?.name||"")}</option>`).join("");
+  const tk=k=>`<div class="row" style="margin:6px 0 2px"><input class="in" list="dlc2" id="${k}_tk" placeholder="Autocompletar con un símbolo (ej. AAPL)" style="flex:1;min-width:0" onchange="autoCalc('${k}',this.value)"></div><p class="sm" id="${k}_note" style="margin:2px 0 4px"></p>`;
+  document.getElementById("tlBody").innerHTML=`<datalist id="dlc2">${dl2}</datalist><p class="sm">Cada calculadora se puede rellenar a mano o autocompletar con una acción o activo del mercado: escribe su símbolo y se cargan sus datos. Después puedes cambiar cualquier número.</p><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+  <div class="box"><h3>Flujo de caja descontado</h3><p class="sm">Cuánto vale hoy el dinero que la empresa generará en 10 años.</p>${tk('c')}
    ${fld("c_f","Caja libre por acción hoy ($)",10)}${fld("c_g","Crecimiento anual, años 1-5 (%)",8)}${fld("c_r","Tasa de descuento (%)",10)}${fld("c_t","Crecimiento a largo plazo (%)",2.5)}${fld("c_p","Precio actual ($)",150)}<div id="c_out" style="margin-top:10px"></div></div>
-  <div class="box"><h3>Fórmula de Graham</h3><p class="sm">Valor rápido a partir del beneficio y el crecimiento.</p>
+  <div class="box"><h3>Fórmula de Graham</h3><p class="sm">Valor rápido a partir del beneficio y el crecimiento.</p>${tk('g')}
    ${fld("g_e","Beneficio por acción ($)",6)}${fld("g_g","Crecimiento esperado a 7-10 años (%)",6)}${fld("g_y","Rentabilidad de bonos AAA (%)",5)}${fld("g_p","Precio actual ($)",90)}${fld("g_b","Valor contable por acción ($, número de Graham)",30)}<div id="g_out" style="margin-top:10px"></div></div>
-  <div class="box"><h3>Dividendos</h3><p class="sm">Cuánto cobrarías al año por tus acciones.</p>
+  <div class="box"><h3>Dividendos</h3><p class="sm">Cuánto cobrarías al año por tus acciones.</p>${tk('d')}
    ${fld("d_p","Precio de la acción ($)",50)}${fld("d_d","Dividendo anual por acción ($)",2)}${fld("d_n","Número de acciones",100)}${fld("d_g","Crecimiento anual del dividendo (%)",5)}<div id="d_out" style="margin-top:10px"></div></div>
-  <div class="box"><h3>Interés compuesto</h3><p class="sm">Cómo crece una inversión con aportaciones.</p>
+  <div class="box"><h3>Interés compuesto</h3><p class="sm">Cómo crece una inversión con aportaciones.</p>${tk('i')}
    ${fld("i_i","Dinero inicial ($)",5000)}${fld("i_m","Aportación mensual ($)",200)}${fld("i_r","Rentabilidad anual supuesta (%)",7)}${fld("i_y","Años",20)}<div id="i_out" style="margin-top:10px"></div></div></div>
   <p class="sm" style="margin-top:10px">Ejemplos con números inventados: cámbialos por los tuyos. Son cálculos matemáticos, no promesas ni asesoramiento. La rentabilidad real nunca es constante.</p>`;
   calcRun();
@@ -765,6 +767,23 @@ async function toolDir(){
   <div class="row" style="margin:8px 0"><button class="btn${DIRV==="P"?" on":""}" onclick="DIRV='P';toolDir()">Compras</button><button class="btn${DIRV==="S"?" on":""}" onclick="DIRV='S';toolDir()">Ventas</button></div>
   ${L.length?`<div style="overflow-x:auto"><table><tr><th>Empresa</th><th>Importe total</th><th>Personas</th><th>Última</th><th>Veredicto nuestro</th></tr>${L.map(o=>`<tr><td>${D.m[o.t]||D.v.items?.[o.t]?`<a href="#" style="color:var(--gold)" onclick="vista('term');detalle('${esc(o.t)}');return false">${esc(o.t)}</a>`:`<strong>${esc(o.t)}</strong>`} <span class="sm">${esc(o.n)}</span></td><td>$${num(o.v,0)}</td><td>${o.ppl.size}</td><td>${esc(o.last)}</td><td>${tlv(calc(o.t))}</td></tr><tr><td colspan="5" class="sm" style="padding-top:0">${o.ops.sort((a,c)=>c.v-a.v).slice(0,3).map(x=>`${esc(x.w)}${x.r?" ("+esc(x.r)+")":""}: ${num(x.sh,0)} acciones a $${num(x.px)} el ${esc(x.d)}`).join(" · ")}</td></tr>`).join("")}</table></div>`:'<p class="sm">No hay operaciones de este tipo.</p>'}
   <p class="sm" style="margin-top:8px">Una compra de un directivo es una señal, no una garantía: puede equivocarse como cualquiera. Las ventas suelen estar programadas de antemano y significan menos.</p>`;
+}
+
+async function autoCalc(k,t){
+  t=(t||"").toUpperCase().trim();const note=document.getElementById(k+"_note"),set=(i,x)=>{const e=document.getElementById(i);if(e&&x!=null&&isFinite(x))e.value=+(+x).toFixed(2)};
+  if(!t){note.textContent="";return}
+  const v=D.v.items?.[t]||{},p=D.m[t]?.c;
+  if(!p&&!v.name){note.textContent="Ese símbolo no está en nuestra lista.";return}
+  const nm=(v.name||t),faltan=[];
+  if(k==="c"){set("c_p",p);if(v.fcfps)set("c_f",v.fcfps);else faltan.push("la caja libre por acción");if(v.g!=null)set("c_g",v.g*100)}
+  if(k==="g"){set("g_p",p);if(v.eps)set("g_e",v.eps);else faltan.push("el beneficio por acción");if(v.g!=null)set("g_g",Math.min(v.g*100,15));faltan.push("el valor contable (si quieres el número de Graham)")}
+  if(k==="d"){set("d_p",p);faltan.push("el dividendo anual por acción")}
+  if(k==="i"){
+    const h=await j("data/history/"+t+".json");
+    if(h&&h.length>50){const a=h[0],b=h[h.length-1],yrs=(new Date(b[0])-new Date(a[0]))/(365.25*864e5);if(yrs>=1&&a[1]>0){const r=(Math.pow(b[1]/a[1],1/yrs)-1)*100;set("i_r",r);note.innerHTML=`${esc(nm)}: ha rendido de media un <strong>${num(r,1)} % anual</strong> en los últimos ${num(yrs,1)} años (solo pasado, sin dividendos; no garantiza el futuro).`;calcRun();return}}
+    note.textContent="No hay suficiente histórico de precios de este activo.";return}
+  note.innerHTML=`Cargado: <strong>${esc(nm)}</strong>${p?" · precio $"+num(p):""}.${faltan.length?" Falta que lo escribas tú: "+faltan.join(", ")+".":""}`;
+  calcRun();
 }
 </script>
 </body>
