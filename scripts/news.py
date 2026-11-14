@@ -47,19 +47,30 @@ def read_feed(lang, name, url):
         if local(it.tag) not in ("item", "entry"):
             continue
         f = {}
+        img = None
         for ch in it:
             k = local(ch.tag)
             if k == "link":
                 f["link"] = ch.get("href") or (ch.text or "").strip()
             elif k in ("title", "pubdate", "updated", "published", "date"):
                 f.setdefault(k, ch.text or "")
+            if k in ("content", "thumbnail", "enclosure", "image") and not img:
+                u, ty = ch.get("url") or "", (ch.get("type") or ch.get("medium") or "").lower()
+                if u and (k == "thumbnail" or "image" in ty or re.search(r"\.(jpe?g|png|webp)(\?|$)", u, re.I)):
+                    img = u
+            if k in ("description", "encoded", "summary", "content") and not img and ch.text:
+                m = re.search(r"<img[^>]+src=[\"']([^\"']+)", ch.text, re.I)
+                if m:
+                    img = html.unescape(m.group(1))
         t, u = clean(f.get("title")), (f.get("link") or "").strip()
         d = parse_date(f.get("pubdate") or f.get("published") or f.get("updated") or f.get("date"))
         if len(t) < 15 or not re.match(r"https?://", u):
             continue
         if d and (NOW - d > timedelta(days=MAX_AGE_DAYS) or d > NOW + timedelta(hours=1)):
             continue
-        out.append({"t": t, "u": u, "s": name, "l": lang, "d": d.strftime("%Y-%m-%dT%H:%M:%SZ") if d else None})
+        if img and (not img.startswith("https://") or re.search(r"pixel|1x1|spacer|feedburner|doubleclick", img, re.I)):
+            img = None
+        out.append({"t": t, "u": u, "s": name, "l": lang, "d": d.strftime("%Y-%m-%dT%H:%M:%SZ") if d else None, "i": img})
         if len(out) >= MAX_PER_FEED:
             break
     return out
