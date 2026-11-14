@@ -6,7 +6,7 @@ import json, os, re, sys, time, urllib.error
 from datetime import date, timedelta
 from statistics import mean, median, pstdev
 from mensajes import build_broad
-from engine import (get, annual, dcf, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, eps_growth, is_finance_sic, is_investment_company, normalize_facts, hist_series, pick, TERMINAL, DISCOUNT, telegram, prices_polygon, downsample,
+from engine import (get, annual, dcf, rate_for, scenarios, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, eps_growth, is_finance_sic, is_investment_company, normalize_facts, hist_series, pick, TERMINAL, DISCOUNT, telegram, prices_polygon, downsample,
                     DATA, FUND, HIST, TODAY, POLY, SEC_UA, YIELD_AAA, read_universe)
 
 MODELS = DATA / "models.json"
@@ -104,7 +104,7 @@ def bank_models(facts):
             **{a: round(c, 2) for a, c in m.items()}}
 
 
-def basic_models(facts):
+def basic_models(facts, t=None):
     eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
     cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], "USD")
     cap, _ = annual(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], "USD")
@@ -126,8 +126,9 @@ def basic_models(facts):
     k = ends[-1]
     shares = shs.get(k) or (ni[k] / eps[k] if k in ni and eps[k] > 0 else None)
     fcf = [cfo[x] - abs(cap.get(x, 0)) for x in list(cfo)[-(7 if cyc else 3):]]
+    rate, beta = rate_for(t) if t else (DISCOUNT, None)
     if shares and shares > 0 and fcf and mean(fcf) > 0:
-        m["dcf"] = dcf(mean(fcf) / shares, g)
+        m["dcf"] = dcf(mean(fcf) / shares, g, rate)
     m = {a: b for a, b in m.items() if b > 0}
     while len(m) >= 2 and max(m.values()) > 3 * min(m.values()):
         m.pop(max(m, key=m.get))
@@ -149,6 +150,12 @@ def basic_models(facts):
     if "dcf" in m and shares and shares > 0:
         res["fcfps"] = round(mean(fcf) / shares, 2)
         res["g"] = round(g, 4)
+    res["r"] = rate
+    if beta is not None:
+        res["beta"] = beta
+    esc = scenarios(e_use, g, (mean(fcf) / shares) if (shares and shares > 0 and fcf) else None, rate, None, tuple(m))
+    if esc:
+        res["esc"] = esc
     return res
 
 
@@ -209,13 +216,13 @@ def weekly():
                     items[tk] = {"type": "ACCIONES", "name": name.title(), "kind": "financiera"}
                 continue
             facts = normalize_facts(facts)
-            m = basic_models(facts)
+            m = basic_models(facts, tk)
             if m:
                 fd = fundamentals(facts)
                 if fd:
                     (FUND / f"{tk}.json").write_text(json.dumps(fd, ensure_ascii=False), encoding="utf-8")
                     m["health"] = fd["health"]
-                items[tk] = {"type": "ACCIONES", "name": name.title(), **m}
+                items[tk] = {"type": "ACCIONES", "name": name.title(), "sic": sic, **m}
                 ok += 1
         except Exception as e:
             print(f"{tk}: error ({e})")

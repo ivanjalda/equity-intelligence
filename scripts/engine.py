@@ -18,6 +18,9 @@ YIELD_AAA = 5.0      # rendimiento de bonos AAA usado en la fórmula de Graham (
 DISCOUNT = 0.10      # tasa de descuento del DCF
 TERMINAL = 0.025     # crecimiento a perpetuidad del DCF
 MIN_MARGIN = 25.0    # margen de seguridad mínimo para COMPRAR (%)
+ERP = 0.055          # prima de riesgo de la bolsa frente al bono (lo que exige un inversor por asumir el riesgo de las acciones)
+RF_FALLBACK = 0.043  # bono a 10 años de EE. UU. si no se puede consultar el dato oficial
+_RF = []
 
 
 def verdict(mg, health=None, fiab=None):
@@ -283,15 +286,89 @@ def clamp(x, a, b):
     return max(a, min(b, x))
 
 
-def dcf(fcfps, g):
+def risk_free():
+    """Rentabilidad del bono del Tesoro de EE. UU. a 10 años (datos oficiales del Tesoro). Se pide una vez por ejecución."""
+    if _RF:
+        return _RF[0]
+    rf = RF_FALLBACK
+    try:
+        y = date.today().year
+        url = ("https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/"
+               f"{y}/all?type=daily_treasury_yield_curve&field_tdr_date_value={y}&page&_format=csv")
+        rows = list(csv.DictReader(io.StringIO(get(url, {"User-Agent": "Mozilla/5.0"}, 30))))
+        v = float(rows[0]["10 Yr"]) / 100
+        if 0.005 < v < 0.15:
+            rf = v
+    except Exception as e:
+        print(f"Bono a 10 años: se usa el valor de reserva ({RF_FALLBACK * 100:.1f} %) porque no se pudo consultar ({e}).")
+    _RF.append(rf)
+    return rf
+
+
+def _weekly(rows):
+    out = {}
+    for r in rows:
+        try:
+            out[date.fromisoformat(r[0]).isocalendar()[:2]] = r[1]
+        except Exception:
+            pass
+    return out
+
+
+def rate_for(t):
+    """Tasa de descuento propia de cada empresa = bono a 10 años + beta x prima de riesgo.
+    La beta mide cuánto se mueve la acción respecto al mercado (SPY) en los últimos 5 años (semanas).
+    Devuelve (tasa, beta). Sin historial suficiente: tasa estándar y beta None."""
+    try:
+        a = _weekly(json.loads((HIST / f"{t}.json").read_text(encoding="utf-8")))
+        b = _weekly(json.loads((HIST / "SPY.json").read_text(encoding="utf-8")))
+        wk = sorted(set(a) & set(b))[-261:]
+        if len(wk) < 120:
+            return DISCOUNT, None
+        ra = [a[wk[i]] / a[wk[i - 1]] - 1 for i in range(1, len(wk)) if a[wk[i - 1]] > 0]
+        rb = [b[wk[i]] / b[wk[i - 1]] - 1 for i in range(1, len(wk)) if b[wk[i - 1]] > 0]
+        n = min(len(ra), len(rb))
+        ra, rb = ra[-n:], rb[-n:]
+        ma, mb = mean(ra), mean(rb)
+        var = sum((x - mb) ** 2 for x in rb) / (n - 1)
+        beta = sum((x - ma) * (y - mb) for x, y in zip(ra, rb)) / (n - 1) / var
+        beta = clamp(0.67 * beta + 0.33, 0.5, 1.8)          # ajuste habitual: las betas tienden hacia 1
+        return round(clamp(risk_free() + beta * ERP, 0.075, 0.13), 4), round(beta, 2)
+    except Exception:
+        return DISCOUNT, None
+
+
+def scenarios(e_use, g, fcfps, r, mult_q=None, use=("graham", "dcf", "multiples")):
+    """Rango bajista / base / alcista del valor por acción.
+    Bajista: crecimiento 2 puntos menor y tasa 1 punto mayor. Alcista: al revés. Los múltiplos usan el PER histórico
+    del cuartil bajo / mediano / alto de la propia empresa. Devuelve [bajista, base, alcista] o None."""
+    out = []
+    for i, (dg, dr) in enumerate(((-0.02, 0.01), (0, 0), (0.02, -0.01))):
+        g2 = clamp(g + dg, 0.0, 0.15) if g > 0 or dg > 0 else 0.0
+        vals = []
+        if "graham" in use and e_use > 0:
+            vals.append(e_use * (8.5 + 2 * g2 * 100) * 4.4 / YIELD_AAA)
+        if "dcf" in use and fcfps and fcfps > 0:
+            vals.append(dcf(fcfps, g2, r + dr))
+        if "multiples" in use and mult_q and e_use > 0:
+            vals.append(clamp(mult_q[i], 8, 30) * e_use)
+        vals = [v for v in vals if v > 0]
+        if not vals:
+            return None
+        out.append(round(mean(vals), 2))
+    return out
+
+
+def dcf(fcfps, g, r=DISCOUNT):
     v, f = 0.0, fcfps
     for y in range(1, 11):
         f *= 1 + (g if y <= 5 else g / 2)
-        v += f / (1 + DISCOUNT) ** y
-    return v + f * (1 + TERMINAL) / (DISCOUNT - TERMINAL) / (1 + DISCOUNT) ** 10
+        v += f / (1 + r) ** y
+    return v + f * (1 + TERMINAL) / (r - TERMINAL) / (1 + r) ** 10
 
 
 def value_stock(t, cyc, facts, hist, price):
+    rate, beta = rate_for(t)
     eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
     cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], "USD")
     cap, _ = annual(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], "USD")
@@ -321,16 +398,18 @@ def value_stock(t, cyc, facts, hist, price):
     fcfps = None
     if shares and shares > 0 and fcf and mean(fcf) > 0:
         fcfps = mean(fcf) / shares
-        models["dcf"] = dcf(fcfps, g)
+        models["dcf"] = dcf(fcfps, g, rate)
     # Múltiplos: PER mediano histórico x beneficio
     dates = [h[0] for h in hist]
-    pes = []
+    pes, mq = [], None
     for e in ends:
         i = bisect.bisect_right(dates, e) - 1
         if i >= 0 and eps[e] > 0:
             pes.append(hist[i][4] / eps[e])
     if len(pes) >= 4 and e_use > 0:
         models["multiples"] = clamp(median(pes), 8, 30) * e_use
+        ps = sorted(pes)
+        mq = [ps[len(ps) // 4], median(pes), ps[(3 * len(ps)) // 4]]
     models = {m: v for m, v in models.items() if v > 0}
     if len(models) < 2:
         return f"menos de 2 métodos válidos (hay: {', '.join(models) or 'ninguno'})"
@@ -364,6 +443,12 @@ def value_stock(t, cyc, facts, hist, price):
     if fcfps:
         item["fcfps"] = round(fcfps, 2)
     item["g"] = round(g, 4)
+    item["r"] = rate
+    if beta is not None:
+        item["beta"] = beta
+    esc = scenarios(e_use, g, fcfps, rate, mq, tuple(models))
+    if esc:
+        item["esc"] = esc
     item["chk"] = [{"t": a, "x": b} for a, b in chk]
     return item, iv, mg
 
@@ -388,11 +473,11 @@ HINTS = {"Ingresos": "Lo que vende al año.",
          "Patrimonio neto": "Lo que quedaría para los accionistas si pagara todas sus deudas."}
 
 
-def hist_series(facts, names, flow):
+def hist_series(facts, names, flow, unit="USD"):
     out = {}
     for n in names:
         tmp = {}
-        for r in facts.get("us-gaap", {}).get(n, {}).get("units", {}).get("USD", []):
+        for r in facts.get("us-gaap", {}).get(n, {}).get("units", {}).get(unit, []):
             if flow:
                 if "start" not in r or not 340 <= (date.fromisoformat(r["end"]) - date.fromisoformat(r["start"])).days <= 380:
                     continue
@@ -473,6 +558,83 @@ def judge(s):
     return {"insights": L, "health": "Sólida" if q >= .75 else "Aceptable" if q >= .5 else "Frágil"}
 
 
+# ---------- ESTADOS FINANCIEROS (hasta 10 años) ----------
+# (nombre, etiquetas oficiales de la SEC, es flujo del año, unidad)
+ST_IS = [("Ingresos", FLOW["Ingresos"], 1, "USD"),
+         ("Coste de ventas", ["CostOfRevenue", "CostOfGoodsAndServicesSold", "CostOfGoodsSold"], 1, "USD"),
+         ("Beneficio bruto", ["GrossProfit"], 1, "USD"),
+         ("Investigación y desarrollo", ["ResearchAndDevelopmentExpense"], 1, "USD"),
+         ("Gastos comerciales y generales", ["SellingGeneralAndAdministrativeExpense"], 1, "USD"),
+         ("Resultado operativo", ["OperatingIncomeLoss"], 1, "USD"),
+         ("Gastos por intereses", ["InterestExpense", "InterestExpenseNonoperating", "InterestExpenseDebt"], 1, "USD"),
+         ("Beneficio antes de impuestos", ["IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+                                           "IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments"], 1, "USD"),
+         ("Impuestos", ["IncomeTaxExpenseBenefit"], 1, "USD"),
+         ("Beneficio neto", ["NetIncomeLoss"], 1, "USD"),
+         ("Beneficio por acción", ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], 1, "USD/shares"),
+         ("Acciones (millones)", ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"], 1, "shares")]
+ST_BS = [("Caja", BAL["Caja"], 0, "USD"),
+         ("Inversiones a corto plazo", ["ShortTermInvestments", "MarketableSecuritiesCurrent", "AvailableForSaleSecuritiesDebtSecuritiesCurrent"], 0, "USD"),
+         ("Cuentas por cobrar", ["AccountsReceivableNetCurrent"], 0, "USD"),
+         ("Inventarios", ["InventoryNet"], 0, "USD"),
+         ("Activo corriente", BAL["Activo corriente"], 0, "USD"),
+         ("Inmovilizado material", ["PropertyPlantAndEquipmentNet"], 0, "USD"),
+         ("Fondo de comercio", ["Goodwill"], 0, "USD"),
+         ("Activos totales", BAL["Activos totales"], 0, "USD"),
+         ("Cuentas por pagar", ["AccountsPayableCurrent"], 0, "USD"),
+         ("Deuda a corto plazo", ["DebtCurrent", "LongTermDebtCurrent", "ShortTermBorrowings"], 0, "USD"),
+         ("Pasivo corriente", BAL["Pasivo corriente"], 0, "USD"),
+         ("Deuda a largo plazo", BAL["Deuda a largo plazo"], 0, "USD"),
+         ("Pasivos totales", BAL["Pasivos totales"], 0, "USD"),
+         ("Patrimonio neto", BAL["Patrimonio neto"], 0, "USD")]
+ST_CF = [("Flujo de caja operativo", ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], 1, "USD"),
+         ("Inversión en activos (capex)", ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], 1, "USD"),
+         ("Flujo de inversión", ["NetCashProvidedByUsedInInvestingActivities", "NetCashProvidedByUsedInInvestingActivitiesContinuingOperations"], 1, "USD"),
+         ("Dividendos pagados", ["PaymentsOfDividends", "PaymentsOfDividendsCommonStock"], 1, "USD"),
+         ("Recompra de acciones", ["PaymentsForRepurchaseOfCommonStock"], 1, "USD"),
+         ("Flujo de financiación", ["NetCashProvidedByUsedInFinancingActivities", "NetCashProvidedByUsedInFinancingActivitiesContinuingOperations"], 1, "USD")]
+
+
+def statements(facts):
+    """Cuenta de resultados, balance y flujo de caja de los últimos 10 años (millones de $; por acción en $)."""
+    cache = {}
+
+    def ser(row):
+        name, tags, flow, unit = row
+        d = hist_series(facts, tags, bool(flow), unit)
+        return name, d
+
+    all_rows = {}
+    for grp in (ST_IS, ST_BS, ST_CF):
+        for row in grp:
+            nm, d = ser(row)
+            all_rows[nm] = d
+    base = all_rows["Ingresos"] or all_rows["Activos totales"]
+    if len(base) < 3:
+        return None
+    # un año = un cierre de ejercicio; se alinean los datos que cierran a menos de 10 días de ese cierre
+    ends = list(base)[-10:]
+    out = {"y": [e[:4] for e in ends], "e": ends}
+    for key, grp in (("is", ST_IS), ("bs", ST_BS), ("cf", ST_CF)):
+        rows = {}
+        for nm, tags, flow, unit in grp:
+            d = all_rows[nm]
+            vals = [pick(d, e) for e in ends]
+            if all(v is None for v in vals):
+                continue
+            if unit == "USD/shares":
+                rows[nm] = [None if v is None else round(v, 2) for v in vals]
+            else:
+                rows[nm] = [None if v is None else round(v / 1e6, 1 if unit == "shares" else 0) for v in vals]
+        out[key] = rows
+    # partidas que se calculan: flujo de caja libre
+    if "Flujo de caja operativo" in out["cf"]:
+        f = out["cf"]["Flujo de caja operativo"]
+        c = out["cf"].get("Inversión en activos (capex)", [None] * len(f))
+        out["cf"]["Flujo de caja libre"] = [None if a is None else round(a - abs(b or 0)) for a, b in zip(f, c)]
+    return out
+
+
 def fundamentals(facts):
     raw = {k: hist_series(facts, v, k in FLOW) for k, v in {**BAL, **FLOW}.items()}
     cfo = hist_series(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], True)
@@ -490,7 +652,14 @@ def fundamentals(facts):
         vals = [pick(raw[k], e) for e in ends]
         if any(x is not None for x in vals):
             series[k] = [None if x is None else round(x / 1e6) for x in vals]
-    return {"years": [e[:4] for e in ends], "series": series, "hints": {k: HINTS[k] for k in series}, **judge(series)}
+    res = {"years": [e[:4] for e in ends], "series": series, "hints": {k: HINTS[k] for k in series}, **judge(series)}
+    try:
+        st = statements(facts)
+        if st:
+            res["st"] = st
+    except Exception as e:
+        print(f"  estados financieros: error ({e})")
+    return res
 
 
 # ---------- TELEGRAM ----------
@@ -548,6 +717,7 @@ def main():
                 if sic is None:
                     print(f"{t}: sin valorar (no se pudo confirmar su sector)")
                     continue
+                entry["sic"] = sic
                 if is_finance_sic(sic) or is_investment_company(facts):
                     entry["kind"] = "financiera"
                     print(f"{t}: sin valorar (banco, aseguradora, fondo o inmobiliaria: necesitan otro método)")
