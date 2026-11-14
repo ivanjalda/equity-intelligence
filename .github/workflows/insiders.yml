@@ -15,7 +15,7 @@ concurrency:
 jobs:
   directivos:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 100
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,7 +24,7 @@ jobs:
       - name: Leer formularios 4 de la SEC
         env:
           SEC_USER_AGENT: "EquityIntelligence community16jalda@gmail.com"
-        run: python scripts/insiders.py
+        run: python -u scripts/insiders.py
       - name: Guardar resultados
         run: |
           git config user.name "equity-bot"
