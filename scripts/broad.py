@@ -218,7 +218,7 @@ def weekly():
             facts = normalize_facts(facts)
             m = basic_models(facts, tk)
             if m:
-                fd = fundamentals(facts)
+                fd = fundamentals(facts, cik)
                 if fd:
                     (FUND / f"{tk}.json").write_text(json.dumps(fd, ensure_ascii=False), encoding="utf-8")
                     m["health"] = fd["health"]

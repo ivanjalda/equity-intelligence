@@ -76,6 +76,7 @@ def parse(raw):
             role = "Consejero"
         elif txt_of(rel, "isTenPercentOwner") in ("1", "true"):
             role = "Accionista >10 %"
+    plan = 1 if txt_of(root, "aff10b5One") in ("1", "true") else 0   # venta programada de antemano (plan 10b5-1)
     res = []
     for tr in root.findall("nonDerivativeTable/nonDerivativeTransaction"):
         code = txt_of(tr, "transactionCoding/transactionCode")
@@ -88,7 +89,11 @@ def parse(raw):
             continue
         if px <= 0 or sh <= 0 or sh * px < MIN_USD or not tick:
             continue
-        res.append({"t": tick, "n": name, "w": who.title() if who.isupper() else who, "r": role, "k": code,
+        try:
+            ho = round(float(txt_of(tr, "postTransactionAmounts/sharesOwnedFollowingTransaction/value")))
+        except ValueError:
+            ho = None
+        res.append({"ho": ho, "p": plan, "t": tick, "n": name, "w": who.title() if who.isupper() else who, "r": role, "k": code,
                     "d": txt_of(tr, "transactionDate/value")[:10], "sh": round(sh), "px": round(px, 2), "v": round(sh * px)})
     return res
 
@@ -100,6 +105,8 @@ def main():
             old = json.loads(OUT.read_text(encoding="utf-8"))
         except Exception:
             pass
+    if old.get("ver") != 2:   # versión anterior sin posición ni plan programado: se vuelve a leer todo
+        old = {"items": [], "seen": []}
     seen = set(old.get("seen", []))
     items = list(old.get("items", []))
     today = date.today()
@@ -151,7 +158,7 @@ def main():
         print("No se pudo leer ningún formulario. No se guarda nada.")
         sys.exit(0)
     DATA.mkdir(exist_ok=True)
-    OUT.write_text(json.dumps({"updated": today.isoformat(), "items": items, "seen": keep_seen}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    OUT.write_text(json.dumps({"ver": 2, "updated": today.isoformat(), "items": items, "seen": keep_seen}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Listo: {nuevos} formularios leídos ({fallos} con error), {len(items)} operaciones guardadas.")
 
 

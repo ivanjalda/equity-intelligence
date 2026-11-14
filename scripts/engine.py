@@ -586,7 +586,21 @@ ST_BS = [("Caja", BAL["Caja"], 0, "USD"),
          ("Pasivo corriente", BAL["Pasivo corriente"], 0, "USD"),
          ("Deuda a largo plazo", BAL["Deuda a largo plazo"], 0, "USD"),
          ("Pasivos totales", BAL["Pasivos totales"], 0, "USD"),
-         ("Patrimonio neto", BAL["Patrimonio neto"], 0, "USD")]
+         ("Patrimonio neto", BAL["Patrimonio neto"], 0, "USD"),
+         ("Activo no corriente", ["AssetsNoncurrent"], 0, "USD"),
+         ("Otros activos corrientes", ["OtherAssetsCurrent"], 0, "USD"),
+         ("Activos por derecho de uso", ["OperatingLeaseRightOfUseAsset"], 0, "USD"),
+         ("Activos intangibles", ["IntangibleAssetsNetExcludingGoodwill"], 0, "USD"),
+         ("Otros activos no corrientes", ["OtherAssetsNoncurrent"], 0, "USD"),
+         ("Ingresos diferidos", ["ContractWithCustomerLiabilityCurrent", "DeferredRevenueCurrent"], 0, "USD"),
+         ("Arrendamientos a corto plazo", ["OperatingLeaseLiabilityCurrent"], 0, "USD"),
+         ("Arrendamientos a largo plazo", ["OperatingLeaseLiabilityNoncurrent"], 0, "USD"),
+         ("Impuestos diferidos", ["DeferredIncomeTaxLiabilitiesNet", "DeferredTaxLiabilitiesNoncurrent"], 0, "USD"),
+         ("Otros pasivos corrientes", ["OtherLiabilitiesCurrent"], 0, "USD"),
+         ("Otros pasivos no corrientes", ["OtherLiabilitiesNoncurrent"], 0, "USD"),
+         ("Pasivo no corriente", ["LiabilitiesNoncurrent"], 0, "USD"),
+         ("Patrimonio total", ["StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"], 0, "USD"),
+         ("Intereses minoritarios", ["MinorityInterest"], 0, "USD")]
 ST_CF = [("Flujo de caja operativo", ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], 1, "USD"),
          ("Inversión en activos (capex)", ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], 1, "USD"),
          ("Flujo de inversión", ["NetCashProvidedByUsedInInvestingActivities", "NetCashProvidedByUsedInInvestingActivitiesContinuingOperations"], 1, "USD"),
@@ -595,7 +609,19 @@ ST_CF = [("Flujo de caja operativo", ["NetCashProvidedByUsedInOperatingActivitie
          ("Flujo de financiación", ["NetCashProvidedByUsedInFinancingActivities", "NetCashProvidedByUsedInFinancingActivitiesContinuingOperations"], 1, "USD")]
 
 
-def statements(facts):
+def last_report(facts):
+    """Último informe anual presentado a la SEC (10-K; 20-F o 40-F en empresas extranjeras)."""
+    best = None
+    for tag in ("Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "SalesRevenueNet", "Assets", "NetIncomeLoss"):
+        for rows in facts.get("us-gaap", {}).get(tag, {}).get("units", {}).values():
+            for r in rows:
+                if r.get("form") in ("10-K", "10-K/A", "20-F", "40-F") and r.get("fp") == "FY" and r.get("accn"):
+                    if best is None or r.get("filed", "") > best["filed"]:
+                        best = {"acc": r["accn"], "form": r["form"], "filed": r.get("filed", ""), "end": r.get("end", "")}
+    return best
+
+
+def statements(facts, cik=None):
     """Cuenta de resultados, balance y flujo de caja de los últimos 10 años (millones de $; por acción en $)."""
     cache = {}
 
@@ -615,6 +641,12 @@ def statements(facts):
     # un año = un cierre de ejercicio; se alinean los datos que cierran a menos de 10 días de ese cierre
     ends = list(base)[-10:]
     out = {"y": [e[:4] for e in ends], "e": ends}
+    try:
+        src = last_report(facts)
+        if src and cik:
+            out["src"], out["cik"] = src, int(cik)
+    except Exception:
+        pass
     for key, grp in (("is", ST_IS), ("bs", ST_BS), ("cf", ST_CF)):
         rows = {}
         for nm, tags, flow, unit in grp:
@@ -635,7 +667,7 @@ def statements(facts):
     return out
 
 
-def fundamentals(facts):
+def fundamentals(facts, cik=None):
     raw = {k: hist_series(facts, v, k in FLOW) for k, v in {**BAL, **FLOW}.items()}
     cfo = hist_series(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], True)
     cap = hist_series(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], True)
@@ -654,7 +686,7 @@ def fundamentals(facts):
             series[k] = [None if x is None else round(x / 1e6) for x in vals]
     res = {"years": [e[:4] for e in ends], "series": series, "hints": {k: HINTS[k] for k in series}, **judge(series)}
     try:
-        st = statements(facts)
+        st = statements(facts, cik)
         if st:
             res["st"] = st
     except Exception as e:
@@ -724,7 +756,7 @@ def main():
                     continue
                 facts = normalize_facts(facts)
                 try:
-                    fd = fundamentals(facts)
+                    fd = fundamentals(facts, n)
                     if fd:
                         (FUND / f"{t}.json").write_text(json.dumps(fd, ensure_ascii=False), encoding="utf-8")
                         entry["health"] = fd["health"]
