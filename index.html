@@ -17,7 +17,7 @@ header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:cen
 .btn{background:var(--bg);border:1px solid var(--b);color:var(--m);padding:5px 11px;border-radius:5px;cursor:pointer;font-size:12px}
 .btn.on{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700}
 .layout{display:grid;grid-template-columns:310px 1fr 320px;grid-template-rows:minmax(0,1fr);flex:1;min-height:0}
-#vHist,#vFund{flex:1;min-height:0}
+#vHist,#vFund,#vTools{flex:1;min-height:0}
 a.btn{text-decoration:none;display:inline-block}
 footer{flex:none;border-top:1px solid var(--b);background:var(--p);padding:7px 14px;font-size:12px;color:var(--m);text-align:center}
 footer a{color:var(--t);margin:0 6px;white-space:nowrap}
@@ -43,7 +43,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 .up{color:var(--g)}.dn{color:var(--r)}
 .note{background:var(--p2);border-left:3px solid var(--gold);padding:10px 12px;border-radius:4px;margin:12px 0}
 @media(max-width:1100px){.layout{grid-template-columns:270px 1fr}.r{display:none}}
-@media(max-width:700px){body{display:block;height:auto}.layout{grid-template-columns:1fr;grid-template-rows:none;height:auto}.l{border-right:0}#vHist,#vFund{overflow:visible}}
+@media(max-width:700px){body{display:block;height:auto}.layout{grid-template-columns:1fr;grid-template-rows:none;height:auto}.l{border-right:0}#vHist,#vFund,#vTools{overflow:visible}}
 .tick{flex:none;position:relative;overflow:hidden;white-space:nowrap;background:var(--p2);border-bottom:1px solid var(--b);height:30px;font-size:12px;line-height:30px}
 .tick .lb{position:absolute;left:0;top:0;z-index:2;background:var(--gold);color:#000;font-weight:700;padding:0 12px;box-shadow:6px 0 8px -4px rgba(0,0,0,.35)}
 .tick .trk{display:inline-flex;padding-left:130px;animation:tk var(--dur,90s) linear infinite}
@@ -97,6 +97,9 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 .nwi .tx{display:block;padding:8px 10px}
 
 .adimg{display:flex;gap:6px;margin:2px 0 10px}.adimg img{flex:1;min-width:0;width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:5px;border:1px solid var(--b)}.adsvg{display:block;width:100%;height:auto;margin:2px 0 10px}
+.in{background:var(--p2);color:var(--t);border:1px solid var(--b);border-radius:6px;padding:8px 10px;font:inherit}
+.tmap{border-radius:8px;overflow:hidden;background:var(--b)}.tile{position:absolute;box-sizing:border-box;border:1px solid var(--bg);color:#fff;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:clamp(9px,1.1vw,15px)}.tile:hover{filter:brightness(1.18)}.tile span{line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,.45)}.tile small{display:block;font-weight:500;font-size:.8em}
+#vTools{flex:1;min-height:0;overflow:auto}
 </style>
 </head>
 <body>
@@ -105,6 +108,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
   <div class="row" style="margin:0">
     <button class="btn on" id="tHome" onclick="vista('home')">Inicio</button>
     <button class="btn" id="tAn" onclick="vista('term')">Análisis de mercado</button>
+    <button class="btn" id="tTools" onclick="vista('tools')">Herramientas</button>
     <button class="btn" id="tFund" onclick="vista('fund')">Grandes fondos</button>
     <button class="btn" id="tHist" onclick="vista('hist')">Historial</button>
     <a class="btn" href="aprender.html">Aprender</a>
@@ -137,6 +141,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 
 <main id="vHist" style="display:none"></main>
 <main id="vFund" style="display:none"></main>
+<main id="vTools" style="display:none"></main>
 
 <footer>
   <strong>Información, no asesoramiento financiero.</strong> Invertir conlleva riesgo de perder dinero. Precios al cierre de mercado, no en directo.<br>
@@ -350,6 +355,7 @@ function homeRender(){
    <a class="sc" onclick="irCat('ETFS')"><strong>Índices y ETFs</strong><span class="sm">Si el mercado entero está caro o barato.</span></a>
    <a class="sc" onclick="irCat('COMMODITIES')"><strong>Materias primas</strong><span class="sm">Oro, petróleo y más, ajustados por inflación.</span></a>
    <a class="sc" onclick="irCat('BONOS')"><strong>Bonos</strong><span class="sm">Rentabilidad actual frente a los últimos 10 años.</span></a>
+   <a class="sc" onclick="vista('tools')"><strong>Herramientas</strong><span class="sm">Comparador, calculadoras, mapa de valor, resultados y directivos.</span></a>
    <a class="sc" onclick="vista('fund')"><strong>Grandes fondos</strong><span class="sm">Qué compran y venden los grandes inversores.</span></a>
    <a class="sc" onclick="vista('hist')"><strong>Historial</strong><span class="sm">Cada señal, con su fecha y su resultado real.</span></a>
    <a class="sc" href="aprender.html"><strong>Aprender</strong><span class="sm">Cómo leer cada pantalla y qué significa cada término.</span></a>
@@ -375,8 +381,8 @@ function subnav(){
 }
 function navOn(on){
   const v=on||window._vista;
-  ["tHome","tAn","tFund","tHist"].forEach(i=>document.getElementById(i).classList.remove("on"));
-  const id={home:"tHome",term:"tAn",fund:"tFund",hist:"tHist"}[v];
+  ["tHome","tAn","tTools","tFund","tHist"].forEach(i=>document.getElementById(i).classList.remove("on"));
+  const id={home:"tHome",term:"tAn",tools:"tTools",fund:"tFund",hist:"tHist"}[v];
   if(id)document.getElementById(id).classList.add("on");
   document.getElementById("subnav").style.display=v==="term"?"flex":"none";
   if(v==="term")subnav();
@@ -571,6 +577,7 @@ function fondos(){
   const link=p=>p.ticker&&D.m[p.ticker]?`<a href="#" onclick="vista('term');detalle('${esc(p.ticker)}');return false" style="color:var(--gold)">${esc(p.ticker)}</a>`:`<strong>${esc(p.ticker||"—")}</strong>`;
   el.innerHTML=`<div class="box"><h2>Grandes fondos · informes 13F</h2>
   <p class="sm">Qué tienen en cartera los grandes inversores y qué han comprado o vendido respecto al trimestre anterior. Los informes llegan con hasta 45 días de retraso, solo incluyen acciones de EE. UU. y no muestran ventas en corto. Fuente: SEC.</p>
+  ${apuestas(f,usd,link,chg)}
   ${f.managers.map(m=>`<details style="margin:8px 0;border:1px solid var(--b);border-radius:6px;padding:8px 12px"><summary style="cursor:pointer"><strong>${esc(m.name)}</strong> <span class="sm">· ${esc(m.who)} · cartera ${usd(m.value)} · ${m.count} posiciones · informe a ${esc(m.period)}</span>${m.stale?' <span class="badge ESPERAR">Informe anterior</span>':""}</summary>
   <div style="overflow-x:auto"><table style="margin-top:8px"><tr><th>Valor</th><th>Empresa</th><th>% de la cartera</th><th>Cambio vs. trimestre anterior</th><th>Importe</th></tr>
   ${m.positions.map(p=>`<tr><td>${link(p)}</td><td class="sm">${esc(p.name)}</td><td>${num(p.pct,1)} %</td><td>${chg(p)}</td><td>${usd(p.value)}</td></tr>`).join("")}</table></div>
@@ -583,8 +590,9 @@ function vista(v){
   document.getElementById("vTerm").style.display=v==="term"?"grid":"none";
   document.getElementById("vHist").style.display=v==="hist"?"block":"none";
   document.getElementById("vFund").style.display=v==="fund"?"block":"none";
+  document.getElementById("vTools").style.display=v==="tools"?"block":"none";
   navOn(v);
-  if(v==="home")relojes();if(v==="hist")historial();if(v==="fund")fondos();window.scrollTo(0,0);
+  if(v==="home")relojes();if(v==="hist")historial();if(v==="fund")fondos();if(v==="tools")tools();window.scrollTo(0,0);
 }
 function historialViejo(){
   const el=document.getElementById("vHist"),S=D.s||[];
@@ -605,6 +613,135 @@ function historialViejo(){
   ${rows.map(x=>`<tr><td>${esc(x.date)}</td><td><strong>${esc(x.ticker)}</strong></td><td><span class="badge ${esc(x.verdict)}">${esc(x.verdict)}</span></td><td>$${num(x.price)}</td><td>${x.p?"$"+num(x.p):"—"}</td><td>${c(x.r)}</td><td>${c(x.b)}</td></tr>`).join("")}</table></div></div>`;
 }
 init();
+
+function apuestas(f,usd,link,chg){
+  const all=[];f.managers.forEach(m=>{if(m.stale)return;const vis=new Set();m.positions.forEach(p=>{const k=p.ticker||p.name;if(vis.has(k))return;vis.add(k);all.push({m,p})})});
+  const big=[...all].sort((a,b)=>b.p.pct-a.p.pct).slice(0,15);
+  const buy=all.filter(x=>x.p.action==="nuevo"||x.p.action==="compra").sort((a,b)=>b.p.value-a.p.value).slice(0,15);
+  const tb=(L,col)=>`<div style="overflow-x:auto"><table><tr><th>Valor</th><th>Gestor</th>${col}<th>Cambio</th></tr>${L.map(({m,p})=>`<tr><td>${link(p)} <span class="sm">${esc(p.name)}</span></td><td class="sm">${esc(m.who)}</td><td>${col.includes("%")?num(p.pct,1)+" %":usd(p.value)}</td><td>${chg(p)}</td></tr>`).join("")}</table></div>`;
+  return `<h3 style="margin-top:14px">Mayores apuestas</h3><p class="sm">Las posiciones que pesan más dentro de la cartera de cada gestor: donde más confían.</p>${tb(big,"<th>% de su cartera</th>")}
+  <h3 style="margin-top:14px">Mayores compras del trimestre</h3><p class="sm">Compras nuevas o ampliaciones, ordenadas por el tamaño de la posición.</p>${tb(buy,"<th>Tamaño de la posición</th>")}`;
+}
+
+/* ===== HERRAMIENTAS: comparador, calculadoras, mapa de valor, resultados, directivos ===== */
+const TOOLS=[["comp","Comparador"],["calc","Calculadoras"],["mapa","Mapa de valor"],["res","Próximos resultados"],["dir","Compras de directivos"]];
+let TOOL="comp";
+function tools(){
+  const el=document.getElementById("vTools");
+  el.innerHTML=`<div class="box"><h2>Herramientas</h2><p class="sm">Útiles para estudiar por tu cuenta. Todo son datos y cálculos informativos, no asesoramiento financiero.</p>
+  <div class="row" id="tlTabs" style="margin:10px 0 14px">${TOOLS.map(([k,l])=>`<button class="btn${TOOL===k?" on":""}" onclick="TOOL='${k}';tools()">${l}</button>`).join("")}</div><div id="tlBody"></div></div>`;
+  ({comp:toolComp,calc:toolCalc,mapa:toolMapa,res:toolRes,dir:toolDir})[TOOL]();
+}
+const tlv=c=>c?`<span class="badge ${c.verdict}">${c.verdict}</span>`:'<span class="badge NA">Sin valorar</span>';
+/* --- comparador --- */
+function toolComp(){
+  const b=document.getElementById("tlBody");
+  const val=tickers().filter(t=>{const c=calc(t);return c&&c.v&&(D.v.items[t].type||"ACCIONES")==="ACCIONES"});
+  if(!window._cmp)window._cmp=val.map(t=>[t,calc(t)]).sort((a,c)=>rkOf(c[1])-rkOf(a[1])).slice(0,3).map(x=>x[0]);
+  const dl=val.sort().map(t=>`<option value="${esc(t)}">${esc(D.v.items[t].name||"")}</option>`).join("");
+  const sel=window._cmp;
+  const row=(l,f)=>`<tr><td class="sm">${l}</td>${sel.map(t=>`<td>${f(t,calc(t),D.v.items?.[t]||{})}</td>`).join("")}</tr>`;
+  const usd=x=>typeof x==="number"?"$"+num(x):"—";
+  b.innerHTML=`<datalist id="dlc">${dl}</datalist>
+  <p class="sm">Elige hasta 4 acciones (escribe el símbolo, por ejemplo AAPL) y compáralas lado a lado.</p>
+  <div class="row" style="margin-bottom:10px">${[0,1,2,3].map(i=>`<input class="in" list="dlc" placeholder="Símbolo ${i+1}" value="${esc(sel[i]||"")}" style="width:130px" onchange="cmpSet(${i},this.value)">`).join("")}</div>
+  <div style="overflow-x:auto"><table><tr><th></th>${sel.map(t=>`<th><a href="#" style="color:var(--gold)" onclick="vista('term');detalle('${esc(t)}');return false">${esc(t)}</a><div class="sm">${esc(D.v.items?.[t]?.name||"")}</div></th>`).join("")}</tr>
+  ${row("Veredicto",(t,c)=>tlv(c))}
+  ${row("Precio (cierre)",(t,c)=>usd(c?.p))}
+  ${row("Valor intrínseco",(t,c)=>usd(c?.iv))}
+  ${row("Margen de seguridad",(t,c)=>c&&typeof c.mg==="number"?`<span class="${c.mg>=0?"up":"dn"}">${num(c.mg,1)} %</span>`:"—")}
+  ${row("Precio de entrada",(t,c)=>usd(c?.entry))}
+  ${row("Flujo de caja descontado",(t,c,v)=>usd(v.dcf))}
+  ${row("Fórmula de Graham",(t,c,v)=>usd(v.graham))}
+  ${row("Múltiplos históricos",(t,c,v)=>usd(v.multiples))}
+  ${row("Acuerdo entre métodos",(t,c)=>c&&c.spr?(c.spr<1.5?"Alto":c.spr<2.2?"Medio":"Bajo"):"—")}
+  ${row("PER",(t,c)=>c&&c.pe?num(c.pe,1)+"x":"—")}
+  ${row("Salud de la empresa",(t,c,v)=>esc(v.health||"—"))}
+  ${row("Fiabilidad de los datos",(t,c,v)=>esc(v.fiab||"—"))}
+  ${row("Plazo",(t,c,v)=>esc(v.horizon||"—"))}
+  ${row("Cíclica",(t,c,v)=>v.cyclical?"Sí":"No")}
+  ${row("Próximos resultados (est.)",(t,c,v)=>esc(v.review||"—"))}
+  </table></div><p class="sm" style="margin-top:8px">Mismas reglas para todas. Un valor más alto no significa «mejor empresa»: mira el margen, la salud y la fiabilidad.</p>`;
+}
+function cmpSet(i,t){t=(t||"").toUpperCase().trim();const s=window._cmp;if(!t){s.splice(i,1)}else if(D.v.items?.[t]){s[i]=t}else{alert("Ese símbolo no está valorado en nuestra lista.")}window._cmp=[...new Set(s.filter(Boolean))].slice(0,4);toolComp()}
+/* --- calculadoras --- */
+function dcf2(f0,g,r,tg){let v=0,f=f0;for(let y=1;y<=10;y++){f*=1+(y<=5?g:g/2);v+=f/Math.pow(1+r,y)}return v+f*(1+tg)/(r-tg)/Math.pow(1+r,10)}
+function toolCalc(){
+  const fld=(id,l,val,st="any")=>`<label class="sm" style="display:block;margin:6px 0 2px">${l}</label><input class="in" id="${id}" type="number" step="${st}" value="${val}" style="width:100%" oninput="calcRun()">`;
+  document.getElementById("tlBody").innerHTML=`<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+  <div class="box"><h3>Flujo de caja descontado</h3><p class="sm">Cuánto vale hoy el dinero que la empresa generará en 10 años.</p>
+   ${fld("c_f","Caja libre por acción hoy ($)",10)}${fld("c_g","Crecimiento anual, años 1-5 (%)",8)}${fld("c_r","Tasa de descuento (%)",10)}${fld("c_t","Crecimiento a largo plazo (%)",2.5)}${fld("c_p","Precio actual ($)",150)}<div id="c_out" style="margin-top:10px"></div></div>
+  <div class="box"><h3>Fórmula de Graham</h3><p class="sm">Valor rápido a partir del beneficio y el crecimiento.</p>
+   ${fld("g_e","Beneficio por acción ($)",6)}${fld("g_g","Crecimiento esperado a 7-10 años (%)",6)}${fld("g_y","Rentabilidad de bonos AAA (%)",5)}${fld("g_p","Precio actual ($)",90)}${fld("g_b","Valor contable por acción ($, número de Graham)",30)}<div id="g_out" style="margin-top:10px"></div></div>
+  <div class="box"><h3>Dividendos</h3><p class="sm">Cuánto cobrarías al año por tus acciones.</p>
+   ${fld("d_p","Precio de la acción ($)",50)}${fld("d_d","Dividendo anual por acción ($)",2)}${fld("d_n","Número de acciones",100)}${fld("d_g","Crecimiento anual del dividendo (%)",5)}<div id="d_out" style="margin-top:10px"></div></div>
+  <div class="box"><h3>Interés compuesto</h3><p class="sm">Cómo crece una inversión con aportaciones.</p>
+   ${fld("i_i","Dinero inicial ($)",5000)}${fld("i_m","Aportación mensual ($)",200)}${fld("i_r","Rentabilidad anual supuesta (%)",7)}${fld("i_y","Años",20)}<div id="i_out" style="margin-top:10px"></div></div></div>
+  <p class="sm" style="margin-top:10px">Ejemplos con números inventados: cámbialos por los tuyos. Son cálculos matemáticos, no promesas ni asesoramiento. La rentabilidad real nunca es constante.</p>`;
+  calcRun();
+}
+function calcRun(){
+  const n=i=>parseFloat(document.getElementById(i).value)||0,set=(i,h)=>document.getElementById(i).innerHTML=h,u=x=>"$"+num(x);
+  const f=n("c_f"),g=n("c_g")/100,r=n("c_r")/100,tg=n("c_t")/100,p=n("c_p");
+  if(r>tg&&f>0){const v=dcf2(f,g,r,tg),m=(v-p)/v*100;set("c_out",`<div class="m"><small>Valor por acción</small><strong>${u(v)}</strong></div><p class="sm">Margen de seguridad: <strong class="${m>=0?"up":"dn"}">${num(m,1)} %</strong>${m>=25?" · zona de interés":m>=0?" · barata, pero con poco colchón":" · cara"}</p>`)}else set("c_out",'<p class="sm">La tasa de descuento debe ser mayor que el crecimiento a largo plazo y la caja positiva.</p>');
+  const e=n("g_e"),gg=n("g_g"),y=n("g_y"),gp=n("g_p"),bv=n("g_b");
+  let h="";if(e>0&&y>0){const v=e*(8.5+2*gg)*4.4/y,m=(v-gp)/v*100;h+=`<div class="m"><small>Valor de Graham</small><strong>${u(v)}</strong></div><p class="sm">Margen: <strong class="${m>=0?"up":"dn"}">${num(m,1)} %</strong></p>`}
+  if(e>0&&bv>0){h+=`<p class="sm">Número de Graham (√(22,5 × beneficio × valor contable)): <strong>${u(Math.sqrt(22.5*e*bv))}</strong></p>`}
+  set("g_out",h||'<p class="sm">Pon un beneficio positivo.</p>');
+  const dp=n("d_p"),dd=n("d_d"),dn=n("d_n"),dg=n("d_g")/100;
+  if(dp>0){let s=dd*dn,t=0;const f5=[];for(let k=1;k<=10;k++){t+=s;if(k===5||k===10)f5.push(`año ${k}: ${u(s)} al año`);s*=1+dg}
+   set("d_out",`<div class="m"><small>Rentabilidad por dividendo</small><strong>${num(dd/dp*100,2)} %</strong></div><p class="sm">Cobras ${u(dd*dn)} al año con ${num(dn,0)} acciones (invertido: ${u(dp*dn)}).<br>${f5.join(" · ")}<br>Cobrado en 10 años: ${u(t)}</p>`)}else set("d_out","");
+  const i0=n("i_i"),mm=n("i_m"),ir=n("i_r")/100/12,yy=Math.min(n("i_y"),80);let a=i0;for(let k=0;k<yy*12;k++)a=a*(1+ir)+mm;const ap=i0+mm*yy*12;
+  set("i_out",`<div class="m"><small>Valor final</small><strong>${u(a)}</strong></div><p class="sm">Aportado: ${u(ap)} · Ganancia: <strong class="${a>=ap?"up":"dn"}">${u(a-ap)}</strong></p>`);
+}
+/* --- mapa de valor (treemap) --- */
+function squarify(it,x,y,w,h){const out=[];let rest=it.slice();
+  while(rest.length){const sh=Math.min(w,h);let row=[],s=0,best=Infinity,i=0;
+    const worst=(r,sum)=>{const mx=r[0].a,mn=r[r.length-1].a;return Math.max(sh*sh*mx/(sum*sum),sum*sum/(sh*sh*mn))};
+    while(i<rest.length){const nr=row.concat(rest[i]),ns=s+rest[i].a,wv=worst(nr,ns);if(row.length&&wv>best)break;row=nr;s=ns;best=wv;i++}
+    rest=rest.slice(i);const th=s/sh;let off=0;
+    if(w>=h){row.forEach(r=>{const hh=r.a/th;out.push({t:r.t,x:x,y:y+off,w:th,h:hh});off+=hh});x+=th;w-=th}
+    else{row.forEach(r=>{const ww=r.a/th;out.push({t:r.t,x:x+off,y:y,w:ww,h:th});off+=ww});y+=th;h-=th}}
+  return out}
+function toolMapa(){
+  const rows=[];
+  tickers().forEach(t=>{const v=D.v.items?.[t];if(!v||(v.type||"ACCIONES")!=="ACCIONES"||!v.sh)return;const c=calc(t);if(!c||!c.p)return;rows.push({t,c,cap:v.sh*c.p})});
+  rows.sort((a,b)=>b.cap-a.cap);const top=rows.slice(0,150);
+  const b=document.getElementById("tlBody");
+  if(top.length<10){b.innerHTML='<p class="sm">Todavía no hay suficientes empresas valoradas para dibujar el mapa.</p>';return}
+  const W=1000,H=560,tot=top.reduce((a,r)=>a+r.cap,0),it=top.map(r=>({t:r.t,a:r.cap/tot*W*H}));
+  const L=squarify(it,0,0,W,H),by=Object.fromEntries(top.map(r=>[r.t,r]));
+  const col={COMPRAR:"var(--g)",ESPERAR:"var(--y)",CARO:"var(--r)",REVISAR:"#7e57c2"};
+  const cnt={};top.forEach(r=>cnt[r.c.verdict]=(cnt[r.c.verdict]||0)+1);
+  b.innerHTML=`<p class="sm">Las ${top.length} mayores empresas valoradas. <strong>Tamaño</strong> = valor de mercado aproximado. <strong>Color</strong> = nuestro veredicto. Pulsa una para ver su análisis.</p>
+  <div class="row" style="margin:6px 0">${["COMPRAR","ESPERAR","CARO","REVISAR"].map(k=>`<span class="badge ${k}">${LBL[k]}: ${cnt[k]||0}</span>`).join("")}</div>
+  <div class="tmap" style="position:relative;width:100%;aspect-ratio:${W}/${H}">${L.map(r=>{const o=by[r.t],big=r.w>60&&r.h>34;return`<div class="tile" title="${esc(r.t)} · ${esc(o.c.verdict)}${typeof o.c.mg==="number"?" · margen "+num(o.c.mg,0)+" %":""}" onclick="vista('term');detalle('${esc(r.t)}')" style="left:${r.x/W*100}%;top:${r.y/H*100}%;width:${r.w/W*100}%;height:${r.h/H*100}%;background:${col[o.c.verdict]||"var(--b)"};color:${o.c.verdict==="ESPERAR"?"#000":"#fff"}"><span>${big?esc(r.t):""}${r.w>90&&r.h>56&&typeof o.c.mg==="number"?`<small>${num(o.c.mg,0)} %</small>`:""}</span></div>`}).join("")}</div>
+  <p class="sm" style="margin-top:8px">El valor de mercado es aproximado (acciones medias del último año × precio de cierre). El número en cada casilla es el margen de seguridad.</p>`;
+}
+/* --- próximos resultados --- */
+let RESV="TODOS";
+function toolRes(){
+  const hoy=new Date().toISOString().slice(0,10),lim=new Date(Date.now()+75*864e5).toISOString().slice(0,10);
+  const rows=[];tickers().forEach(t=>{const v=D.v.items?.[t];if(!v||!v.review||(v.type||"ACCIONES")!=="ACCIONES"||v.review<hoy||v.review>lim)return;const c=calc(t);if(RESV==="COMPRAR"&&(!c||c.verdict!=="COMPRAR"))return;rows.push({t,v,c})});
+  rows.sort((a,b)=>a.v.review.localeCompare(b.v.review)||(rkOf(b.c)-rkOf(a.c)));
+  document.getElementById("tlBody").innerHTML=`<p class="sm"><strong>Fechas estimadas</strong>: calculadas sumando un trimestre al último informe oficial. La empresa confirma la fecha real pocos días antes; consúltala en su web de relación con inversores.</p>
+  <div class="row" style="margin:8px 0">${["TODOS","COMPRAR"].map(k=>`<button class="btn${RESV===k?" on":""}" onclick="RESV='${k}';toolRes()">${k==="TODOS"?"Todas":"Solo oportunidades de compra"}</button>`).join("")}</div>
+  ${rows.length?`<div style="overflow-x:auto"><table><tr><th>Fecha estimada</th><th>Empresa</th><th>Veredicto</th></tr>${rows.slice(0,200).map(r=>`<tr><td>${esc(r.v.review)}</td><td><a href="#" style="color:var(--gold)" onclick="vista('term');detalle('${esc(r.t)}');return false">${esc(r.t)}</a> <span class="sm">${esc(r.v.name||"")}</span></td><td>${tlv(r.c)}</td></tr>`).join("")}</table></div>`:'<p class="sm">No hay resultados previstos en los próximos 75 días con este filtro.</p>'}`;
+}
+/* --- compras de directivos (formulario 4) --- */
+let DIRV="P";
+async function toolDir(){
+  const b=document.getElementById("tlBody");b.innerHTML='<p class="sm">Cargando…</p>';
+  if(!D.i)D.i=await j("data/insiders.json")||{none:true};
+  const I=D.i;
+  if(I.none||!I.items){b.innerHTML='<p class="sm">Todavía no hay datos de directivos. El robot que los lee de la SEC se ejecuta cada mañana; en cuanto termine su primera vuelta aparecerán aquí.</p>';return}
+  const g={};I.items.filter(x=>x.k===DIRV).forEach(x=>{const o=g[x.t]||(g[x.t]={t:x.t,n:x.n,v:0,ppl:new Set(),last:"",ops:[]});o.v+=x.v;o.ppl.add(x.w);o.ops.push(x);if(x.d>o.last)o.last=x.d});
+  const L=Object.values(g).sort((a,b)=>b.v-a.v).slice(0,60);
+  b.innerHTML=`<p class="sm">Operaciones de directivos, consejeros y grandes accionistas comunicadas a la SEC (formulario 4) en los últimos 45 días. Solo operaciones en mercado abierto de más de 50.000 $. Actualizado ${esc(I.updated)}.</p>
+  <div class="row" style="margin:8px 0"><button class="btn${DIRV==="P"?" on":""}" onclick="DIRV='P';toolDir()">Compras</button><button class="btn${DIRV==="S"?" on":""}" onclick="DIRV='S';toolDir()">Ventas</button></div>
+  ${L.length?`<div style="overflow-x:auto"><table><tr><th>Empresa</th><th>Importe total</th><th>Personas</th><th>Última</th><th>Veredicto nuestro</th></tr>${L.map(o=>`<tr><td>${D.m[o.t]||D.v.items?.[o.t]?`<a href="#" style="color:var(--gold)" onclick="vista('term');detalle('${esc(o.t)}');return false">${esc(o.t)}</a>`:`<strong>${esc(o.t)}</strong>`} <span class="sm">${esc(o.n)}</span></td><td>$${num(o.v,0)}</td><td>${o.ppl.size}</td><td>${esc(o.last)}</td><td>${tlv(calc(o.t))}</td></tr><tr><td colspan="5" class="sm" style="padding-top:0">${o.ops.sort((a,c)=>c.v-a.v).slice(0,3).map(x=>`${esc(x.w)}${x.r?" ("+esc(x.r)+")":""}: ${num(x.sh,0)} acciones a $${num(x.px)} el ${esc(x.d)}`).join(" · ")}</td></tr>`).join("")}</table></div>`:'<p class="sm">No hay operaciones de este tipo.</p>'}
+  <p class="sm" style="margin-top:8px">Una compra de un directivo es una señal, no una garantía: puede equivocarse como cualquiera. Las ventas suelen estar programadas de antemano y significan menos.</p>`;
+}
 </script>
 </body>
 </html>
