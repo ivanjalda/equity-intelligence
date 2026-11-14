@@ -44,21 +44,64 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 .note{background:var(--p2);border-left:3px solid var(--gold);padding:10px 12px;border-radius:4px;margin:12px 0}
 @media(max-width:1100px){.layout{grid-template-columns:270px 1fr}.r{display:none}}
 @media(max-width:700px){body{display:block;height:auto}.layout{grid-template-columns:1fr;grid-template-rows:none;height:auto}.l{border-right:0}#vHist,#vFund{overflow:visible}}
+.tick{flex:none;position:relative;overflow:hidden;white-space:nowrap;background:var(--p2);border-bottom:1px solid var(--b);height:30px;font-size:12px;line-height:30px}
+.tick .lb{position:absolute;left:0;top:0;z-index:2;background:var(--gold);color:#000;font-weight:700;padding:0 12px;box-shadow:6px 0 8px -4px rgba(0,0,0,.35)}
+.tick .trk{display:inline-flex;padding-left:130px;animation:tk var(--dur,90s) linear infinite}
+.tick:hover .trk{animation-play-state:paused}
+.tick .ti{padding:0 18px;border-right:1px solid var(--b)}
+.tick .ti b{color:var(--w)}.tick .ti i{color:var(--m);font-style:normal;font-size:11px}
+@keyframes tk{to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.tick{overflow-x:auto}.tick .trk{animation:none}}
+.home{grid-template-columns:300px 1fr 320px}
+.ck{background:var(--p2);border:1px solid var(--b);border-radius:8px;padding:10px 12px}
+.ck .hr{font-size:26px;font-weight:700;color:var(--w);font-variant-numeric:tabular-nums;line-height:1.2}
+.ck .hr small{font-size:14px;color:var(--m);font-weight:400}
+.ck .dot{width:10px;height:10px;border-radius:50%;background:var(--r);display:inline-block}
+.ck.op .dot{background:var(--g);box-shadow:0 0 0 3px rgba(8,153,129,.25)}
+.clocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.nw{display:block;color:var(--t);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--b);font-size:13px;line-height:1.35}
+.nw:hover{color:var(--gold)}
+.nw small{display:block;color:var(--m);font-size:11px;margin-top:2px}
+.fila{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--b);cursor:pointer}
+.fila:hover strong{color:var(--gold)}
+.sc{display:block;background:var(--p2);border:1px solid var(--b);border-radius:8px;padding:12px;color:var(--t);text-decoration:none;cursor:pointer}
+.sc:hover{border-color:var(--gold)}
+.sc strong{display:block;color:var(--w);margin-bottom:2px}
+.secs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.promo{border:1px dashed var(--b);border-radius:8px;padding:12px;background:var(--p);color:var(--t);text-decoration:none;display:block}
+.promo:hover{border-color:var(--gold)}
+.promo small{color:var(--m);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:1100px){#vHome{display:flex!important;flex-direction:column;overflow-y:auto}#hC{order:-1}#vHome aside,#vHome main{overflow:visible}#vHome .r{display:block;border-left:0;border-top:1px solid var(--b)}#vHome .l{border-right:0;border-top:1px solid var(--b)}}
+@media(max-width:700px){.ck .hr{font-size:22px}.ck{padding:8px 10px}#vHome{overflow:visible}.two{grid-template-columns:1fr}.tick .lb{padding:0 8px}}
 </style>
 </head>
 <body>
 <header>
   <div class="brand">Equity Intelligence<small id="upd">Cargando datos…</small></div>
   <div class="row" style="margin:0">
-    <button class="btn on" id="tTerm" onclick="vista('term')">Terminal</button>
+    <button class="btn on" id="tHome" onclick="vista('home')">Inicio</button>
+    <button class="btn" id="tAcc" onclick="irCat('ACCIONES')">Acciones</button>
+    <button class="btn" id="tEtf" onclick="irCat('ETFS')">Índices y ETFs</button>
+    <button class="btn" id="tCom" onclick="irCat('COMMODITIES')">Materias primas</button>
+    <button class="btn" id="tBon" onclick="irCat('BONOS')">Bonos</button>
+    <button class="btn" id="tTerm" onclick="irCat('TODOS')">Buscador</button>
     <button class="btn" id="tFund" onclick="vista('fund')">Grandes fondos</button>
-    <button class="btn" id="tHist" onclick="vista('hist')">Historial de señales</button>
+    <button class="btn" id="tHist" onclick="vista('hist')">Historial</button>
     <a class="btn" href="como-funciona.html">Cómo funciona</a>
     <button class="btn" type="button" data-tema-btn onclick="cambiarTema()" title="Cambiar entre modo claro y modo noche">☀ Modo claro</button>
   </div>
 </header>
 
-<div id="vTerm" class="layout">
+<div class="tick" id="tick" aria-label="Cotizaciones del último cierre"></div>
+
+<div id="vHome" class="layout home">
+  <aside class="l" id="hL"></aside>
+  <main id="hC"></main>
+  <aside class="r" id="hR"></aside>
+</div>
+
+<div id="vTerm" class="layout" style="display:none">
   <aside class="l">
     <input id="q" placeholder="Buscar ticker o nombre">
     <div class="sm">Veredicto</div>
@@ -98,15 +141,16 @@ async function init(){
   D.m=await j("data/market-data.json")||{};
   D.v=await j("data/valuations.json")||{items:{}};
   D.s=await j("data/signals.json")||[];
-  D.f=await j("data/13f.json");
+  D.f=await j("data/13f.json");D.n=await j("data/news.json");
   document.getElementById("upd").textContent=D.v.updated?"Precios al cierre de mercado (no en directo) · actualizado "+D.v.updated:"Sin datos cargados todavía";
-  const mk=(id,arr,get,set)=>{const e=document.getElementById(id);e.innerHTML="";arr.forEach(k=>{const b=document.createElement("button");b.className="btn"+(get()===k?" on":"");b.textContent=LBL[k];b.onclick=()=>{set(k);mk(id,arr,get,set);lista()};e.appendChild(b)})};
-  mk("fVer",VERS,()=>ver,k=>ver=k);mk("fCat",CATS,()=>cat,k=>cat=k);mk("fHor",HORS,()=>hor,k=>hor=k);
+  buildFilters();
   document.getElementById("q").oninput=()=>lista();
   lista();panel13f();
-  const best=tickers().map(t=>[t,calc(t)]).filter(x=>x[1]&&x[1].verdict==="COMPRAR").sort((a,b)=>rkOf(b[1])-rkOf(a[1]))[0];
-  best?detalle(best[0]):inicio();
+  window._best=tickers().map(t=>[t,calc(t)]).filter(x=>x[1]&&x[1].verdict==="COMPRAR").sort((a,b)=>rkOf(b[1])-rkOf(a[1]))[0];
+  homeRender();cinta();vista("home");
 }
+function mk(id,arr,get,set){const e=document.getElementById(id);e.innerHTML="";arr.forEach(k=>{const b=document.createElement("button");b.className="btn"+(get()===k?" on":"");b.textContent=LBL[k];b.onclick=()=>{set(k);buildFilters();lista();navOn()};e.appendChild(b)})}
+function buildFilters(){mk("fVer",VERS,()=>ver,k=>ver=k);mk("fCat",CATS,()=>cat,k=>cat=k);mk("fHor",HORS,()=>hor,k=>hor=k)}
 function toggleCic(){cic=!cic;document.getElementById("fCic").classList.toggle("on",cic);lista()}
 
 function calc(t){
@@ -164,6 +208,147 @@ function inicio(){
 
 let cur=null;
 window.addEventListener("tema",()=>{if(cur&&document.getElementById("vTerm").style.display!=="none")detalle(cur)});
+/* ===== INICIO: cinta de mercado, relojes de bolsas, resumen, noticias ===== */
+const NYSE_HOL=["2026-01-01","2026-01-19","2026-02-16","2026-04-03","2026-05-25","2026-06-19","2026-07-03","2026-09-07","2026-11-26","2026-12-25","2027-01-01","2027-01-18","2027-02-15","2027-03-26","2027-05-31","2027-06-18","2027-07-05","2027-09-06","2027-11-25","2027-12-24"];
+const NYSE_EARLY={"2026-11-27":780,"2026-12-24":780,"2027-11-26":780};
+const BOLSAS=[
+  {n:"Nueva York",f:"NYSE / Nasdaq",tz:"America/New_York",o:[[570,960]],hol:NYSE_HOL,early:NYSE_EARLY},
+  {n:"Madrid",f:"BME",tz:"Europe/Madrid",o:[[540,1050]]},
+  {n:"Londres",f:"LSE",tz:"Europe/London",o:[[480,990]]},
+  {n:"Tokio",f:"TSE",tz:"Asia/Tokyo",o:[[540,690],[750,930]]}
+];
+const DIAS=["el domingo","el lunes","el martes","el miércoles","el jueves","el viernes","el sábado"];
+const p2=n=>String(n).padStart(2,"0");
+function lp(tz,d){const o={};new Intl.DateTimeFormat("en-CA",{timeZone:tz,hourCycle:"h23",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",weekday:"short"}).formatToParts(d).forEach(p=>o[p.type]=p.value);return{date:`${o.year}-${o.month}-${o.day}`,h:+o.hour,mi:+o.minute,s:+o.second,wd:["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].indexOf(o.weekday)}}
+const dur=m=>{const h=Math.floor(m/60),r=m%60;return h?`${h} h ${r} min`:`${r} min`};
+const hm=m=>`${Math.floor(m/60)}:${p2(m%60)}`;
+function habil(b,t){return !(t.wd===0||t.wd===6||(b.hol&&b.hol.includes(t.date)))}
+function estado(b,d){
+  const t=lp(b.tz,d),m=t.h*60+t.mi;
+  if(habil(b,t)){
+    const ses=b.o.map(x=>[x[0],(b.early&&b.early[t.date])||x[1]]);
+    for(let i=0;i<ses.length;i++){
+      const a=ses[i][0],z=ses[i][1];
+      if(m>=a&&m<z)return{open:true,txt:"cierra en "+dur(z-m)};
+      if(m<a)return{open:false,txt:(i?"reabre":"abre")+" en "+dur(a-m)};
+    }
+  }
+  for(let k=1;k<=10;k++){
+    const t2=lp(b.tz,new Date(d.getTime()+k*864e5));
+    if(habil(b,t2))return{open:false,txt:"abre "+(k===1?"mañana":DIAS[t2.wd])+" a las "+hm(b.o[0][0])};
+  }
+  return{open:false,txt:""};
+}
+function relojes(){
+  const el=document.getElementById("clocks");if(!el||!el.offsetParent)return;
+  const d=new Date();
+  el.innerHTML=BOLSAS.map(b=>{const t=lp(b.tz,d),e=estado(b,d);
+    return `<div class="ck ${e.open?"op":"cl"}"><div class="flex"><strong>${esc(b.n)}</strong><span class="dot"></span></div><div class="hr">${p2(t.h)}:${p2(t.mi)}<small>:${p2(t.s)}</small></div><div class="sm"><strong style="color:${e.open?"var(--up)":"var(--dn)"}">${e.open?"Abierta":"Cerrada"}</strong> · ${esc(b.f)}</div><div class="sm">${esc(e.txt)}</div></div>`}).join("");
+}
+setInterval(relojes,1000);
+
+const TICK=[["SPY","S&P 500"],["QQQ","Nasdaq 100"],["DIA","Dow Jones"],["IWM","Russell 2000"],["GLD","Oro"],["SLV","Plata"],["USO","Petróleo"],["TLT","Bonos EE. UU. largo plazo"],["AAPL",""],["MSFT",""],["NVDA",""],["AMZN",""],["GOOGL",""],["META",""],["TSLA",""]];
+async function previo(t){
+  const m=D.m[t];if(!m)return null;
+  if(typeof m.p==="number")return{p:m.p,d:m.d||null};
+  if(D.h[t]===undefined)D.h[t]=await j(`data/history/${t}.json`);
+  const h=D.h[t];if(!h||h.length<2)return null;
+  const a=h[h.length-1],b=h[h.length-2];
+  if(Math.abs(a[1]-m.c)>0.011)return null;
+  return{p:b[1],d:a[0]};
+}
+const fcorta=iso=>iso.slice(8,10)+"/"+iso.slice(5,7);
+async function cinta(){
+  const el=document.getElementById("tick");
+  const rows=await Promise.all(TICK.filter(x=>D.m[x[0]]).map(async x=>({t:x[0],n:x[1],c:D.m[x[0]].c,pv:await previo(x[0])})));
+  if(!rows.length){el.style.display="none";return}
+  const ds=rows.map(r=>r.pv&&r.pv.d).filter(Boolean).sort(),dt=ds.length?ds[ds.length-1]:null;
+  const one=rows.map(r=>{const ch=r.pv?(r.c/r.pv.p-1)*100:null;
+    return `<span class="ti"><b>${esc(r.n||r.t)}</b> ${r.n?`<i>${esc(r.t)}</i> `:""}$${num(r.c)} ${ch===null?"":`<span class="${ch>=0?"up":"dn"}">${ch>=0?"▲":"▼"} ${num(Math.abs(ch))} %</span>`}</span>`}).join("");
+  el.innerHTML=`<span class="lb">${dt?"Cierre del "+fcorta(dt):"Último cierre"}</span><div class="trk" id="trk">${one+one+one+one}</div>`;
+  const tr=document.getElementById("trk");tr.style.setProperty("--dur",Math.max(30,Math.round(tr.scrollWidth/2/45))+"s");
+}
+
+const TIPS=[
+ ["Margen de seguridad","Es la diferencia entre lo que vale un negocio y lo que pagas por él. Cuanto más barato compras respecto a su valor, más colchón tienes si te equivocas en el cálculo. Es una idea de Benjamin Graham."],
+ ["Valor intrínseco","Es lo que vale una empresa por el dinero que será capaz de generar, no por lo que marque el precio hoy. Por eso lo calculamos con tres métodos distintos y miramos si coinciden."],
+ ["PER","Precio entre beneficio por acción. Un PER de 15 significa que pagas 15 años de beneficios actuales. Más bajo no siempre es mejor: hay que compararlo con el propio historial de la empresa y con su sector."],
+ ["Flujo de caja libre","Es el dinero que le queda a una empresa después de pagar sus gastos y sus inversiones. Es difícil de maquillar, por eso es la base de uno de nuestros métodos de valoración."],
+ ["Empresas cíclicas","Sus beneficios suben y bajan con la economía (petróleo, minería, automóviles…). Valorarlas con un solo año engaña, así que usamos la media de varios años."],
+ ["Bonos y tipos de interés","Cuando suben los tipos de interés, el precio de los bonos ya emitidos baja, y al revés. Cuanto más largo es el bono, más se mueve."],
+ ["Informes 13F","Los grandes gestores de EE. UU. deben informar a la SEC de sus carteras cada trimestre, con hasta 45 días de retraso. Sirven para ver tendencias, no para copiar operaciones a ciegas."]
+];
+const hace=iso=>{if(!iso)return"";const m=Math.round((Date.now()-new Date(iso))/6e4);if(isNaN(m)||m<0)return"";return m<60?`hace ${Math.max(m,1)} min`:m<1440?`hace ${Math.floor(m/60)} h`:`hace ${Math.floor(m/1440)} d`};
+const okUrl=u=>/^https?:\/\//i.test(u||"");
+function noticias(lang,n){
+  const a=((D.n&&D.n.items)||[]).filter(x=>x.l===lang&&okUrl(x.u)).slice(0,n);
+  if(!a.length)return '<p class="sm">Todavía no hay titulares cargados. Aparecerán aquí en cuanto se actualicen.</p>';
+  return a.map(x=>`<a class="nw" href="${esc(x.u)}" target="_blank" rel="noopener nofollow">${esc(x.t)}<small>${esc(x.s)}${x.d?" · "+hace(x.d):""}</small></a>`).join("");
+}
+function abrir(t){window._tinit=true;vista("term");detalle(t)}
+function homeRender(){
+  const filas=tickers().map(t=>[t,calc(t)]),cu={COMPRAR:0,REVISAR:0,ESPERAR:0,CARO:0},tot=filas.filter(x=>x[1]).length;
+  filas.forEach(x=>{if(x[1])cu[x[1].verdict]++});
+  const tipo=t=>(D.v.items?.[t]?.type)||D.m[t]?.type||"ACCIONES";
+  const comp=filas.filter(x=>x[1]&&x[1].verdict==="COMPRAR").sort((a,b)=>rkOf(b[1])-rkOf(a[1])),top=comp.filter(x=>tipo(x[0])==="ACCIONES").slice(0,8),otros=comp.filter(x=>tipo(x[0])!=="ACCIONES").length;
+  const dato=c=>c.assess?(c.assess.metrics[0]?esc(c.assess.metrics[0].k)+": "+esc(c.assess.metrics[0].v):""):`margen ${num(c.mg,0)} %`;
+  const mv=Object.keys(D.m).filter(t=>typeof D.m[t].p==="number"&&D.m[t].type==="ACCIONES").map(t=>[t,(D.m[t].c/D.m[t].p-1)*100]).sort((a,b)=>b[1]-a[1]);
+  const mvh=a=>a.map(x=>`<div class="fila" onclick="abrir('${esc(x[0])}')"><strong>${esc(x[0])}</strong><span class="${x[1]>=0?"up":"dn"}">${x[1]>=0?"▲":"▼"} ${num(Math.abs(x[1]))} %</span></div>`).join("");
+  const S=D.s||[],ult=S.length?S[S.length-1].date:null,sg=ult?S.filter(s=>s.date===ult):[];
+  const tip=TIPS[Math.floor(Date.now()/864e5)%TIPS.length];
+  const f=D.f;
+  document.getElementById("hL").innerHTML=`<h3>Noticias de mercado</h3>${noticias("es",14)}<p class="sm" style="margin-top:8px">Solo mostramos el titular y la fuente. Al pulsar se abre la noticia en el medio original.</p>`;
+  document.getElementById("hC").innerHTML=`
+  <div class="flex" style="margin-bottom:8px"><h2 style="margin:0">Inicio</h2><span class="sm">Relojes calculados con el horario habitual de cada bolsa</span></div>
+  <div class="clocks" id="clocks"></div>
+  <p class="sm" style="margin:-4px 0 14px">Incluye los festivos de Nueva York. No incluye los de Madrid, Londres ni Tokio: consulta el calendario oficial de cada bolsa.</p>
+  <div class="box"><div class="flex"><h3 style="margin:0">Mejores acciones según nuestro motor</h3><span class="sm">${D.v.updated?"Actualizado "+esc(D.v.updated):""}</span></div>
+   <div class="grid"><div class="m"><small>Activos valorados</small><strong>${tot}</strong></div><div class="m"><small>Oportunidades de compra</small><strong class="up">${cu.COMPRAR}</strong></div><div class="m"><small>Mejor esperar</small><strong>${cu.ESPERAR}</strong></div><div class="m"><small>Caros ahora</small><strong class="dn">${cu.CARO}</strong></div></div>
+   ${top.length?top.map(x=>`<div class="fila" onclick="abrir('${esc(x[0])}')"><span><strong>${esc(x[0])}</strong> <span class="sm">${esc((D.v.items?.[x[0]]||{}).name||"")}</span></span><span class="sm">${dato(x[1])} · ${D.m[x[0]]?"$"+num(D.m[x[0]].c):""} <span class="badge COMPRAR">COMPRAR</span></span></div>`).join(""):'<p class="sm">Ahora mismo no hay acciones en zona de compra que cumplan todos nuestros filtros.</p>'}
+   ${otros?`<p class="sm" style="margin:8px 0 0">Además, ${otros} ${otros===1?"activo":"activos"} entre índices, bonos y materias primas en zona de compra: <a href="#" onclick="irCat('ETFS');return false" style="color:var(--gold)">índices y ETFs</a> · <a href="#" onclick="irCat('BONOS');return false" style="color:var(--gold)">bonos</a> · <a href="#" onclick="irCat('COMMODITIES');return false" style="color:var(--gold)">materias primas</a>.</p>`:""}
+   <button class="btn" style="margin-top:10px" onclick="irCat('TODOS')">Ver todos los activos →</button></div>
+  <div class="two">
+   <div class="box"><h3>Mayores subidas del último cierre</h3>${mv.length?mvh(mv.slice(0,5)):'<p class="sm">Se mostrarán tras la próxima actualización diaria.</p>'}<p class="sm" style="margin-top:6px">Entre las acciones de nuestra lista principal.</p></div>
+   <div class="box"><h3>Mayores bajadas del último cierre</h3>${mv.length?mvh(mv.slice(-5).reverse()):'<p class="sm">Se mostrarán tras la próxima actualización diaria.</p>'}</div>
+  </div>
+  <div class="two">
+   <div class="box"><h3>Señales más recientes${ult?" · "+esc(ult):""}</h3>${sg.length?sg.slice(0,8).map(s=>`<div class="fila" onclick="abrir('${esc(s.ticker)}')"><strong>${esc(s.ticker)}</strong><span class="sm">$${num(s.price)} <span class="badge ${esc(s.verdict)}">${esc(s.verdict)}</span></span></div>`).join(""):'<p class="sm">Todavía no hay señales registradas.</p>'}
+    <button class="btn" style="margin-top:8px" onclick="vista('hist')">Ver historial completo →</button></div>
+   <div class="box"><h3>Concepto del día · ${esc(tip[0])}</h3><p style="margin:0">${esc(tip[1])}</p><a class="btn" style="margin-top:10px" href="como-funciona.html">Cómo funciona todo →</a></div>
+  </div>
+  <h3>Explora por secciones</h3>
+  <div class="secs">
+   <a class="sc" onclick="irCat('ACCIONES')"><strong>Acciones</strong><span class="sm">Valor intrínseco, salud y plazo ideal.</span></a>
+   <a class="sc" onclick="irCat('ETFS')"><strong>Índices y ETFs</strong><span class="sm">Si el mercado entero está caro o barato.</span></a>
+   <a class="sc" onclick="irCat('COMMODITIES')"><strong>Materias primas</strong><span class="sm">Oro, petróleo y más, ajustados por inflación.</span></a>
+   <a class="sc" onclick="irCat('BONOS')"><strong>Bonos</strong><span class="sm">Rentabilidad actual frente a los últimos 10 años.</span></a>
+   <a class="sc" onclick="vista('fund')"><strong>Grandes fondos</strong><span class="sm">Qué compran y venden los grandes inversores.</span></a>
+   <a class="sc" onclick="vista('hist')"><strong>Historial</strong><span class="sm">Cada señal, con su fecha y su resultado real.</span></a>
+  </div>
+  <h3 style="margin-top:16px">Más de nuestra empresa</h3>
+  <div class="two">
+   <a class="promo" href="https://nexusterminalalerts.com/" target="_blank" rel="noopener sponsored"><small>Publicidad propia</small><br><strong style="color:var(--w)">Nexus Terminal</strong><div class="sm">Escáner de mercado con señales diarias y su histórico público.</div></a>
+   <a class="promo" href="https://www.valmontco.com/" target="_blank" rel="noopener sponsored"><small>Publicidad propia</small><br><strong style="color:var(--w)">Valmont &amp; Co.</strong><div class="sm">Academia de inversión: guías, cursos y libros.</div></a>
+  </div>
+  <p class="sm" style="margin-top:6px">Equity Intelligence, Nexus Terminal y Valmont &amp; Co. pertenecen a Community16 LLC. La formación no es asesoramiento financiero ni garantiza resultados.</p>`;
+  const tb=(a)=>a&&a.length?a.map(x=>`<div class="fila" ${x.ticker&&D.m[x.ticker]?`onclick="abrir('${esc(x.ticker)}')"`:""}><span><strong>${esc(x.ticker||"")}</strong> <span class="sm">${esc(x.name||"")}</span></span><span class="sm">${esc(x.funds)} de ${esc(f.total)} fondos</span></div>`).join(""):"";
+  document.getElementById("hR").innerHTML=`<h3>Mercados de EE. UU. <span class="sm">(titulares en inglés)</span></h3>${noticias("en",10)}
+  ${f&&f.buys&&f.buys.length?`<h3 style="margin-top:16px">Los grandes fondos compraron</h3>${tb(f.buys.slice(0,6))}<p class="sm" style="margin-top:6px">Informes 13F del trimestre ${esc(f.quarter)}. Llegan con hasta 45 días de retraso.</p><button class="btn" style="width:100%;margin-top:6px" onclick="vista('fund')">Ver todas las carteras →</button>`:""}`;
+  relojes();
+}
+function irCat(c){
+  cat=c;ver=c==="TODOS"?"COMPRAR":"TODAS";hor="TODOS";window._tinit=true;
+  buildFilters();vista("term");lista();
+  const p=document.querySelector("#list .card");if(p)p.click();
+}
+const NAVCAT={TODOS:"tTerm",ACCIONES:"tAcc",ETFS:"tEtf",COMMODITIES:"tCom",BONOS:"tBon"};
+function navOn(on){
+  const v=on||window._vista;
+  ["tHome","tTerm","tAcc","tEtf","tCom","tBon","tFund","tHist"].forEach(i=>document.getElementById(i).classList.remove("on"));
+  const id=v==="home"?"tHome":v==="term"?NAVCAT[cat]:v==="fund"?"tFund":v==="hist"?"tHist":null;
+  if(id)document.getElementById(id).classList.add("on");
+}
+
 function detalle(t){
   cur=t;
   const c=calc(t),v=D.v.items?.[t]||{},p=D.m[t]?.c,main=document.getElementById("main");
@@ -307,11 +492,14 @@ function fondos(){
   ${m.sold&&m.sold.length?`<p class="sm">Posiciones vendidas por completo: ${m.sold.map(s=>esc(s.ticker||s.name)).join(", ")}</p>`:""}</details>`).join("")}</div>`;
 }
 function vista(v){
+  window._vista=v;
+  document.getElementById("vHome").style.display=v==="home"?"grid":"none";
+  if(v==="term"&&!window._tinit){window._tinit=true;window._best?detalle(window._best[0]):inicio()}
   document.getElementById("vTerm").style.display=v==="term"?"grid":"none";
   document.getElementById("vHist").style.display=v==="hist"?"block":"none";
   document.getElementById("vFund").style.display=v==="fund"?"block":"none";
-  [["tTerm","term"],["tHist","hist"],["tFund","fund"]].forEach(([i,k])=>document.getElementById(i).classList.toggle("on",v===k));
-  if(v==="hist")historial();if(v==="fund")fondos();
+  navOn(v);
+  if(v==="home")relojes();if(v==="hist")historial();if(v==="fund")fondos();window.scrollTo(0,0);
 }
 function historial(){
   const el=document.getElementById("vHist"),S=D.s||[];

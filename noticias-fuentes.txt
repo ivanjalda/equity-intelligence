@@ -1,0 +1,11 @@
+# Fuentes de noticias. Formato: idioma|Nombre que se muestra|dirección del RSS
+# Para quitar una fuente, borra su línea. Para añadir otra, copia una línea y cambia los datos.
+es|Cinco Días|https://feeds.elpais.com/mrss-s/pages/ep/site/cincodias.elpais.com/portada
+es|Expansión|https://e00-expansion.uecdn.es/rss/mercados.xml
+es|Europa Press|https://www.europapress.es/rss/rss.aspx?ch=136
+es|Investing.com|https://es.investing.com/rss/news.rss
+en|Reserva Federal|https://www.federalreserve.gov/feeds/press_all.xml
+en|SEC|https://www.sec.gov/news/pressreleases.rss
+en|CNBC|https://www.cnbc.com/id/10000664/device/rss/rss.html
+en|MarketWatch|https://feeds.content.dowjones.io/public/rss/mw_topstories
+en|Yahoo Finance|https://finance.yahoo.com/news/rssindex
