@@ -830,7 +830,7 @@ async function ficha(){
   const el=document.getElementById("vFicha");
   if(!el.querySelector("#fq")){
     el.innerHTML=`<div class="box"><h2>Ficha de empresa</h2><p class="sm">Escribe el nombre o el símbolo de una empresa de EE. UU. y verás en una sola página cuánto vale, si está cara o barata, cómo son sus cuentas, qué empresas se le parecen y qué hacen los directivos y los grandes fondos. Todo con datos oficiales y explicado en sencillo.</p>
-    <div style="position:relative;max-width:520px"><input class="in" id="fq" autocomplete="off" placeholder="Ej.: Nike, NKE, Apple…" style="width:100%;font-size:16px;padding:10px" oninput="fSug(this.value)" onkeydown="fEnter(event)"><div id="fsug" class="sug" style="display:none"></div></div></div><div id="fbody"></div>`;
+    <div style="position:relative;max-width:520px"><input class="in" id="fq" autocomplete="off" placeholder="Ej.: Nike, NKE, Apple…" style="width:100%;font-size:16px;padding:10px" oninput="fSug(this.value)" onkeydown="fEnter(event)"><div id="fsug" class="sug" style="display:none"></div></div><p class="sm" style="margin:8px 0 0">¿No entiendes algún dato? Lo que significa cada línea de las cuentas está explicado en <a href="aprender.html#cuentas" target="_blank" rel="noopener">Aprender</a>. También puedes pulsar sobre el nombre de cualquier línea de las tablas.</p></div><div id="fbody"></div>`;
     document.addEventListener("click",e=>{const s=document.getElementById("fsug");if(s&&!e.target.closest("#fsug,#fq"))s.style.display="none"});
   }
   const sg=document.getElementById("fsug");if(sg)sg.style.display="none";
