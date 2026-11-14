@@ -481,5 +481,12 @@
   "verdict": "COMPRAR",
   "price": 79.68,
   "spy": 735.29
+ },
+ {
+  "date": "2026-11-14",
+  "ticker": "BRBR",
+  "verdict": "COMPRAR",
+  "price": 10.56,
+  "spy": 754.37
  }
 ]
