@@ -1,0 +1,33 @@
+name: Compras de directivos (formulario 4)
+
+on:
+  schedule:
+    - cron: "45 8 * * 2-6"     # martes a sábado por la mañana (formularios del día anterior)
+  workflow_dispatch:            # permite ejecutarlo a mano
+
+permissions:
+  contents: write
+
+concurrency:
+  group: equity-data
+  cancel-in-progress: false
+
+jobs:
+  directivos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Leer formularios 4 de la SEC
+        env:
+          SEC_USER_AGENT: "EquityIntelligence community16jalda@gmail.com"
+        run: python scripts/insiders.py
+      - name: Guardar resultados
+        run: |
+          git config user.name "equity-bot"
+          git config user.email "equity-bot@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || (git commit -m "Directivos $(date -u +%F)" && git pull --rebase origin main && git push)
