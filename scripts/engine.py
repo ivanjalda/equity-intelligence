@@ -361,6 +361,9 @@ def value_stock(t, cyc, facts, hist, price):
     if shares and shares > 0:
         item["sh"] = round(shares)
     item["eps"] = round(e_last, 2)
+    if fcfps:
+        item["fcfps"] = round(fcfps, 2)
+    item["g"] = round(g, 4)
     item["chk"] = [{"t": a, "x": b} for a, b in chk]
     return item, iv, mg
 
