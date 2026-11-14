@@ -102,6 +102,8 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 #vTools{flex:1;min-height:0;overflow:auto}
 
 .nwf{border:1px solid var(--b);border-left:4px solid hsl(var(--h) 55% 52%);border-radius:8px;padding:10px 12px;margin:8px 0;background:var(--p2);font-size:15px;line-height:1.3}.nwf em{display:block;font-style:normal;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:hsl(var(--h) 60% 62%);font-weight:700;margin-bottom:4px}.nwf span{display:block;font-weight:600}.nwf small{display:block;margin-top:4px;color:var(--m)}
+
+.nwf .ic{display:flex;align-items:center;justify-content:center;height:60px;margin:-2px 0 8px;border-radius:6px;background:linear-gradient(135deg,hsl(var(--h) 45% 24%),hsl(var(--h) 45% 13%))}.nwf .ic svg{height:44px;width:auto}
 </style>
 </head>
 <body>
@@ -313,13 +315,25 @@ const TIPS=[
 const hace=iso=>{if(!iso)return"";const m=Math.round((Date.now()-new Date(iso))/6e4);if(isNaN(m)||m<0)return"";return m<60?`hace ${Math.max(m,1)} min`:m<1440?`hace ${Math.floor(m/60)} h`:`hace ${Math.floor(m/1440)} d`};
 const okUrl=u=>/^https?:\/\//i.test(u||"");
 /* Fotos solo de organismos públicos (SEC y Reserva Federal). El resto, solo texto. */
+/* Ilustraciones propias por tema (no son fotos de terceros) */
+const ICONS={
+ banco:'<path d="M8 22 32 8l24 14M12 26v20M24 26v20M40 26v20M52 26v20M6 50h52"/>',
+ petroleo:'<path d="M32 6c10 14 16 22 16 30a16 16 0 0 1-32 0c0-8 6-16 16-30z"/>',
+ oro:'<path d="M14 40l8-18h20l8 18zM22 22l-4-6h28l-4 6"/>',
+ cripto:'<circle cx="32" cy="28" r="20"/><path d="M26 18h10a5 5 0 0 1 0 10H26m0 0h11a5 5 0 0 1 0 10H26M26 14v28"/>',
+ resultados:'<path d="M10 48V30M24 48V18M38 48V26M52 48V10M6 50h52"/>',
+ chip:'<rect x="16" y="16" width="32" height="32" rx="3"/><rect x="26" y="26" width="12" height="12"/><path d="M24 8v8M32 8v8M40 8v8M24 48v8M32 48v8M40 48v8M8 24h8M8 32h8M8 40h8M48 24h8M48 32h8M48 40h8"/>',
+ persona:'<circle cx="32" cy="20" r="10"/><path d="M12 54c0-12 9-20 20-20s20 8 20 20"/>',
+ grafico:'<path d="M6 50 20 32l10 8 14-20 14 10M6 8v44h52"/>'};
+const TOPICS=[[/tipos|inter[eé]s|fed\b|reserva federal|bce|inflaci|interest|rate cut|rates|inflation|treasury|bonos|bond/i,"banco"],[/petr[oó]leo|crudo|oil|gas natural|opec|brent/i,"petroleo"],[/\boro\b|plata|gold|silver|copper|cobre/i,"oro"],[/bitcoin|cripto|crypto|ethereum/i,"cripto"],[/resultados|beneficio|ganancias|ingresos|earnings|profit|revenue|dividend/i,"resultados"],[/ia\b|inteligencia artificial|\bai\b|nvidia|chip|semiconductor|tecnol|tech\b/i,"chip"],[/director|presidente|vicepresidente|ceo\b|consejero|insider|compra acciones|vende acciones/i,"persona"]];
+const topicIc=(t,h)=>{const k=(TOPICS.find(x=>x[0].test(t))||[0,"grafico"])[1];return `<span class="ic" aria-hidden="true"><svg viewBox="0 0 64 60" fill="none" stroke="hsl(${h} 70% 72%)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg></span>`};
 const IMG_OK=["SEC","Reserva Federal"];
 function noticias(lang,n,ads){
   const a=((D.n&&D.n.items)||[]).filter(x=>x.l===lang&&okUrl(x.u)).slice(0,n);
   const hue=s=>{let k=0;for(const c of s)k=(k*31+c.charCodeAt(0))%360;return k};
   const meta=x=>`<small>${esc(x.s)}${x.d?" · "+hace(x.d):""}</small>`;
   const h=a.map((x,n)=>{
-    const foto=IMG_OK.includes(x.s)&&x.i&&/^https:\/\//i.test(x.i);
+    const foto=x.i&&/^https:\/\//i.test(x.i);
     if(foto)return `<a class="nw nwi" href="${esc(x.u)}" target="_blank" rel="noopener nofollow"><span class="ph"><img src="${esc(x.i)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.nwi').classList.remove('nwi');this.parentNode.remove()"></span><span class="tx">${esc(x.t)}${meta(x)}</span></a>`;
     if(n%3===1)return `<a class="nw nwf" style="--h:${hue(x.s)}" href="${esc(x.u)}" target="_blank" rel="noopener nofollow"><em>${esc(x.s)}</em><span>${esc(x.t)}</span>${x.d?`<small>${hace(x.d)}</small>`:""}</a>`;
     return `<a class="nw" href="${esc(x.u)}" target="_blank" rel="noopener nofollow">${esc(x.t)}${meta(x)}</a>`});

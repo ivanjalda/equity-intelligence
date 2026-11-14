@@ -1,11 +1,12 @@
-# Fuentes de noticias. Formato: idioma|Nombre que se muestra|dirección del RSS
+# Fuentes de noticias. Formato: idioma|Nombre que se muestra|dirección del RSS|foto
+# Si la línea termina en |foto, se muestran las fotos de ese medio. Si no, solo el texto.
 # Para quitar una fuente, borra su línea. Para añadir otra, copia una línea y cambia los datos.
-es|Cinco Días|https://feeds.elpais.com/mrss-s/pages/ep/site/cincodias.elpais.com/portada
+es|Cinco Días|https://feeds.elpais.com/mrss-s/pages/ep/site/cincodias.elpais.com/portada|foto
 es|Expansión|https://e00-expansion.uecdn.es/rss/mercados.xml
-es|Europa Press|https://www.europapress.es/rss/rss.aspx?ch=136
-es|Investing.com|https://es.investing.com/rss/news.rss
+es|Europa Press|https://www.europapress.es/rss/rss.aspx?ch=136|foto
+es|Investing.com|https://es.investing.com/rss/news.rss|foto
 en|Reserva Federal|https://www.federalreserve.gov/feeds/press_all.xml
 en|SEC|https://www.sec.gov/news/pressreleases.rss
 en|CNBC|https://www.cnbc.com/id/10000664/device/rss/rss.html
-en|MarketWatch|https://feeds.content.dowjones.io/public/rss/mw_topstories
+en|MarketWatch|https://feeds.content.dowjones.io/public/rss/mw_topstories|foto
 en|Yahoo Finance|https://finance.yahoo.com/news/rssindex
