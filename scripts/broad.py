@@ -146,6 +146,9 @@ def basic_models(facts):
         res["sh"] = round(shares)
     res["chk"] = [{"t": a, "x": c} for a, c in chk]
     res["eps"] = round(v[-1], 2)
+    if "dcf" in m and shares and shares > 0:
+        res["fcfps"] = round(mean(fcf) / shares, 2)
+        res["g"] = round(g, 4)
     return res
 
 
