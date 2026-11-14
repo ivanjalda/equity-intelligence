@@ -95,6 +95,8 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 .nwi .ph{display:block;aspect-ratio:16/9;background:var(--p)}
 .nwi img{display:block;width:100%;height:100%;object-fit:cover}
 .nwi .tx{display:block;padding:8px 10px}
+
+.adimg{display:flex;gap:6px;margin:2px 0 10px}.adimg img{flex:1;min-width:0;width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:5px;border:1px solid var(--b)}.adsvg{display:block;width:100%;height:auto;margin:2px 0 10px}
 </style>
 </head>
 <body>
@@ -287,10 +289,11 @@ async function cinta(){
 
 const TELEGRAM_URL=""; // Cuando exista el canal público de Telegram, pega aquí su enlace (por ejemplo https://t.me/nombre_del_canal)
 const VAL="https://www.valmontco.com/";
-const adValmont=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Valmont &amp; Co. · Academia de inversión</small><strong>Guías y libros de inversión</strong><p class="sm">En español e inglés, con prólogos gratis para empezar. Contenido educativo.</p><div class="row"><a class="btn on" href="${VAL}collections/complete-guides" target="_blank" rel="noopener sponsored">Ver guías</a><a class="btn" href="${VAL}" target="_blank" rel="noopener sponsored">valmontco.com</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. Contenido educativo, no es asesoramiento financiero.</p></div>`;
-const adCursos=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Valmont &amp; Co. · Cursos</small><strong>Cursos de inversión paso a paso</strong><p class="sm">Formación en español para aprender a invertir con método.</p><div class="row"><a class="btn on" href="${VAL}collections/courses" target="_blank" rel="noopener sponsored">Ver cursos</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. No garantiza resultados.</p></div>`;
-const adNexus=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Nexus Terminal</small><strong>El mercado, leído cada día</strong><p class="sm">Escáner de acciones, cripto y divisas con su histórico público de señales.</p><div class="row"><a class="btn on" href="https://nexusterminalalerts.com/" target="_blank" rel="noopener sponsored">Abrir Nexus Terminal</a></div></div>`;
-const telegramCard=()=>`<div class="ad" style="border-style:solid"><small>Avisos gratuitos</small><strong>Canal de Telegram</strong><p class="sm">Te avisamos cuando aparezca una nueva oportunidad de compra, con enlace directo al análisis.</p>${TELEGRAM_URL?`<a class="btn on" href="${esc(TELEGRAM_URL)}" target="_blank" rel="noopener">Unirme al canal</a>`:'<span class="badge NA">Muy pronto</span>'}</div>`;
+const adImgs=(a,n)=>`<div class="adimg">${[1,2,3,4].slice(0,n).map(i=>`<img src="images/${a}-${i}.jpg" alt="" loading="lazy">`).join("")}</div>`;
+const adValmont=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Valmont &amp; Co. · Academia de inversión</small>${adImgs("guia",3)}<strong>Guías y libros de inversión</strong><p class="sm">En español e inglés, con prólogos gratis para empezar. Contenido educativo.</p><div class="row"><a class="btn on" href="${VAL}collections/complete-guides" target="_blank" rel="noopener sponsored">Ver guías</a><a class="btn" href="${VAL}" target="_blank" rel="noopener sponsored">valmontco.com</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. Contenido educativo, no es asesoramiento financiero.</p></div>`;
+const adCursos=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Valmont &amp; Co. · Cursos</small>${adImgs("curso",3)}<strong>Cursos de inversión paso a paso</strong><p class="sm">Formación en español para aprender a invertir con método.</p><div class="row"><a class="btn on" href="${VAL}collections/courses" target="_blank" rel="noopener sponsored">Ver cursos</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. No garantiza resultados.</p></div>`;
+const NXV='<svg viewBox="0 0 300 96" class="adsvg" aria-hidden="true"><rect width="300" height="96" rx="6" fill="#10131b"/><g stroke="#2a2e39"><path d="M0 24H300M0 48H300M0 72H300"/></g><g stroke-width="2"><path d="M20 70V44M20 60V52" stroke="#089981"/><path d="M50 62V36" stroke="#089981"/><path d="M80 58V40" stroke="#f23645"/><path d="M110 66V46" stroke="#089981"/><path d="M140 50V30" stroke="#089981"/><path d="M170 54V32" stroke="#f23645"/><path d="M200 44V24" stroke="#089981"/><path d="M230 40V20" stroke="#089981"/><path d="M260 48V28" stroke="#f23645"/></g><g><rect x="16" y="48" width="8" height="14" fill="#089981"/><rect x="46" y="42" width="8" height="16" fill="#089981"/><rect x="76" y="44" width="8" height="10" fill="#f23645"/><rect x="106" y="50" width="8" height="12" fill="#089981"/><rect x="136" y="34" width="8" height="12" fill="#089981"/><rect x="166" y="36" width="8" height="12" fill="#f23645"/><rect x="196" y="28" width="8" height="12" fill="#089981"/><rect x="226" y="24" width="8" height="12" fill="#089981"/><rect x="256" y="32" width="8" height="12" fill="#f23645"/></g><path d="M10 66C60 56 100 58 150 42S230 28 290 24" fill="none" stroke="#d4af37" stroke-width="1.6" stroke-dasharray="4 3"/><text x="290" y="90" text-anchor="end" font-size="8" fill="#8a8d98" font-family="sans-serif">Ilustración, no son datos reales</text></svg>';
+const adNexus=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Nexus Terminal · Análisis técnico</small>${NXV}<strong>Nexus Terminal: análisis técnico para hacer trading</strong><p class="sm">Nuestra otra web. Un motor propio hace el análisis técnico de acciones, criptomonedas y divisas por sí solo y publica pronósticos de inversión y señales, con avisos en Telegram y un histórico público de aciertos y fallos.</p><div class="row"><a class="btn on" href="https://nexusterminalalerts.com/" target="_blank" rel="noopener sponsored">Abrir Nexus Terminal</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. Análisis técnico informativo, no es asesoramiento financiero.</p></div>`;const telegramCard=()=>`<div class="ad" style="border-style:solid"><small>Avisos gratuitos</small><strong>Canal de Telegram</strong><p class="sm">Te avisamos cuando aparezca una nueva oportunidad de compra, con enlace directo al análisis.</p>${TELEGRAM_URL?`<a class="btn on" href="${esc(TELEGRAM_URL)}" target="_blank" rel="noopener">Unirme al canal</a>`:'<span class="badge NA">Muy pronto</span>'}</div>`;
 const TIPS=[
  ["Margen de seguridad","Es la diferencia entre lo que vale un negocio y lo que pagas por él. Cuanto más barato compras respecto a su valor, más colchón tienes si te equivocas en el cálculo. Es una idea de Benjamin Graham."],
  ["Valor intrínseco","Es lo que vale una empresa por el dinero que será capaz de generar, no por lo que marque el precio hoy. Por eso lo calculamos con tres métodos distintos y miramos si coinciden."],
@@ -416,6 +419,19 @@ async function historial(){
   ${rows.map(x=>`<tr><td>${esc(x.date)}</td><td><strong>${esc(x.ticker)}</strong></td><td><span class="badge ${esc(x.verdict)}">${esc(x.verdict)}</span></td><td>$${num(x.price)}</td><td>${x.p?"$"+num(x.p):"—"}</td><td>${c(x.r)}</td><td>${c(x.b)}</td><td>${c(x.bq)}</td><td>${c(x.bv)}</td></tr>`).join("")}</table></div></div>`;
 }
 
+/* Qué descuenta el mercado + sensibilidad (solo si el motor guardó el flujo de caja y el crecimiento) */
+function dcfJS(f0,g,r){let v=0,f=f0;for(let y=1;y<=10;y++){f*=1+(y<=5?g:g/2);v+=f/Math.pow(1+r,y)}return v+f*1.025/(r-.025)/Math.pow(1+r,10)}
+function gImplicito(f0,p){let lo=-.15,hi=.35;if(dcfJS(f0,lo,.1)>p)return null;if(dcfJS(f0,hi,.1)<p)return null;for(let i=0;i<50;i++){const m=(lo+hi)/2;if(dcfJS(f0,m,.1)<p)lo=m;else hi=m}return(lo+hi)/2}
+function sensHTML(v,p){
+  if(!v||!v.fcfps||v.g==null||!p)return"";
+  const gi=gImplicito(v.fcfps,p),pc=x=>(x*100).toFixed(1).replace(".",",")+" %";
+  const gs=[0,v.g,Math.min(v.g+.03,.2)].filter((x,i,a)=>a.indexOf(x)===i).sort((a,b)=>a-b),rs=[.09,.10,.11];
+  let h=`<h3 style="margin-top:18px">Qué descuenta el mercado</h3><p class="sm">Solo con el método de flujo de caja descontado: el precio de hoy equivale a que la empresa crezca <strong>${gi==null?"un ritmo fuera de lo razonable":pc(gi)+" al año"}</strong> (años 1 a 5). Nosotros usamos <strong>${pc(v.g)}</strong>, el que ha tenido en los últimos 5 años. `;
+  if(gi!=null)h+=gi<v.g?"El mercado espera <strong>menos</strong> crecimiento que el histórico: o está equivocado, o ve riesgos que las cuentas pasadas no muestran.":"El mercado ya cuenta con <strong>más</strong> crecimiento que el histórico.";
+  h+=`</p><table><tr><td class="sm">Valor por acción (flujo de caja)</td>${rs.map(r=>`<td class="sm"><b>descuento ${(r*100).toFixed(0)} %</b></td>`).join("")}</tr>${gs.map(g=>`<tr><td class="sm">crecimiento ${pc(g)}${g===v.g?" (el nuestro)":""}</td>${rs.map(r=>{const x=dcfJS(v.fcfps,g,r);return`<td class="${x>=p?"up":"dn"}">$${num(x)}</td>`}).join("")}</tr>`).join("")}</table><p class="sm">Verde: vale más que el precio actual. Rojo: vale menos. Si el resultado cambia mucho con pequeños cambios de supuestos, desconfía del valor intrínseco.</p>`;
+  return h;
+}
+
 function detalle(t){
   cur=t;
   const c=calc(t),v=D.v.items?.[t]||{},p=D.m[t]?.c,main=document.getElementById("main");
@@ -432,10 +448,12 @@ function detalle(t){
     if(c.verdict==="COMPRAR")h+=`El precio ya ofrece un margen de seguridad suficiente.`;
     else if(c.verdict==="REVISAR")h+=`Según las cuentas cotiza un ${num(c.mg,0)} % por debajo de su valor, pero hemos detectado datos dudosos (más abajo) y no la damos como oportunidad hasta resolverlos.`;
     else h+=`${c.weak?"Parece barata en números, pero su salud financiera es frágil. ":""}${c.odd?"La diferencia con su valor es tan grande que puede deberse a un dato atípico: verifícalo antes de actuar. ":""}Precio de entrada recomendado: <strong>$${num(c.entry)}</strong> (25 % bajo el valor intrínseco).${v.review?` Próxima revisión: <strong>${esc(v.review)}</strong>${v.review_reason?" ("+esc(v.review_reason)+")":""}.`:""}`;
+    if(c.mg>=40)h+=` <strong>Margen muy alto (${num(c.mg,0)} %).</strong> Un margen así puede ser una oportunidad, pero también la señal de que el mercado ve algo que las cuentas pasadas no reflejan (un problema de negocio, un competidor, un cambio tecnológico). Entiende por qué cotiza tan por debajo antes de actuar.`;
     h+=` Valor calculado con ${c.n} de 3 métodos. No es asesoramiento financiero.</div>`;
   }
   if(!c&&v.kind==="financiera")h+=`<div class="note">Los bancos y aseguradoras sí se valoran, pero los fondos, las inmobiliarias y otros intermediarios financieros necesitan métodos propios que todavía no incluimos. Por eso no damos veredicto, para no mostrar un número engañoso.</div>`;
   h+=fiabHTML(v);
+  h+=sensHTML(v,p);
   h+=`<div id="drop"></div>`;
   h+=`<div class="flex"><h3>Cotización</h3><div class="row" id="rng" style="margin:0"></div></div><div id="chart" class="chart"></div>`;
   if(c)h+=methodsHTML(v);
