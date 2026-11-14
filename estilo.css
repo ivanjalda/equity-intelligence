@@ -33,3 +33,16 @@ body.texto *{box-sizing:border-box}
 .pag code{background:var(--p2);padding:1px 5px;border-radius:4px;font-size:.92em}
 @media(max-width:600px){.pag table{font-size:13.5px}.pag td,.pag th{padding:6px 5px}}
 :root[data-theme="light"] .btn.on{color:#fff}
+
+/* Páginas anchas con índice (Cómo funciona, Aprender) */
+.pag.ancha{max-width:1500px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:44px;padding:28px 32px 52px}
+.toc{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 40px);overflow:auto;border-right:1px solid var(--b);padding-right:18px}
+.toc b{display:block;color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.toc a{display:block;padding:5px 0;color:var(--t);text-decoration:none;font-size:14px;line-height:1.35}
+.toc a:hover{color:var(--gold)}
+.cont{min-width:0;font-size:17px}
+.cont h2{scroll-margin-top:16px;border-top:1px solid var(--b);padding-top:22px}
+.tarjetas{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0 8px}
+.tarjetas div{background:var(--p);border:1px solid var(--b);border-radius:10px;padding:14px;font-size:15px;line-height:1.45}
+.tarjetas b{display:block;color:var(--gold);font-size:16px;margin-bottom:4px}
+@media(max-width:900px){.pag.ancha{grid-template-columns:1fr;gap:8px;padding:18px 14px 36px}.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--b);padding:0 0 12px;display:flex;flex-wrap:wrap;gap:2px 16px}.toc b{width:100%}.cont{font-size:16px}}

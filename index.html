@@ -74,6 +74,22 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:1100px){#vHome{display:flex!important;flex-direction:column;overflow-y:auto}#hC{order:-1}#vHome aside,#vHome main{overflow:visible}#vHome .r{display:block;border-left:0;border-top:1px solid var(--b)}#vHome .l{border-right:0;border-top:1px solid var(--b)}}
 @media(max-width:700px){.ck .hr{font-size:22px}.ck{padding:8px 10px}#vHome{overflow:visible}.two{grid-template-columns:1fr}.tick .lb{padding:0 8px}}
+
+.subnav{flex:none;display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:6px 20px 0;background:var(--p);border-bottom:1px solid var(--b)}
+.subnav .tab{background:none;border:0;border-bottom:3px solid transparent;color:var(--m);padding:7px 12px;cursor:pointer;font-size:13px;font-weight:600}
+.subnav .tab span{font-weight:400;font-size:11px;background:var(--p2);border-radius:9px;padding:1px 6px;margin-left:3px}
+.subnav .tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.subnav .sn{margin-left:auto;padding-right:4px}
+.hero{padding:6px 2px 18px}
+.hero h1{margin:0 0 8px;font-size:30px;line-height:1.2;color:var(--w)}
+.hero h1 span{color:var(--gold)}
+.hero p{margin:0 0 12px;max-width:760px;color:var(--t);font-size:15px}
+.ad{position:relative;border:1px solid var(--gold);border-radius:10px;padding:16px 14px 12px;margin:12px 0;background:var(--p2)}
+.ad .adl{position:absolute;top:-9px;left:12px;background:var(--bg);padding:0 7px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--m)}
+.ad small{display:block;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;font-size:10.5px;font-weight:700;margin-bottom:3px}
+.ad strong{display:block;color:var(--w);font-size:16px;line-height:1.25;margin-bottom:4px}
+.ad p{margin:0 0 8px}
+@media(max-width:700px){.hero h1{font-size:24px}.subnav{padding:6px 10px 0}.subnav .sn{display:none}}
 </style>
 </head>
 <body>
@@ -81,13 +97,10 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
   <div class="brand">Equity Intelligence<small id="upd">Cargando datos…</small></div>
   <div class="row" style="margin:0">
     <button class="btn on" id="tHome" onclick="vista('home')">Inicio</button>
-    <button class="btn" id="tAcc" onclick="irCat('ACCIONES')">Acciones</button>
-    <button class="btn" id="tEtf" onclick="irCat('ETFS')">Índices y ETFs</button>
-    <button class="btn" id="tCom" onclick="irCat('COMMODITIES')">Materias primas</button>
-    <button class="btn" id="tBon" onclick="irCat('BONOS')">Bonos</button>
-    <button class="btn" id="tTerm" onclick="irCat('TODOS')">Buscador</button>
+    <button class="btn" id="tAn" onclick="vista('term')">Análisis de mercado</button>
     <button class="btn" id="tFund" onclick="vista('fund')">Grandes fondos</button>
     <button class="btn" id="tHist" onclick="vista('hist')">Historial</button>
+    <a class="btn" href="aprender.html">Aprender</a>
     <a class="btn" href="como-funciona.html">Cómo funciona</a>
     <button class="btn" type="button" data-tema-btn onclick="cambiarTema()" title="Cambiar entre modo claro y modo noche">☀ Modo claro</button>
   </div>
@@ -101,13 +114,11 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
   <aside class="r" id="hR"></aside>
 </div>
 
-<div id="vTerm" class="layout" style="display:none">
+<div class="subnav" id="subnav" style="display:none"></div><div id="vTerm" class="layout" style="display:none">
   <aside class="l">
     <input id="q" placeholder="Buscar ticker o nombre">
     <div class="sm">Veredicto</div>
     <div class="row" id="fVer"></div>
-    <div class="sm">Tipo de activo</div>
-    <div class="row" id="fCat"></div>
     <div class="sm">Plazo de inversión</div>
     <div class="row" id="fHor"></div>
     <div class="row"><button class="btn" id="fCic" onclick="toggleCic()">Solo cíclicas</button></div>
@@ -122,7 +133,7 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 
 <footer>
   <strong>Información, no asesoramiento financiero.</strong> Invertir conlleva riesgo de perder dinero. Precios al cierre de mercado, no en directo.<br>
-  <a href="aviso-legal.html">Aviso legal</a> <a href="privacidad.html">Privacidad</a> <a href="cookies.html">Cookies</a> <a href="riesgo.html">Aviso de riesgo</a> <a href="como-funciona.html">Cómo funciona</a>
+  <a href="aviso-legal.html">Aviso legal</a> <a href="privacidad.html">Privacidad</a> <a href="cookies.html">Cookies</a> <a href="riesgo.html">Aviso de riesgo</a> <a href="como-funciona.html">Cómo funciona</a> <a href="aprender.html">Aprender</a>
 </footer>
 
 <script>
@@ -150,7 +161,7 @@ async function init(){
   homeRender();cinta();vista("home");
 }
 function mk(id,arr,get,set){const e=document.getElementById(id);e.innerHTML="";arr.forEach(k=>{const b=document.createElement("button");b.className="btn"+(get()===k?" on":"");b.textContent=LBL[k];b.onclick=()=>{set(k);buildFilters();lista();navOn()};e.appendChild(b)})}
-function buildFilters(){mk("fVer",VERS,()=>ver,k=>ver=k);mk("fCat",CATS,()=>cat,k=>cat=k);mk("fHor",HORS,()=>hor,k=>hor=k)}
+function buildFilters(){mk("fVer",VERS,()=>ver,k=>ver=k);mk("fHor",HORS,()=>hor,k=>hor=k)}
 function toggleCic(){cic=!cic;document.getElementById("fCic").classList.toggle("on",cic);lista()}
 
 function calc(t){
@@ -269,6 +280,12 @@ async function cinta(){
   const tr=document.getElementById("trk");tr.style.setProperty("--dur",Math.max(30,Math.round(tr.scrollWidth/2/45))+"s");
 }
 
+const TELEGRAM_URL=""; // Cuando exista el canal público de Telegram, pega aquí su enlace (por ejemplo https://t.me/nombre_del_canal)
+const VAL="https://www.valmontco.com/";
+const adValmont=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Valmont &amp; Co. · Academia de inversión</small><strong>Guías y libros de inversión</strong><p class="sm">En español e inglés, con prólogos gratis para empezar. Contenido educativo.</p><div class="row"><a class="btn on" href="${VAL}collections/complete-guides" target="_blank" rel="noopener sponsored">Ver guías</a><a class="btn" href="${VAL}" target="_blank" rel="noopener sponsored">valmontco.com</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. Contenido educativo, no es asesoramiento financiero.</p></div>`;
+const adCursos=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Valmont &amp; Co. · Cursos</small><strong>Cursos de inversión paso a paso</strong><p class="sm">Formación en español para aprender a invertir con método.</p><div class="row"><a class="btn on" href="${VAL}collections/courses" target="_blank" rel="noopener sponsored">Ver cursos</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. No garantiza resultados.</p></div>`;
+const adNexus=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Nexus Terminal</small><strong>El mercado, leído cada día</strong><p class="sm">Escáner de acciones, cripto y divisas con su histórico público de señales.</p><div class="row"><a class="btn on" href="https://nexusterminalalerts.com/" target="_blank" rel="noopener sponsored">Abrir Nexus Terminal</a></div></div>`;
+const telegramCard=()=>`<div class="ad" style="border-style:solid"><small>Avisos gratuitos</small><strong>Canal de Telegram</strong><p class="sm">Te avisamos cuando aparezca una nueva oportunidad de compra, con enlace directo al análisis.</p>${TELEGRAM_URL?`<a class="btn on" href="${esc(TELEGRAM_URL)}" target="_blank" rel="noopener">Unirme al canal</a>`:'<span class="badge NA">Muy pronto</span>'}</div>`;
 const TIPS=[
  ["Margen de seguridad","Es la diferencia entre lo que vale un negocio y lo que pagas por él. Cuanto más barato compras respecto a su valor, más colchón tienes si te equivocas en el cálculo. Es una idea de Benjamin Graham."],
  ["Valor intrínseco","Es lo que vale una empresa por el dinero que será capaz de generar, no por lo que marque el precio hoy. Por eso lo calculamos con tres métodos distintos y miramos si coinciden."],
@@ -280,10 +297,12 @@ const TIPS=[
 ];
 const hace=iso=>{if(!iso)return"";const m=Math.round((Date.now()-new Date(iso))/6e4);if(isNaN(m)||m<0)return"";return m<60?`hace ${Math.max(m,1)} min`:m<1440?`hace ${Math.floor(m/60)} h`:`hace ${Math.floor(m/1440)} d`};
 const okUrl=u=>/^https?:\/\//i.test(u||"");
-function noticias(lang,n){
+function noticias(lang,n,ads){
   const a=((D.n&&D.n.items)||[]).filter(x=>x.l===lang&&okUrl(x.u)).slice(0,n);
-  if(!a.length)return '<p class="sm">Todavía no hay titulares cargados. Aparecerán aquí en cuanto se actualicen.</p>';
-  return a.map(x=>`<a class="nw" href="${esc(x.u)}" target="_blank" rel="noopener nofollow">${esc(x.t)}<small>${esc(x.s)}${x.d?" · "+hace(x.d):""}</small></a>`).join("");
+  const h=a.map(x=>`<a class="nw" href="${esc(x.u)}" target="_blank" rel="noopener nofollow">${esc(x.t)}<small>${esc(x.s)}${x.d?" · "+hace(x.d):""}</small></a>`);
+  if(!a.length)return '<p class="sm">Todavía no hay titulares cargados. Aparecerán aquí en cuanto se actualicen.</p>'+(ads||[]).join("");
+  (ads||[]).forEach((ad,i)=>h.splice(Math.min(3+i*4,h.length),0,ad));
+  return h.join("");
 }
 function abrir(t){window._tinit=true;vista("term");detalle(t)}
 function homeRender(){
@@ -297,16 +316,17 @@ function homeRender(){
   const S=D.s||[],ult=S.length?S[S.length-1].date:null,sg=ult?S.filter(s=>s.date===ult):[];
   const tip=TIPS[Math.floor(Date.now()/864e5)%TIPS.length];
   const f=D.f;
-  document.getElementById("hL").innerHTML=`<h3>Noticias de mercado</h3>${noticias("es",14)}<p class="sm" style="margin-top:8px">Solo mostramos el titular y la fuente. Al pulsar se abre la noticia en el medio original.</p>`;
+  document.getElementById("hL").innerHTML=`<h3>Noticias de mercado</h3>${noticias("es",14,[adValmont()])}<p class="sm" style="margin-top:8px">Solo mostramos el titular y la fuente. Al pulsar se abre la noticia en el medio original.</p>`;
   document.getElementById("hC").innerHTML=`
-  <div class="flex" style="margin-bottom:8px"><h2 style="margin:0">Inicio</h2><span class="sm">Relojes calculados con el horario habitual de cada bolsa</span></div>
+  <div class="hero"><h1>El valor de cada empresa,<br><span>calculado con datos oficiales.</span></h1><p>Tres métodos de valoración, salud financiera, grandes fondos y un historial público de aciertos. Sin promesas: con los límites a la vista. Los precios son del último cierre, no en directo.</p><div class="row"><button class="btn on" onclick="vista('term')">Ver el análisis de mercado</button><a class="btn" href="aprender.html">Aprender a leer el análisis</a>${TELEGRAM_URL?`<a class="btn" href="${esc(TELEGRAM_URL)}" target="_blank" rel="noopener">Canal de Telegram</a>`:""}</div></div>
+  <div class="flex" style="margin-bottom:8px"><h3 style="margin:0">Los mercados ahora</h3><span class="sm">Calculado con el horario habitual de cada bolsa</span></div>
   <div class="clocks" id="clocks"></div>
   <p class="sm" style="margin:-4px 0 14px">Incluye los festivos de Nueva York. No incluye los de Madrid, Londres ni Tokio: consulta el calendario oficial de cada bolsa.</p>
   <div class="box"><div class="flex"><h3 style="margin:0">Mejores acciones según nuestro motor</h3><span class="sm">${D.v.updated?"Actualizado "+esc(D.v.updated):""}</span></div>
    <div class="grid"><div class="m"><small>Activos valorados</small><strong>${tot}</strong></div><div class="m"><small>Oportunidades de compra</small><strong class="up">${cu.COMPRAR}</strong></div><div class="m"><small>Mejor esperar</small><strong>${cu.ESPERAR}</strong></div><div class="m"><small>Caros ahora</small><strong class="dn">${cu.CARO}</strong></div></div>
    ${top.length?top.map(x=>`<div class="fila" onclick="abrir('${esc(x[0])}')"><span><strong>${esc(x[0])}</strong> <span class="sm">${esc((D.v.items?.[x[0]]||{}).name||"")}</span></span><span class="sm">${dato(x[1])} · ${D.m[x[0]]?"$"+num(D.m[x[0]].c):""} <span class="badge COMPRAR">COMPRAR</span></span></div>`).join(""):'<p class="sm">Ahora mismo no hay acciones en zona de compra que cumplan todos nuestros filtros.</p>'}
    ${otros?`<p class="sm" style="margin:8px 0 0">Además, ${otros} ${otros===1?"activo":"activos"} entre índices, bonos y materias primas en zona de compra: <a href="#" onclick="irCat('ETFS');return false" style="color:var(--gold)">índices y ETFs</a> · <a href="#" onclick="irCat('BONOS');return false" style="color:var(--gold)">bonos</a> · <a href="#" onclick="irCat('COMMODITIES');return false" style="color:var(--gold)">materias primas</a>.</p>`:""}
-   <button class="btn" style="margin-top:10px" onclick="irCat('TODOS')">Ver todos los activos →</button></div>
+   <button class="btn" style="margin-top:10px" onclick="irCat('TODOS')">Ver todo el análisis →</button></div>
   <div class="two">
    <div class="box"><h3>Mayores subidas del último cierre</h3>${mv.length?mvh(mv.slice(0,5)):'<p class="sm">Se mostrarán tras la próxima actualización diaria.</p>'}<p class="sm" style="margin-top:6px">Entre las acciones de nuestra lista principal.</p></div>
    <div class="box"><h3>Mayores bajadas del último cierre</h3>${mv.length?mvh(mv.slice(-5).reverse()):'<p class="sm">Se mostrarán tras la próxima actualización diaria.</p>'}</div>
@@ -324,15 +344,13 @@ function homeRender(){
    <a class="sc" onclick="irCat('BONOS')"><strong>Bonos</strong><span class="sm">Rentabilidad actual frente a los últimos 10 años.</span></a>
    <a class="sc" onclick="vista('fund')"><strong>Grandes fondos</strong><span class="sm">Qué compran y venden los grandes inversores.</span></a>
    <a class="sc" onclick="vista('hist')"><strong>Historial</strong><span class="sm">Cada señal, con su fecha y su resultado real.</span></a>
+   <a class="sc" href="aprender.html"><strong>Aprender</strong><span class="sm">Cómo leer cada pantalla y qué significa cada término.</span></a>
+   <a class="sc" href="como-funciona.html"><strong>Cómo funciona</strong><span class="sm">Métodos, fuentes de datos y límites, sin letra pequeña.</span></a>
   </div>
-  <h3 style="margin-top:16px">Más de nuestra empresa</h3>
-  <div class="two">
-   <a class="promo" href="https://nexusterminalalerts.com/" target="_blank" rel="noopener sponsored"><small>Publicidad propia</small><br><strong style="color:var(--w)">Nexus Terminal</strong><div class="sm">Escáner de mercado con señales diarias y su histórico público.</div></a>
-   <a class="promo" href="https://www.valmontco.com/" target="_blank" rel="noopener sponsored"><small>Publicidad propia</small><br><strong style="color:var(--w)">Valmont &amp; Co.</strong><div class="sm">Academia de inversión: guías, cursos y libros.</div></a>
-  </div>
-  <p class="sm" style="margin-top:6px">Equity Intelligence, Nexus Terminal y Valmont &amp; Co. pertenecen a Community16 LLC. La formación no es asesoramiento financiero ni garantiza resultados.</p>`;
+  <div class="two" style="margin-top:14px">${telegramCard()}<div class="ad"><span class="adl">Publicidad</span><small>Valmont &amp; Co. · Academia de inversión</small><strong>Aprende a invertir con guías, libros y cursos</strong><p class="sm">Guías y libros en español e inglés, con prólogos gratis. Cursos en español. Contenido educativo creado por el equipo de Community16 LLC.</p><div class="row"><a class="btn on" href="${VAL}collections/complete-guides" target="_blank" rel="noopener sponsored">Ver guías</a><a class="btn" href="${VAL}collections/courses" target="_blank" rel="noopener sponsored">Ver cursos</a><a class="btn" href="${VAL}" target="_blank" rel="noopener sponsored">Ir a valmontco.com</a></div></div></div>
+  <p class="sm" style="margin-top:6px">Equity Intelligence, Nexus Terminal y Valmont &amp; Co. pertenecen a Community16 LLC. Los anuncios son propios; la formación no es asesoramiento financiero ni garantiza resultados.</p>`;
   const tb=(a)=>a&&a.length?a.map(x=>`<div class="fila" ${x.ticker&&D.m[x.ticker]?`onclick="abrir('${esc(x.ticker)}')"`:""}><span><strong>${esc(x.ticker||"")}</strong> <span class="sm">${esc(x.name||"")}</span></span><span class="sm">${esc(x.funds)} de ${esc(f.total)} fondos</span></div>`).join(""):"";
-  document.getElementById("hR").innerHTML=`<h3>Mercados de EE. UU. <span class="sm">(titulares en inglés)</span></h3>${noticias("en",10)}
+  document.getElementById("hR").innerHTML=`<h3>Mercados de EE. UU. <span class="sm">(titulares en inglés)</span></h3>${noticias("en",10,[adCursos(),adNexus()])}
   ${f&&f.buys&&f.buys.length?`<h3 style="margin-top:16px">Los grandes fondos compraron</h3>${tb(f.buys.slice(0,6))}<p class="sm" style="margin-top:6px">Informes 13F del trimestre ${esc(f.quarter)}. Llegan con hasta 45 días de retraso.</p><button class="btn" style="width:100%;margin-top:6px" onclick="vista('fund')">Ver todas las carteras →</button>`:""}`;
   relojes();
 }
@@ -341,12 +359,56 @@ function irCat(c){
   buildFilters();vista("term");lista();
   const p=document.querySelector("#list .card");if(p)p.click();
 }
-const NAVCAT={TODOS:"tTerm",ACCIONES:"tAcc",ETFS:"tEtf",COMMODITIES:"tCom",BONOS:"tBon"};
+function subnav(){
+  const el=document.getElementById("subnav"),cnt={};
+  tickers().forEach(t=>{const ty=(D.v.items?.[t]?.type)||D.m[t]?.type||"ACCIONES";cnt[ty]=(cnt[ty]||0)+1});
+  const tabs=[["TODOS","Todo",tickers().length],["ACCIONES","Acciones",cnt.ACCIONES||0],["ETFS","Índices y ETFs",cnt.ETFS||0],["COMMODITIES","Materias primas",cnt.COMMODITIES||0],["BONOS","Bonos",cnt.BONOS||0]];
+  el.innerHTML=tabs.map(x=>`<button class="tab${cat===x[0]?" on":""}" onclick="irCat('${x[0]}')">${x[1]} <span>${x[2]}</span></button>`).join("")+`<span class="sm sn">Elige un tipo de activo y luego un veredicto</span>`;
+}
 function navOn(on){
   const v=on||window._vista;
-  ["tHome","tTerm","tAcc","tEtf","tCom","tBon","tFund","tHist"].forEach(i=>document.getElementById(i).classList.remove("on"));
-  const id=v==="home"?"tHome":v==="term"?NAVCAT[cat]:v==="fund"?"tFund":v==="hist"?"tHist":null;
+  ["tHome","tAn","tFund","tHist"].forEach(i=>document.getElementById(i).classList.remove("on"));
+  const id={home:"tHome",term:"tAn",fund:"tFund",hist:"tHist"}[v];
   if(id)document.getElementById(id).classList.add("on");
+  document.getElementById("subnav").style.display=v==="term"?"flex":"none";
+  if(v==="term")subnav();
+}
+
+/* ===== HISTORIAL con comparativas ===== */
+async function histPrecio(t){if(D.h[t]===undefined)D.h[t]=await j(`data/history/${t}.json`);return D.h[t]}
+function precioEn(h,f){
+  if(!h||!h.length)return null;let lo=0,hi=h.length-1,r=null;
+  while(lo<=hi){const m=(lo+hi)>>1;if(h[m][0]<=f){r=h[m];lo=m+1}else hi=m-1}
+  return r&&(new Date(f)-new Date(r[0]))/864e5<=10?r[1]:null;
+}
+async function historial(){
+  const el=document.getElementById("vHist"),S=D.s||[];
+  if(!S.length){el.innerHTML='<div class="box"><h2>Historial de señales</h2><p class="sm">Aún no hay señales registradas. Cada veredicto se guardará con su fecha y precio, y se comparará con el mercado. No hay datos simulados del pasado.</p></div>';return}
+  el.innerHTML='<div class="box"><h2>Historial de señales</h2><p class="sm">Cargando comparativas…</p></div>';
+  const [hq,hv]=await Promise.all([histPrecio("QQQ"),histPrecio("VTI")]);
+  const spy=D.m.SPY?.c,q=D.m.QQQ?.c,v=D.m.VTI?.c;
+  const rows=S.map(s=>{
+    const p=D.m[s.ticker]?.c,r=p?(p/s.price-1)*100:null,b=spy&&s.spy?(spy/s.spy-1)*100:null;
+    const q0=precioEn(hq,s.date),bq=q&&q0?(q/q0-1)*100:null,v0=precioEn(hv,s.date),bv=v&&v0?(v/v0-1)*100:null;
+    return{...s,p,r,b,bq,bv};
+  });
+  const com=rows.filter(x=>x.r!==null&&x.b!==null&&x.bq!==null&&x.bv!==null);
+  const avg=k=>com.length?com.reduce((a,x)=>a+x[k],0)/com.length:null;
+  const gana=(k)=>com.filter(x=>x.r>x[k]).length;
+  const c=x=>x===null?"—":`<span class="${x>=0?"up":"dn"}">${num(x,1)} %</span>`;
+  const card=(t,val,sub)=>`<div class="m"><small>${t}</small><strong>${val}</strong>${sub?`<small>${sub}</small>`:""}</div>`;
+  el.innerHTML=`<div class="box"><div class="flex"><h2 style="margin:0">Historial de señales</h2><a class="btn" href="aprender.html#historial">Cómo leer este historial</a></div>
+  <p class="sm">Cada señal se registró el día que se emitió y sus resultados no se editan. Las comparamos con tres referencias objetivas en las mismas fechas: el S&amp;P 500, el Nasdaq 100 y el mercado total de EE. UU. No importamos historiales de otras webs: no son datos públicos verificables y no podríamos comprobarlos.</p>
+  <div class="grid"><div class="m"><small>Señales registradas</small><strong>${S.length}</strong></div>
+  <div class="m"><small>Con resultado comparable</small><strong>${com.length}</strong><small>de ${S.length}</small></div>
+  ${card("Nuestras señales (media)",com.length?num(avg("r"),1)+" %":"—","")}
+  ${card("S&amp;P 500, mismas fechas",com.length?num(avg("b"),1)+" %":"—",com.length?"superamos en "+gana("b")+" de "+com.length:"")}
+  ${card("Nasdaq 100",com.length?num(avg("bq"),1)+" %":"—",com.length?"superamos en "+gana("bq")+" de "+com.length:"")}
+  ${card("Mercado total EE. UU.",com.length?num(avg("bv"),1)+" %":"—",com.length?"superamos en "+gana("bv")+" de "+com.length:"")}</div>
+  ${com.length<30?`<div class="note"><strong>Muestra todavía muy pequeña.</strong> Solo ${com.length} de ${S.length} señales se pueden comparar ya, y además llevan pocos días. Estos porcentajes <strong>no demuestran nada</strong> todavía: los mostramos tal cual, sin retocarlos. Resultados pasados no garantizan resultados futuros.</div>`:""}
+  <div class="note" style="border-color:var(--b)">Las señales incluyen también bonos, materias primas e índices, que no siempre se mueven como la bolsa. Por eso la comparación con las referencias de renta variable es orientativa.</div>
+  <div style="overflow-x:auto"><table><tr><th>Fecha</th><th>Activo</th><th>Veredicto</th><th>Precio entonces</th><th>Precio hoy</th><th>Nuestra señal</th><th>S&amp;P 500</th><th>Nasdaq 100</th><th>Mercado total</th></tr>
+  ${rows.map(x=>`<tr><td>${esc(x.date)}</td><td><strong>${esc(x.ticker)}</strong></td><td><span class="badge ${esc(x.verdict)}">${esc(x.verdict)}</span></td><td>$${num(x.price)}</td><td>${x.p?"$"+num(x.p):"—"}</td><td>${c(x.r)}</td><td>${c(x.b)}</td><td>${c(x.bq)}</td><td>${c(x.bv)}</td></tr>`).join("")}</table></div></div>`;
 }
 
 function detalle(t){
@@ -501,7 +563,7 @@ function vista(v){
   navOn(v);
   if(v==="home")relojes();if(v==="hist")historial();if(v==="fund")fondos();window.scrollTo(0,0);
 }
-function historial(){
+function historialViejo(){
   const el=document.getElementById("vHist"),S=D.s||[];
   if(!S.length){el.innerHTML='<div class="box"><h2>Historial de señales</h2><p class="sm">Aún no hay señales registradas. Cada veredicto se guardará con su fecha y precio, y se comparará con el S&amp;P 500. No hay datos simulados del pasado.</p></div>';return}
   const spy=D.m.SPY?.c;

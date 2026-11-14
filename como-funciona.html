@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cómo funciona | Equity Intelligence</title>
-<meta name="description" content="Cómo calculamos el valor intrínseco, los veredictos, la fiabilidad y de dónde salen los datos.">
+<meta name="description" content="Cómo calculamos el valor intrínseco, los veredictos y la fiabilidad, qué cubrimos, de dónde salen los datos y cuándo se actualizan.">
 <link rel="stylesheet" href="estilo.css">
 <script src="tema.js"></script>
 </head>
@@ -12,19 +12,38 @@
 <header class="cab">
   <a class="marca" href="./">Equity Intelligence</a>
   <div class="acc">
+    <a class="bt" href="aprender.html">Aprender</a>
+    <a class="bt" href="como-funciona.html">Cómo funciona</a>
     <a class="bt" href="./">← Volver a la web</a>
     <button class="bt" type="button" data-tema-btn onclick="cambiarTema()" title="Cambiar entre modo claro y modo noche">☀ Modo claro</button>
   </div>
 </header>
-<main class="pag">
+<main class="pag ancha">
+<nav class="toc" id="toc" aria-label="Índice de la página"></nav><div class="cont">
 <h1>Cómo funciona</h1>
-<p class="fecha">Última actualización: 10 de noviembre de 2026</p>
+<p class="fecha">Última actualización: 14 de noviembre de 2026</p>
 
 <p>Aquí te explicamos, sin tecnicismos, qué hace Equity Intelligence y dónde están sus límites. Si algo no se puede calcular con datos reales y fiables, lo mostramos como <strong>«Sin valorar»</strong> en lugar de inventar un número.</p>
-<div class="aviso">Información, no asesoramiento financiero. Lee el <a href="riesgo.html">aviso de riesgo</a>.</div>
+<div class="aviso">Información, no asesoramiento financiero. Lee el <a href="riesgo.html">aviso de riesgo</a>. Si quieres aprender a leer cada pantalla, tienes la <a href="aprender.html">guía para aprender</a>.</div>
+
+<div class="tarjetas">
+<div><b>Tres métodos</b>Cada empresa se valora de tres formas distintas y se compara el resultado.</div>
+<div><b>Datos oficiales</b>Cuentas de la SEC, tipos de la Reserva Federal y precios de cierre de mercado.</div>
+<div><b>Sin maquillaje</b>Si falta un dato lo decimos. «Sin valorar» es mejor que un número inventado.</div>
+<div><b>Historial público</b>Cada señal se guarda con su fecha y no se edita. Se compara con el mercado.</div>
+</div>
 
 <h2>La idea en una frase</h2>
-<p>Estimamos cuánto <strong>vale</strong> una empresa por lo que gana y lo que tiene, y lo comparamos con lo que <strong>cuesta</strong> hoy en bolsa. Si cuesta bastante menos de lo que vale, puede ser una oportunidad.</p>
+<p>Estimamos cuánto <strong>vale</strong> una empresa por lo que gana y lo que tiene, y lo comparamos con lo que <strong>cuesta</strong> hoy en bolsa. Si cuesta bastante menos de lo que vale, puede ser una oportunidad. Si cuesta más, puede estar cara.</p>
+
+<h2>Qué cubrimos</h2>
+<ul>
+<li><strong>Lista principal:</strong> una selección de acciones grandes y conocidas de EE. UU., con gráfico, cuentas de 5 años, tres métodos de valoración y sello de fiabilidad.</li>
+<li><strong>Mercado amplio:</strong> miles de empresas de EE. UU. con cuentas oficiales en la SEC. Cada domingo recalculamos su valoración y cada día comparamos su precio con ella.</li>
+<li><strong>Índices y ETFs, materias primas y bonos:</strong> fondos cotizados que representan mercados enteros, oro, petróleo, bonos del Tesoro y de empresas.</li>
+<li><strong>Grandes fondos:</strong> las carteras de grandes inversores, a partir de los informes 13F de la SEC.</li>
+</ul>
+<p>Todavía no cubrimos criptomonedas ni bolsas fuera de EE. UU. Cuando lo hagamos, lo explicaremos aquí con el método que usemos.</p>
 
 <h2>Tres formas de calcular lo que vale (valor intrínseco)</h2>
 <ol>
@@ -71,8 +90,14 @@
 <h2>Grandes fondos</h2>
 <p>Los grandes gestores de EE. UU. están obligados a informar cada trimestre de lo que tienen en cartera (informe 13F). Los mostramos junto a nuestro veredicto de cada empresa. Estos informes llegan con hasta 45 días de retraso, solo incluyen acciones de EE. UU. y no reflejan ventas en corto.</p>
 
-<h2>Historial de señales: sin trampas</h2>
-<p>Cada veredicto se guarda el día que se emite, con su precio, y <strong>nunca se edita</strong>. Lo comparamos con el S&amp;P 500 en las mismas fechas. Hemos empezado hace poco, así que con pocas señales medidas <strong>todavía no podemos demostrar que el método funcione mejor que el azar</strong>. Lo iremos mostrando con honestidad, sea bueno o malo.</p>
+<h2 id="historial">Historial de señales: sin trampas</h2>
+<p>Cada veredicto se guarda el día que se emite, con su precio, y <strong>nunca se edita</strong>. Lo comparamos con tres referencias en las mismas fechas: el S&amp;P 500, el Nasdaq 100 y el mercado total de EE. UU. Hemos empezado hace poco, así que con pocas señales medidas <strong>todavía no podemos demostrar que el método funcione mejor que el azar</strong>. Lo mostramos con honestidad, sea bueno o malo. No importamos historiales de otras webs porque no son datos que se puedan verificar.</p>
+
+<h2>Noticias</h2>
+<p>La columna de noticias muestra solo el titular, el nombre del medio y un enlace a la noticia original. No copiamos artículos. Los titulares pertenecen a sus medios y se actualizan cada pocas horas. Los de la columna derecha están en inglés porque proceden de medios de EE. UU. Las noticias son información general: no forman parte de nuestro análisis ni influyen en los veredictos.</p>
+
+<h2>Qué significa «Sin valorar»</h2>
+<p>Un activo aparece «Sin valorar» cuando no podemos calcular su valor con datos fiables. Los motivos más habituales: es un fondo, una inmobiliaria o un intermediario financiero (necesitan métodos propios), la empresa no tiene suficientes años de cuentas, o no hemos podido confirmar su sector. Preferimos decirlo antes que enseñar un número engañoso.</p>
 
 <h2>Qué NO hacemos</h2>
 <ul>
@@ -80,21 +105,43 @@
 <li>No prometemos rentabilidades.</li>
 <li>No inventamos datos: si falta algo, lo decimos.</li>
 <li>No damos consejos personalizados.</li>
+<li>No mostramos precios en directo: son del último cierre.</li>
 </ul>
 
 <h2>De dónde salen los datos y cuándo se actualizan</h2>
-<ul>
-<li>Cuentas de las empresas: SEC (EDGAR), oficiales.</li>
-<li>Precios: cierre de sesión, no en directo.</li>
-<li>Tipos de interés, inflación y crédito: FRED (Reserva Federal de St. Louis).</li>
-<li>Grandes fondos: informes 13F de la SEC.</li>
-</ul>
-<p>Los precios y valoraciones se actualizan de martes a sábado de madrugada (hora de España), con el cierre del día anterior. La valoración de todo el mercado se recalcula cada domingo. Los informes 13F se actualizan cada lunes. La fecha de la última actualización aparece arriba en la web.</p>
+<table>
+<tr><th>Qué</th><th>Fuente</th><th>Cuándo se actualiza</th></tr>
+<tr><td>Cuentas de las empresas</td><td>SEC (EDGAR), oficiales</td><td>Cada vez que la empresa presenta cuentas nuevas</td></tr>
+<tr><td>Precios y valoraciones de la lista principal</td><td>Cierre de sesión</td><td>De martes a sábado de madrugada (hora de España), con el cierre del día anterior</td></tr>
+<tr><td>Valoración de todo el mercado</td><td>Cuentas de la SEC</td><td>Cada domingo</td></tr>
+<tr><td>Tipos de interés, inflación y crédito</td><td>FRED (Reserva Federal de St. Louis)</td><td>Con la actualización diaria</td></tr>
+<tr><td>Grandes fondos</td><td>Informes 13F de la SEC</td><td>Cada lunes (los informes llegan con hasta 45 días de retraso)</td></tr>
+<tr><td>Noticias</td><td>Titulares públicos de varios medios</td><td>Cada pocas horas</td></tr>
+<tr><td>Relojes de las bolsas</td><td>Horario habitual de cada bolsa</td><td>En directo, en tu navegador</td></tr>
+</table>
+<p>La fecha de la última actualización aparece arriba en la web. Los festivos de Nueva York están incluidos en los relojes; los de Madrid, Londres y Tokio no, así que consulta el calendario oficial de cada bolsa.</p>
 
+<h2>Preguntas frecuentes</h2>
+<h3>¿Los precios son en directo?</h3>
+<p>No. Son del último cierre de mercado. Lo indicamos siempre en la cabecera y en la cinta de cotizaciones.</p>
+<h3>Una empresa sale COMPRAR, ¿debo comprarla?</h3>
+<p>No es una orden ni una recomendación personal. Es un punto de partida: significa que, según nuestros cálculos, cotiza con un margen de seguridad amplio. Antes de actuar, investiga por tu cuenta, piensa en tu situación y en el riesgo, y lee el <a href="riesgo.html">aviso de riesgo</a>.</p>
+<h3>¿Por qué una empresa barata no sale COMPRAR?</h3>
+<p>Porque puede tener una salud financiera frágil, datos dudosos (fiabilidad baja) o un margen menor del 25 %. En esos casos salen REVISAR o ESPERAR, con la explicación.</p>
+<h3>¿Cómo sé si el método funciona?</h3>
+<p>Mirando el <strong>Historial</strong>. Todavía es pronto para concluir nada, y lo decimos en la propia página.</p>
+<h3>¿Quién está detrás?</h3>
+<p>Equity Intelligence es una publicación de Community16 LLC. Más datos en el <a href="aviso-legal.html">aviso legal</a>.</p>
+
+</div>
 </main>
+<script>
+(function(){var t=document.getElementById("toc");if(!t)return;var h=document.querySelectorAll(".cont h2"),o="<b>En esta página</b>";
+h.forEach(function(e,i){if(!e.id)e.id="s"+(i+1);o+='<a href="#'+e.id+'">'+e.textContent+'</a>'});t.innerHTML=o})();
+</script>
 <footer class="pie">
   <p><strong>Información, no asesoramiento financiero.</strong> Invertir conlleva riesgo de perder dinero.</p>
-  <p><a href="aviso-legal.html">Aviso legal</a> <a href="privacidad.html">Privacidad</a> <a href="cookies.html">Cookies</a> <a href="riesgo.html">Aviso de riesgo</a> <a href="como-funciona.html">Cómo funciona</a></p>
+  <p><a href="aviso-legal.html">Aviso legal</a> <a href="privacidad.html">Privacidad</a> <a href="cookies.html">Cookies</a> <a href="riesgo.html">Aviso de riesgo</a> <a href="como-funciona.html">Cómo funciona</a> <a href="aprender.html">Aprender</a></p>
   <p>© Community16 LLC. Nuevo México, EE. UU.</p>
 </footer>
 </body>
