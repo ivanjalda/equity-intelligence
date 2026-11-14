@@ -100,6 +100,8 @@ td,th{padding:6px 7px;border-bottom:1px solid var(--b);text-align:left}th{color:
 .in{background:var(--p2);color:var(--t);border:1px solid var(--b);border-radius:6px;padding:8px 10px;font:inherit}
 .tmap{border-radius:8px;overflow:hidden;background:var(--b)}.tile{position:absolute;box-sizing:border-box;border:1px solid var(--bg);color:#fff;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:clamp(9px,1.1vw,15px)}.tile:hover{filter:brightness(1.18)}.tile span{line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,.45)}.tile small{display:block;font-weight:500;font-size:.8em}
 #vTools{flex:1;min-height:0;overflow:auto}
+
+.nwf{border:1px solid var(--b);border-left:4px solid hsl(var(--h) 55% 52%);border-radius:8px;padding:10px 12px;margin:8px 0;background:var(--p2);font-size:15px;line-height:1.3}.nwf em{display:block;font-style:normal;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:hsl(var(--h) 60% 62%);font-weight:700;margin-bottom:4px}.nwf span{display:block;font-weight:600}.nwf small{display:block;margin-top:4px;color:var(--m)}
 </style>
 </head>
 <body>
@@ -310,9 +312,17 @@ const TIPS=[
 ];
 const hace=iso=>{if(!iso)return"";const m=Math.round((Date.now()-new Date(iso))/6e4);if(isNaN(m)||m<0)return"";return m<60?`hace ${Math.max(m,1)} min`:m<1440?`hace ${Math.floor(m/60)} h`:`hace ${Math.floor(m/1440)} d`};
 const okUrl=u=>/^https?:\/\//i.test(u||"");
+/* Fotos solo de organismos públicos (SEC y Reserva Federal). El resto, solo texto. */
+const IMG_OK=["SEC","Reserva Federal"];
 function noticias(lang,n,ads){
   const a=((D.n&&D.n.items)||[]).filter(x=>x.l===lang&&okUrl(x.u)).slice(0,n);
-  const h=a.map(x=>x.i&&/^https:\/\//i.test(x.i)?`<a class="nw nwi" href="${esc(x.u)}" target="_blank" rel="noopener nofollow"><span class="ph"><img src="${esc(x.i)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.nwi').classList.remove('nwi');this.parentNode.remove()"></span><span class="tx">${esc(x.t)}<small>${esc(x.s)}${x.d?" · "+hace(x.d):""}</small></span></a>`:`<a class="nw" href="${esc(x.u)}" target="_blank" rel="noopener nofollow">${esc(x.t)}<small>${esc(x.s)}${x.d?" · "+hace(x.d):""}</small></a>`);
+  const hue=s=>{let k=0;for(const c of s)k=(k*31+c.charCodeAt(0))%360;return k};
+  const meta=x=>`<small>${esc(x.s)}${x.d?" · "+hace(x.d):""}</small>`;
+  const h=a.map((x,n)=>{
+    const foto=IMG_OK.includes(x.s)&&x.i&&/^https:\/\//i.test(x.i);
+    if(foto)return `<a class="nw nwi" href="${esc(x.u)}" target="_blank" rel="noopener nofollow"><span class="ph"><img src="${esc(x.i)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.closest('.nwi').classList.remove('nwi');this.parentNode.remove()"></span><span class="tx">${esc(x.t)}${meta(x)}</span></a>`;
+    if(n%3===1)return `<a class="nw nwf" style="--h:${hue(x.s)}" href="${esc(x.u)}" target="_blank" rel="noopener nofollow"><em>${esc(x.s)}</em><span>${esc(x.t)}</span>${x.d?`<small>${hace(x.d)}</small>`:""}</a>`;
+    return `<a class="nw" href="${esc(x.u)}" target="_blank" rel="noopener nofollow">${esc(x.t)}${meta(x)}</a>`});
   if(!a.length)return '<p class="sm">Todavía no hay titulares cargados. Aparecerán aquí en cuanto se actualicen.</p>'+(ads||[]).join("");
   (ads||[]).forEach((ad,i)=>h.splice(Math.min(3+i*4,h.length),0,ad));
   return h.join("");
