@@ -531,7 +531,9 @@ def main():
             continue
         rows, long_rows = got
         last = rows[-1]
-        market[t] = {"c": round(last[4], 2), "o": round(last[1], 2), "h": round(last[2], 2), "l": round(last[3], 2), "v": int(last[5]), "type": u["type"]}
+        market[t] = {"c": round(last[4], 2), "o": round(last[1], 2), "h": round(last[2], 2), "l": round(last[3], 2), "v": int(last[5]), "type": u["type"], "d": last[0]}
+        if len(rows) > 1:
+            market[t]["p"] = round(rows[-2][4], 2)  # cierre anterior, para la variación del día
         hists[t] = downsample(long_rows)
         entry = {"type": u["type"], "name": cik.get(t.replace(".", "-"), (0, t))[1].title()}
         items[t] = entry
