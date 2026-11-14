@@ -2,7 +2,8 @@
 """Equity Intelligence: compras y ventas de directivos (formulario 4 de la SEC).
 Lee el índice diario de EDGAR, descarga cada formulario 4 y guarda en data/insiders.json las
 compras y ventas en mercado abierto (códigos P y S) de al menos 50.000 $. Conserva 45 días."""
-import json, re, sys, time
+import json, re, sys, time, threading
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, timedelta
 import xml.etree.ElementTree as ET
 from engine import get, DATA, SEC_UA
@@ -10,13 +11,22 @@ from engine import get, DATA, SEC_UA
 H = {"User-Agent": SEC_UA}
 MIN_USD = 50000
 KEEP_DAYS = 45
-BACK_DAYS = 12          # en la primera vuelta mira los últimos días hábiles
-MAX_PER_RUN = 6000      # límite de formularios por ejecución (la SEC admite ~10 por segundo)
+BACK_DAYS = 8           # en la primera vuelta mira los últimos días hábiles
+MAX_PER_RUN = 30000
+BUDGET = 55 * 60        # segundos: pasado este tiempo se guarda lo leído y se sigue en la próxima ejecución
 OUT = DATA / "insiders.json"
 
 
+_lock = threading.Lock()
+_next = [0.0]
+
+
 def sec(url):
-    time.sleep(0.12)
+    """Pide a la SEC como máximo ~8 veces por segundo en total (el límite es 10)."""
+    with _lock:
+        t = max(time.time(), _next[0])
+        _next[0] = t + 0.125
+    time.sleep(max(0, t - time.time()))
     return get(url, H, 60)
 
 
@@ -93,26 +103,45 @@ def main():
     seen = set(old.get("seen", []))
     items = list(old.get("items", []))
     today = date.today()
+    t0 = time.time()
     days = []
     d = today
-    while len(days) < (BACK_DAYS if not seen else 4):
+    while len(days) < BACK_DAYS:
         if d.weekday() < 5:
             days.append(d)
         d -= timedelta(days=1)
     nuevos = fallos = 0
-    for d in sorted(days):
+    todo = []
+    for d in sorted(days, reverse=True):          # primero lo más reciente
         fl = day_filings(d)
         pend = [(a, p) for a, p in fl.items() if a not in seen]
-        print(f"{d}: {len(fl)} formularios 4, {len(pend)} nuevos.")
-        for acc, path in pend:
-            if nuevos + fallos >= MAX_PER_RUN:
-                break
-            try:
-                items.extend(parse(sec("https://www.sec.gov/Archives/" + path)))
-                seen.add(acc)
-                nuevos += 1
-            except Exception:
+        print(f"{d}: {len(fl)} formularios 4, {len(pend)} nuevos.", flush=True)
+        todo.extend(pend)
+
+    def work(ap):
+        acc, path = ap
+        if time.time() - t0 > BUDGET:
+            return None
+        try:
+            return acc, parse(sec("https://www.sec.gov/Archives/" + path))
+        except Exception:
+            return acc, False
+
+    with ThreadPoolExecutor(8) as ex:
+        for r in ex.map(work, todo[:MAX_PER_RUN]):
+            if r is None:
+                continue
+            acc, res = r
+            if res is False:
                 fallos += 1
+                continue
+            items.extend(res)
+            seen.add(acc)
+            nuevos += 1
+            if nuevos % 1000 == 0:
+                print(f"  {nuevos} leídos, {len(items)} operaciones...", flush=True)
+    if len(todo) > nuevos + fallos:
+        print(f"Quedan {len(todo) - nuevos - fallos} por leer; se harán en la próxima ejecución.", flush=True)
     limite = (today - timedelta(days=KEEP_DAYS)).isoformat()
     items = [x for x in items if x["d"] >= limite]
     uniq = {(x["t"], x["w"], x["d"], x["k"], x["sh"], x["px"]): x for x in items}
