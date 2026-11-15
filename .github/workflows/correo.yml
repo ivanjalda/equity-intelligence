@@ -1,0 +1,29 @@
+name: Resumen diario por correo
+
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"    # lunes a viernes, tras el cierre del mercado y los motores
+  workflow_dispatch:            # permite ejecutarlo a mano
+
+permissions:
+  contents: write
+
+concurrency:
+  group: equity-data
+  cancel-in-progress: false
+
+jobs:
+  correo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Preparar y enviar el resumen
+        env:
+          SITE_URL: "https://equityintrinsic.com/"
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          BREVO_LIST_ID: ${{ secrets.BREVO_LIST_ID }}
+        run: python -u scripts/correo.py
