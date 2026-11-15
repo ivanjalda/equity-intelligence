@@ -1,4 +1,4 @@
-/* Equity Intelligence · modo noche / modo claro. Solo guarda tu elección en tu propio navegador. */
+/* Equity Intrinsic · modo noche / modo claro. Solo guarda tu elección en tu propio navegador. */
 (function(){
   var K="ei-tema",R=document.documentElement;
   function leer(){try{return localStorage.getItem(K)}catch(e){return null}}
