@@ -670,6 +670,8 @@ function tools(){
   const el=document.getElementById("vTools");
   el.innerHTML=`<div class="box"><h2>Herramientas</h2><p class="sm">Útiles para estudiar por tu cuenta. Todo son datos y cálculos informativos, no asesoramiento financiero.</p>
   <div class="row" id="tlTabs" style="margin:10px 0 14px">${TOOLS.map(([k,l])=>`<button class="btn${TOOL===k?" on":""}" onclick="TOOL='${k}';tools()">${l}</button>`).join("")}</div><div id="tlBody"></div></div>`;
+  const lkN=({comp:"El comparador de empresas",dir:"Las compras de directivos"})[TOOL],lk=lkN&&accLocked(lkN);
+  if(lk){document.getElementById("tlBody").innerHTML=lk;return}
   ({comp:toolComp,calc:toolCalc,mapa:toolMapa,res:toolRes,dir:toolDir})[TOOL]();
 }
 const tlv=c=>c?`<span class="badge ${c.verdict}">${c.verdict}</span>`:'<span class="badge NA">Sin valorar</span>';
@@ -1012,8 +1014,8 @@ function fFinanzas(fd){
   <div class="box"><h3>Desglose del año</h3><div class="row" id="fyrs" style="margin:6px 0">${yrs.map(i=>`<button class="btn" data-i="${i}" onclick="FY=${i};fVis()">${st.y[i]}</button>`).join("")}</div>
   <h4 style="margin:12px 0 4px">De cada dólar que vende, adónde va</h4><div id="fsank"></div>
   <h4 style="margin:16px 0 4px">El balance: lo que tiene y lo que debe</h4><div id="fbal"></div></div>
-  <div class="box"><h3>Estados financieros</h3><div class="row" id="ftabs" style="margin:6px 0"></div><div id="ftab" style="overflow-x:auto"></div>
-  <p class="sm" style="margin-top:6px">Cuentas anuales oficiales (SEC), en millones de dólares salvo el beneficio por acción. Pulsa en cualquier línea para ver qué significa. Las líneas en cursiva las calculamos nosotros.</p>${fFuente(st)}</div>`;
+  ${accLocked("Estados financieros completos")||`<div class="box"><h3>Estados financieros</h3><div class="row" id="ftabs" style="margin:6px 0"></div><div id="ftab" style="overflow-x:auto"></div>
+  <p class="sm" style="margin-top:6px">Cuentas anuales oficiales (SEC), en millones de dólares salvo el beneficio por acción. Pulsa en cualquier línea para ver qué significa. Las líneas en cursiva las calculamos nosotros.</p>${fFuente(st)}</div>`}`;
 }
 function fFuente(st){
   if(!st.src||!st.cik)return`<p class="sm">Fuente: informes anuales (formulario 10-K) presentados a la SEC. Todavía no incluimos los trimestrales (10-Q).</p>`;
@@ -1097,6 +1099,7 @@ function fBalanza(){
   return bar("Lo que tiene (activos)",A)+bar("De dónde sale: lo que debe y lo que es de los accionistas",P)+neg+`<p class="sm">Ejercicio ${st.y[i]}. Las dos barras miden lo mismo desde dos lados: todo lo que tiene la empresa se ha pagado con deudas o con dinero de sus accionistas.</p>`;
 }
 function fTabs(){
+  if(!document.getElementById("ftabs"))return;
   const T=[["is","Cuenta de resultados"],["bs","Balance"],["cf","Flujo de caja"]];
   document.getElementById("ftabs").innerHTML=T.map(([k,l])=>`<button class="btn${FTAB===k?" on":""}" onclick="FTAB='${k}';fTabs()">${l}</button>`).join("");
   const st=FD.st,S=st[FTAB]||{},y=st.y;
@@ -1158,6 +1161,7 @@ function fPeers(t,v){
 }
 function fDirect(t){
   if(!D.ins||!D.ins.items)return"";
+  const lk=accLocked("Compras y ventas de directivos");if(lk)return lk;
   const L=D.ins.items.filter(x=>x.t===t).slice(0,12);
   const usd=x=>"$"+fN(x,0);
   if(!L.length)return `<div class="box"><h3>Compras y ventas de directivos</h3><p class="sm">Sin operaciones de al menos 50.000 $ en el mercado en los últimos 45 días (datos del formulario 4 de la SEC).</p></div>`;
@@ -1166,14 +1170,14 @@ function fDirect(t){
   <div style="overflow-x:auto"><table><tr><th>Fecha</th><th>Quién</th><th>Cargo</th><th>Operación</th><th>Acciones</th><th>Precio</th><th>Importe</th><th>Cambio en su posición</th></tr>${L.map(x=>`<tr><td>${esc(x.d)}</td><td>${esc(x.w)}</td><td class="sm">${esc(x.r)}</td><td class="${x.k==="P"?"up":"dn"}">${x.k==="P"?"Compra":"Venta"}${x.p?' <span class="sm">· programada</span>':""}</td><td>${fN(x.sh,0)}</td><td>$${num(x.px)}</td><td>${usd(x.v)}</td><td>${dPos(x)}</td></tr>`).join("")}</table></div></div>`;
 }
 /* --- correo electrónico --- */
-function fEmailForm(id){
+function fEmailForm(id,mail){
   return `<form action="${esc(EMAIL_FORM)}" method="post" target="_blank" onsubmit="fStore('ei_em','1');setTimeout(()=>{const b=document.getElementById('${id}');if(b)b.innerHTML='<p><strong>¡Gracias!</strong> Revisa tu correo para confirmar la suscripción.</p>'},300)">
-  <div class="row" style="flex-wrap:wrap;gap:8px"><input class="in" type="email" name="${esc(EMAIL_FIELD)}" required placeholder="tu@correo.com" style="flex:1;min-width:220px"><button class="btn on" type="submit">Quiero las alertas</button></div>
-  <label class="sm" style="display:block;margin-top:6px"><input type="checkbox" required> Acepto recibir por correo las oportunidades y novedades de Equity Intelligence y he leído la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. Puedo darme de baja cuando quiera.</label></form>`;
+  <div class="row" style="flex-wrap:wrap;gap:8px"><input class="in" type="email" name="${esc(EMAIL_FIELD)}" required placeholder="tu@correo.com" value="${esc(mail||"")}" style="flex:1;min-width:220px"><button class="btn on" type="submit">Quiero el resumen diario</button></div>
+  <label class="sm" style="display:block;margin-top:6px"><input type="checkbox" required> Acepto recibir cada día por correo el resumen del mercado, las noticias y las oportunidades de Equity Intelligence, junto con promociones de Valmont &amp; Co. y de Nexus Terminal (webs de Community16 LLC), y he leído la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. Puedo darme de baja cuando quiera.</label></form>`;
 }
 function fEmail(){
   if(!EMAIL_FORM||fStore("ei_em"))return"";
-  return `<div class="box" id="fem"><h3>Recibe las alertas por correo</h3><p class="sm">Te avisamos cuando una empresa entre en zona de compra y cuando los grandes fondos o los directivos se muevan. Gratis, sin publicidad de terceros y sin compartir tu correo.</p>${fEmailForm("fem")}</div>`;
+  return `<div class="box" id="fem"><h3>Recibe el resumen diario por correo</h3><p class="sm">Cada día: cómo cierra el mercado, las oportunidades de compra, las noticias y lo que hacen directivos y grandes fondos. Gratis. Incluye promociones de nuestras propias webs (Valmont &amp; Co. y Nexus Terminal) y nunca compartimos tu correo.</p>${fEmailForm("fem")}</div>`;
 }
 function fEmailTop(n){
   if(!EMAIL_FORM||fStore("ei_em")||fStore("ei_hide")||n<3)return"";
@@ -1181,16 +1185,35 @@ function fEmailTop(n){
 }
 
 /* --- cuentas de usuario (Firebase): entrar con Google o con correo y contraseña. Dormido si no hay configuración --- */
-const FB_CFG=null;
-let FBA=null,FBD=null,FBU=null;
+const FB_CFG={
+  apiKey: "AIzaSyCM07Dxxbtyh32cDdwrTnCr09pdfXEDRWs",
+  authDomain: "equity-intelligence-f02ac.firebaseapp.com",
+  projectId: "equity-intelligence-f02ac",
+  storageBucket: "equity-intelligence-f02ac.firebasestorage.app",
+  messagingSenderId: "313039081250",
+  appId: "1:313039081250:web:260e91249ef20f3ab9df7b"
+};
+let FBA=null,FBD=null,FBU=undefined;   /* undefined = aún no sabemos si hay sesión; null = sin sesión */
 function fbCargar(){
   if(!FB_CFG||!FB_CFG.apiKey)return;
   const V="10.12.2",base="https://www.gstatic.com/firebasejs/"+V+"/";
   const sc=s=>new Promise((ok,ko)=>{const e=document.createElement("script");e.src=base+s;e.onload=ok;e.onerror=ko;document.head.appendChild(e)});
   sc("firebase-app-compat.js").then(()=>Promise.all([sc("firebase-auth-compat.js"),sc("firebase-firestore-compat.js")])).then(()=>{
     firebase.initializeApp(FB_CFG);FBA=firebase.auth();FBD=firebase.firestore();
-    FBA.onAuthStateChanged(async u=>{FBU=u;accBtn();if(u)await accAlEntrar(u)});
+    FBA.onAuthStateChanged(async u=>{FBU=u;accBtn();if(u)await accAlEntrar(u);accRefresh()});
   }).catch(()=>{});
+}
+function accRefresh(){
+  const vis=id=>{const e=document.getElementById(id);return e&&e.style.display!=="none"};
+  try{if(vis("vFicha"))ficha();if(vis("vTools"))tools()}catch(e){}
+}
+function accLocked(tit){
+  /* devuelve "" si el apartado está abierto; si no, el aviso para crear la cuenta gratis */
+  if(!FB_CFG||!FB_CFG.apiKey||FBU)return"";
+  if(FBU===undefined)return `<div class="box"><p class="sm">Comprobando tu cuenta…</p></div>`;
+  return `<div class="box" style="border-color:var(--gold)"><h3>🔒 ${esc(tit)}: gratis con tu cuenta</h3>
+  <p class="sm">Crea una cuenta gratuita en unos segundos (con Google o con tu correo) y desbloqueas: los estados financieros completos de 10 años, las compras y ventas de directivos, el comparador de empresas, tus favoritas en cualquier dispositivo y el resumen diario por correo.</p>
+  <div class="row"><button class="btn on" onclick="accModal()">Crear cuenta gratis o entrar</button></div></div>`;
 }
 function accBtn(){
   let b=document.getElementById("accBtn");
@@ -1204,7 +1227,6 @@ async function accAlEntrar(u){
     const mix=[...new Set([...fFavs(),...nube])].slice(0,100);
     fStore("ei_fav",JSON.stringify(mix));
     if(mix.length!==nube.length||!d.exists)await ref.set({favs:mix,email:u.email||null,actualizado:new Date().toISOString()},{merge:true});
-    if(document.getElementById("vFicha")&&document.getElementById("vFicha").style.display!=="none")ficha();
   }catch(e){}
 }
 function fAccSync(a){
@@ -1224,7 +1246,7 @@ function accModal(){
   m.onclick=e=>{if(e.target===m)m.remove()};
   const caja=h=>`<div class="box" style="max-width:400px;width:100%;margin:0;max-height:92vh;overflow:auto">${h}</div>`;
   if(FBU){
-    m.innerHTML=caja(`<h3>Mi cuenta</h3><p class="sm">${esc(FBU.email||"")}</p><p class="sm">Tus favoritas (${fFavs().length}) se guardan en tu cuenta y las verás en cualquier dispositivo.</p>
+    m.innerHTML=caja(`<h3>Mi cuenta</h3><p class="sm">${esc(FBU.email||"")}</p><p class="sm">Tus favoritas (${fFavs().length}) se guardan en tu cuenta y las verás en cualquier dispositivo.</p>${EMAIL_FORM&&!fStore("ei_em")?`<div id="accEm" style="margin:10px 0"><h4 style="margin:0 0 4px">Resumen diario por correo</h4>${fEmailForm("accEm",FBU.email)}</div>`:""}
     <div class="row"><button class="btn" onclick="FBA.signOut().then(()=>document.getElementById('accModal').remove())">Salir</button><button class="btn" onclick="document.getElementById('accModal').remove()">Cerrar</button></div>
     <p class="sm" style="margin-top:10px">Para borrar tu cuenta y tus datos escríbenos al correo de contacto de la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>`);
   }else{
