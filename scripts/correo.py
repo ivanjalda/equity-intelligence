@@ -13,8 +13,21 @@ DATA = Path(os.environ.get("DATA_DIR", "data"))
 SITE = os.environ.get("SITE_URL", "https://equityintrinsic.com/").rstrip("/") + "/"
 TODAY = date.today().isoformat()
 IDX = [("SPY", "S&P 500"), ("QQQ", "Nasdaq 100"), ("DIA", "Dow Jones"), ("IWM", "Russell 2000")]
+MAT = [("GLD", "Oro"), ("SLV", "Plata"), ("USO", "Petróleo"), ("UNG", "Gas natural"), ("CPER", "Cobre")]
+BON = [("TLT", "Bonos EE. UU. largo plazo"), ("IEF", "Bonos EE. UU. medio plazo"), ("SHY", "Bonos EE. UU. corto plazo"), ("LQD", "Deuda de empresas sólidas"), ("HYG", "Deuda de empresas de más riesgo")]
 NEXUS = os.environ.get("NEXUS_URL", "https://nexusterminalalerts.com")
 METODOS = ("dcf", "graham", "multiples", "pb", "gnum")
+VERDE, ROJO, ORO, TXT, SUAVE = "#0b8043", "#c5221f", "#b8860b", "#1f2937", "#6b7280"
+
+TIPS = [
+    ("Margen de seguridad", "Es la diferencia entre lo que vale un negocio y lo que pagas por él. Cuanto más barato compras respecto a su valor, más colchón tienes si te equivocas en el cálculo. Es una idea de Benjamin Graham."),
+    ("Valor intrínseco", "Es lo que vale una empresa por el dinero que será capaz de generar, no por lo que marque el precio hoy. Por eso lo calculamos con tres métodos distintos y miramos si coinciden."),
+    ("PER", "Precio entre beneficio por acción. Un PER de 15 significa que pagas 15 años de beneficios actuales. Más bajo no siempre es mejor: hay que compararlo con el propio historial de la empresa y con su sector."),
+    ("Flujo de caja libre", "Es el dinero que le queda a una empresa después de pagar sus gastos y sus inversiones. Es difícil de maquillar, por eso es la base de uno de nuestros métodos de valoración."),
+    ("Empresas cíclicas", "Sus beneficios suben y bajan con la economía (petróleo, minería, automóviles…). Valorarlas con un solo año engaña, así que usamos la media de varios años."),
+    ("Bonos y tipos de interés", "Cuando suben los tipos de interés, el precio de los bonos ya emitidos baja, y al revés. Cuanto más largo es el bono, más se mueve."),
+    ("Informes 13F", "Los grandes gestores de EE. UU. deben informar a la SEC de sus carteras cada trimestre, con hasta 45 días de retraso. Sirven para ver tendencias, no para copiar operaciones a ciegas."),
+]
 
 
 def load(n, d):
@@ -38,8 +51,14 @@ def fecha(iso):
     return f"{d}/{m}/{a}"
 
 
-def oportunidades(vals, market):
-    out = []
+def pct(ch):
+    col = VERDE if ch >= 0 else ROJO
+    return f'<span style="font-weight:bold;color:{col}">{"+" if ch >= 0 else ""}{num(ch)} %</span>'
+
+
+def calcular(vals, market):
+    """Devuelve (oportunidades ordenadas, conteo de veredictos) con las mismas reglas que la web."""
+    ops, cuenta = [], {"COMPRAR": 0, "ESPERAR": 0, "CARO": 0, "REVISAR": 0, "total": 0}
     for t, it in (vals.get("items") or {}).items():
         c = (market.get(t) or {}).get("c")
         nums = [it[k] for k in METODOS if isinstance(it.get(k), (int, float)) and it[k] > 0]
@@ -47,91 +66,190 @@ def oportunidades(vals, market):
             continue
         iv = sum(nums) / len(nums)
         mg = (iv - c) / iv * 100
-        if verdict(mg, it.get("health"), it.get("fiab")) == "COMPRAR":
-            out.append((rank(mg, it.get("health"), it.get("cyclical"), spread(it), it.get("fiab")), mg, t, iv, c, it))
-    out.sort(key=lambda x: x[0], reverse=True)
-    return out
+        v = verdict(mg, it.get("health"), it.get("fiab"))
+        cuenta["total"] += 1
+        if v in cuenta:
+            cuenta[v] += 1
+        if v == "COMPRAR":
+            ops.append((rank(mg, it.get("health"), it.get("cyclical"), spread(it), it.get("fiab")), mg, t, iv, c, it))
+    ops.sort(key=lambda x: x[0], reverse=True)
+    return ops, cuenta
 
 
-def indices(market):
+def cambios(market, pares):
     r = []
-    for t, n in IDX:
+    for t, n in pares:
         m = market.get(t) or {}
         if m.get("c") and m.get("p"):
             r.append((n, m["c"], (m["c"] / m["p"] - 1) * 100))
     return r
 
 
+def movers(market, vals):
+    L = []
+    for t, m in market.items():
+        if m.get("type") == "ACCIONES" and m.get("c") and m.get("p"):
+            nombre = ((vals.get("items") or {}).get(t) or {}).get("name") or ""
+            L.append((t, nombre, m["c"], (m["c"] / m["p"] - 1) * 100))
+    L.sort(key=lambda x: x[3], reverse=True)
+    return L[:5], [x for x in L[::-1][:5] if x[3] < 0]
+
+
+def filas(items, vacio):
+    """items: lista de (izquierda_html, derecha_html)."""
+    if not items:
+        return f'<div style="font-size:13px;color:{SUAVE};padding:4px 0">{vacio}</div>'
+    return "".join(
+        f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #f0f1f3"><tr>'
+        f'<td style="padding:6px 0;font-size:13px;color:{TXT}">{i}</td><td align="right" style="padding:6px 0;font-size:13px;white-space:nowrap">{d}</td></tr></table>'
+        for i, d in items)
+
+
+def caja(titulo, cuerpo, nota=""):
+    n = f'<div style="font-size:11px;color:{SUAVE};margin-top:6px;line-height:15px">{nota}</div>' if nota else ""
+    return (f'<div style="border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px;background:#ffffff">'
+            f'<div style="font-weight:bold;font-size:15px;color:#111827;margin-bottom:6px">{titulo}</div>{cuerpo}{n}</div>')
+
+
+def dos(izq, der):
+    return ('<tr><td style="padding:6px 14px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
+            f'<td class="col" width="50%" valign="top" style="padding:0 6px 0 0">{izq}</td>'
+            f'<td class="col" width="50%" valign="top" style="padding:0 0 0 6px">{der}</td></tr></table></td></tr>')
+
+
+def uno(cont):
+    return f'<tr><td style="padding:6px 14px">{cont}</td></tr>'
+
+
+def fondo(x):
+    t, n = x.get("ticker"), (x.get("name") or "")[:30]
+    if t:
+        return f'<b>{e(t)}</b> <span style="color:{SUAVE};font-size:11px">{e(n)}</span>'
+    return f'<b>{e(n)}</b>'
+
+
 def build():
     market = load("market-data.json", {})
     vals = load("valuations.json", {"items": {}})
-    _todas = (load("news.json", {}) or {}).get("items", [])
-    news = [x for x in _todas if x.get("l") == "es" and x.get("t")][:5]
-    if len(news) < 3:
-        news = (news + [x for x in _todas if x.get("l") != "es" and x.get("t")])[:5]
+    todas = (load("news.json", {}) or {}).get("items", [])
     ins = (load("insiders.json", {}) or {}).get("items", [])
-    ops = oportunidades(vals, market)
-    idx = indices(market)
-    top = ops[:5]
-    # compras de directivos más recientes (solo compras)
-    compras = [x for x in ins if str(x.get("k", "")).upper().startswith(("P", "C", "BUY", "COMPRA"))][:4]
+    sig = load("signals.json", [])
+    f13 = load("13f.json", {}) or {}
+    ops, cuenta = calcular(vals, market)
+    items = (vals.get("items") or {})
 
-    verde, rojo, oro = "#0b8043", "#c5221f", "#b8860b"
     H = []
     a = H.append
-    a(f'<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Equity Intrinsic · {fecha(TODAY)}</title></head>')
-    a('<body style="margin:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#1f2937">')
-    a('<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:16px 8px">')
-    a('<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:10px;overflow:hidden">')
-    a(f'<tr><td style="background:#000;text-align:center;padding:0"><a href="{SITE}"><img src="{SITE}logo-email.jpg" width="300" alt="Equity Intrinsic" style="display:block;margin:0 auto;max-width:100%;height:auto"></a></td></tr>')
-    a(f'<tr><td style="padding:20px 24px 4px"><div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:1px">Resumen diario · {fecha(TODAY)}</div></td></tr>')
-    if idx:
-        a('<tr><td style="padding:8px 24px"><div style="font-weight:bold;font-size:16px;margin-bottom:6px">Mercado hoy</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0">')
-        for n, c, ch in idx:
-            col = verde if ch >= 0 else rojo
-            a(f'<tr><td style="padding:4px 0;font-size:14px">{e(n)}</td><td align="right" style="font-size:14px">{num(c)}</td><td align="right" style="width:80px;font-size:14px;font-weight:bold;color:{col}">{"+" if ch >= 0 else ""}{num(ch)} %</td></tr>')
-        a('</table><div style="font-size:11px;color:#6b7280;margin-top:4px">Referencia: fondos que replican cada índice, al último cierre.</div></td></tr>')
-    a(f'<tr><td style="padding:14px 24px 4px"><div style="font-weight:bold;font-size:16px">Oportunidades de compra ({len(ops)})</div><div style="font-size:12px;color:#6b7280">Precio por debajo de su valor intrínseco con margen de seguridad de al menos 25 %.</div></td></tr>')
+    a(f'<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Equity Intrinsic · {fecha(TODAY)}</title>'
+      '<style>@media only screen and (max-width:680px){td.col{display:block!important;width:100%!important;padding:0 0 10px 0!important}td.tile{display:inline-block!important;width:46%!important}}</style></head>')
+    a('<body style="margin:0;background:#eef0f3;font-family:Arial,Helvetica,sans-serif;color:#1f2937">')
+    a('<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:10px 6px">')
+    a('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:960px;width:100%;background:#f7f8fa;border-radius:10px;overflow:hidden">')
+
+    # Cabecera
+    a(f'<tr><td style="background:#0b0f19;padding:16px 22px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
+      f'<td width="84" valign="middle"><a href="{SITE}"><img src="{SITE}logo-email.jpg" width="76" alt="Equity Intrinsic" style="display:block;border:0;border-radius:6px"></a></td>'
+      f'<td valign="middle" style="padding-left:14px"><div style="font-size:22px;font-weight:bold;color:#d4a72c;letter-spacing:.5px">Equity Intrinsic</div>'
+      f'<div style="font-size:12px;color:#9ca3af;margin-top:2px">Resumen diario · {fecha(TODAY)} · precios al cierre de mercado</div></td>'
+      f'<td align="right" valign="middle"><a href="{SITE}" style="background:#d4a72c;color:#111;text-decoration:none;font-weight:bold;font-size:13px;padding:9px 16px;border-radius:6px;display:inline-block">Abrir la web</a></td></tr></table></td></tr>')
+
+    # Cifras del día
+    if cuenta["total"]:
+        def tile(t, v, col=TXT):
+            return (f'<td class="tile" width="25%" valign="top" style="padding:0 4px"><div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 6px;text-align:center">'
+                    f'<div style="font-size:11px;color:{SUAVE}">{t}</div><div style="font-size:24px;font-weight:bold;color:{col}">{v}</div></div></td>')
+        a('<tr><td style="padding:12px 10px 4px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
+          + tile("Acciones valoradas", f"{cuenta['total']:,}".replace(",", "."))
+          + tile("Oportunidades de compra", cuenta["COMPRAR"], VERDE)
+          + tile("Mejor esperar", cuenta["ESPERAR"])
+          + tile("Caras ahora", cuenta["CARO"], ROJO) + '</tr></table></td></tr>')
+
+    # Mercado
+    idx, mat, bon = cambios(market, IDX), cambios(market, MAT), cambios(market, BON)
+    sub, baj = movers(market, vals)
+    f = lambda L: [(e(n), f'{num(c)} &nbsp; {pct(ch)}') for n, c, ch in L]
+    a(dos(caja("Índices", filas(f(idx), "Sin datos hoy."), "Referencia: fondos que replican cada índice, al último cierre."),
+          caja("Materias primas", filas(f(mat), "Sin datos hoy."), "Fondos que replican cada materia prima.")))
+    g = lambda L: [(f'<b>{e(t)}</b> <span style="color:{SUAVE};font-size:11px">{e(n[:26])}</span>', f'${num(c)} &nbsp; {pct(ch)}') for t, n, c, ch in L]
+    a(dos(caja("Más suben hoy", filas(g(sub), "Sin datos hoy."), "Entre las acciones de nuestra lista principal."),
+          caja("Más bajan hoy", filas(g(baj), "Hoy no hay caídas destacadas."), "Entre las acciones de nuestra lista principal.")))
+    a(dos(caja("Bonos y deuda", filas(f(bon), "Sin datos hoy."), "Fondos que replican cada tipo de bono. Si suben los tipos de interés, su precio baja."),
+          caja("Concepto del día · " + TIPS[date.today().toordinal() % len(TIPS)][0], f'<div style="font-size:13px;line-height:19px;color:{TXT}">{e(TIPS[date.today().toordinal() % len(TIPS)][1])}</div>'
+               f'<div style="margin-top:8px"><a href="{SITE}" style="color:{ORO};font-size:12px;font-weight:bold;text-decoration:none">Cómo funciona todo →</a></div>')))
+
+    # Oportunidades
+    a(uno(f'<div style="font-weight:bold;font-size:17px;color:#111827;padding:6px 0 0">Oportunidades de compra ({len(ops)})</div>'
+          f'<div style="font-size:12px;color:{SUAVE};margin-bottom:2px">Precio por debajo de su valor intrínseco con margen de seguridad de al menos 25 %. Ordenadas por nuestro motor.</div>'))
+    top = ops[:8]
     if top:
-        for _, mg, t, iv, c, it in top:
-            extra = " · ".join(x for x in [f"plazo {it['horizon']}" if it.get("horizon") else "", f"salud {str(it['health']).lower()}" if it.get("health") else "", f"fiabilidad {it['fiab']}" if it.get("fiab") else ""] if x)
-            a(f'<tr><td style="padding:6px 24px"><a href="{SITE}#/ficha/{e(t)}" style="text-decoration:none;color:inherit"><div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px"><span style="font-weight:bold;font-size:15px">{e(it.get("name") or t)}</span> <span style="color:#6b7280;font-size:12px">{e(t)}</span><br><span style="font-size:13px">Precio ${num(c)} → valor intrínseco ${num(iv)}</span> <span style="color:{verde};font-weight:bold;font-size:13px">· margen {mg:.0f} %</span><br><span style="font-size:11px;color:#6b7280">{e(extra)}</span></div></a></td></tr>')
+        def card(x):
+            _, mg, t, iv, c, it = x
+            extra = " · ".join(z for z in [it.get("horizon") and f"plazo {str(it['horizon']).lower()}", it.get("health") and f"salud {str(it['health']).lower()}", it.get("fiab") and f"fiabilidad {it['fiab']}"] if z)
+            return (f'<a href="{SITE}#/ficha/{e(t)}" style="text-decoration:none;color:inherit"><div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;background:#fff;margin-bottom:8px">'
+                    f'<span style="font-weight:bold;font-size:14px;color:#111827">{e(it.get("name") or t)}</span> <span style="color:{SUAVE};font-size:12px">{e(t)}</span><br>'
+                    f'<span style="font-size:13px">Precio ${num(c)} → valor intrínseco ${num(iv)}</span> <span style="color:{VERDE};font-weight:bold;font-size:13px">· margen {mg:.0f} %</span><br>'
+                    f'<span style="font-size:11px;color:{SUAVE}">{e(extra)}</span></div></a>')
+        izq = "".join(card(x) for x in top[0::2])
+        der = "".join(card(x) for x in top[1::2])
+        a(dos(izq, der))
     else:
-        a('<tr><td style="padding:6px 24px;font-size:14px">Hoy no hay oportunidades con margen de seguridad suficiente. Esperar también es una decisión.</td></tr>')
-    if compras:
-        a('<tr><td style="padding:14px 24px 4px"><div style="font-weight:bold;font-size:16px">Directivos que compran con su dinero</div></td></tr>')
-        for x in compras:
-            quien = " · ".join(z for z in [(x.get("w") or "").strip(), (x.get("r") or "").strip()] if z)
-            a(f'<tr><td style="padding:3px 24px;font-size:13px"><b>{e(x.get("t",""))}</b> · {e(x.get("n",""))}{(" — " + e(quien)) if quien else ""} · {fecha(x.get("d", TODAY))}</td></tr>')
-    if news:
-        a('<tr><td style="padding:14px 24px 4px"><div style="font-weight:bold;font-size:16px">Noticias</div></td></tr>')
-        for n in news:
-            a(f'<tr><td style="padding:3px 24px;font-size:13px"><a href="{e(n.get("u","#"))}" style="color:#1a56db;text-decoration:none">{e(n.get("t",""))}</a> <span style="color:#6b7280;font-size:11px">· {e(n.get("s",""))}</span></td></tr>')
-    a(f'<tr><td align="center" style="padding:18px 24px"><a href="{SITE}" style="background:{oro};color:#fff;text-decoration:none;padding:12px 26px;border-radius:6px;font-weight:bold;font-size:14px;display:inline-block">Ver el análisis completo</a></td></tr>')
+        a(uno(f'<div style="font-size:14px;padding:4px 0">Hoy no hay oportunidades con margen de seguridad suficiente. Esperar también es una decisión.</div>'))
+
+    # Señales nuevas + directivos
+    recientes = []
+    if isinstance(sig, list) and sig:
+        ult = max(str(s.get("date", "")) for s in sig)
+        recientes = [s for s in sig if str(s.get("date", "")) == ult and s.get("verdict") == "COMPRAR"][:6]
+    sf = [(f'<b>{e(s.get("ticker",""))}</b> <span style="color:{SUAVE};font-size:11px">{e((items.get(s.get("ticker","")) or {}).get("name","")[:24])}</span>', f'${num(s["price"])}' if isinstance(s.get("price"), (int, float)) else "") for s in recientes]
+    titulo_sig = f"Señales más recientes · {fecha(max(str(s.get('date','')) for s in sig))}" if isinstance(sig, list) and sig else "Señales más recientes"
+    compras = [x for x in ins if str(x.get("k", "")).upper().startswith(("P", "C", "BUY", "COMPRA"))][:5]
+    cf = []
+    for x in compras:
+        quien = " · ".join(z for z in [(x.get("w") or "").strip(), (x.get("r") or "").strip()] if z)
+        imp = f'${num(x["v"], 0)}' if isinstance(x.get("v"), (int, float)) else ""
+        cf.append((f'<b>{e(x.get("t",""))}</b> <span style="color:{SUAVE};font-size:11px">{e((x.get("n") or "")[:30])}</span><br><span style="font-size:11px;color:{SUAVE}">{e(quien)} · {fecha(x.get("d", TODAY))}</span>', imp))
+    a(dos(caja(titulo_sig, filas(sf, "Sin señales nuevas de compra."), "Cada señal queda con su fecha y su resultado real en el historial de la web."),
+          caja("Directivos que compran con su dinero", filas(cf, "Sin compras destacadas en los últimos días."), "Operaciones de al menos 50.000 $ en el mercado (formulario 4 de la SEC).")))
+
+    # Grandes fondos
+    if f13.get("buys") or f13.get("sells"):
+        fb = [(fondo(x), f'{x.get("funds","")} fondos') for x in (f13.get("buys") or [])[:6]]
+        fs = [(fondo(x), f'{x.get("funds","")} fondos') for x in (f13.get("sells") or [])[:6]]
+        nota = f"Informes 13F de {e(f13.get('quarter',''))} (presentados hasta 45 días después del trimestre). Sirven para ver tendencias, no para copiar operaciones."
+        a(dos(caja("Grandes fondos: lo que más compran", filas(fb, "Sin datos."), nota), caja("Grandes fondos: lo que más venden", filas(fs, "Sin datos."), nota)))
+
+    # Noticias
+    def noticias(L):
+        return "".join(
+            f'<div style="padding:6px 0;border-bottom:1px solid #f0f1f3"><a href="{e(n.get("u","#"))}" style="color:#1a56db;text-decoration:none;font-size:13px;line-height:18px">{e(n.get("t",""))}</a>'
+            f'<div style="font-size:11px;color:{SUAVE}">{e(n.get("s",""))}</div></div>' for n in L) or f'<div style="font-size:13px;color:{SUAVE}">Sin noticias hoy.</div>'
+    es_ = [x for x in todas if x.get("l") == "es" and x.get("t")][:6]
+    en_ = [x for x in todas if x.get("l") != "es" and x.get("t")][:6]
+    a(dos(caja("Noticias de mercado", noticias(es_)), caja("Mercados de EE. UU. (titulares en inglés)", noticias(en_))))
+
+    # CTA
+    a(f'<tr><td align="center" style="padding:14px 14px 6px"><a href="{SITE}" style="background:#b8860b;color:#fff;text-decoration:none;padding:13px 30px;border-radius:6px;font-weight:bold;font-size:15px;display:inline-block">Ver el análisis completo en la web</a></td></tr>')
+
     # Publicidad propia
-    a('<tr><td style="padding:6px 24px 0"><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px">Publicidad</div></td></tr>')
-    btn = 'display:inline-block;background:#d4a72c;color:#111111;text-decoration:none;font-weight:bold;font-size:12px;padding:7px 14px;border-radius:5px'
-    caja = 'border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;font-size:12px;line-height:18px;color:#374151'
-    a('<tr><td style="padding:4px 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
-      f'<td width="50%" valign="top" style="padding-right:6px"><div style="{caja}"><b style="font-size:13px;color:#111111">Valmont &amp; Co. · Academia de inversión</b><br>Guías y libros de inversión en español e inglés, con prólogos gratis, y cursos paso a paso.<br><br><a href="https://valmontco.com" style="{btn}">Ver guías y cursos</a></div></td>'
-      f'<td width="50%" valign="top" style="padding-left:6px"><div style="{caja}"><b style="font-size:13px;color:#111111">Nexus Terminal · Análisis técnico</b><br>Nuestro motor analiza acciones, criptomonedas y divisas, y publica pronósticos y señales, con avisos en Telegram.<br><br><a href="{NEXUS}" style="{btn}">Abrir Nexus Terminal</a></div></td>'
-      '</tr></table></td></tr>')
-    a('<tr><td style="padding:4px 24px 0;font-size:10px;color:#9ca3af">Webs de Community16 LLC. Contenido educativo e informativo, no es asesoramiento financiero ni garantiza resultados.</td></tr>')
+    btn = 'display:inline-block;background:#d4a72c;color:#111111;text-decoration:none;font-weight:bold;font-size:12px;padding:8px 16px;border-radius:5px'
+    cx = 'border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px;font-size:12px;line-height:18px;color:#374151;background:#fff'
+    a(uno(f'<div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px">Publicidad</div>'))
+    a(dos(f'<div style="{cx}"><b style="font-size:14px;color:#111111">Valmont &amp; Co. · Academia de inversión</b><br>Guías y libros de inversión en español e inglés, con prólogos gratis, y cursos paso a paso para aprender a invertir con método.<br><br><a href="https://valmontco.com" style="{btn}">Ver guías y cursos</a></div>',
+          f'<div style="{cx}"><b style="font-size:14px;color:#111111">Nexus Terminal · Análisis técnico</b><br>Nuestro motor analiza acciones, criptomonedas y divisas por sí solo y publica pronósticos y señales, con avisos en Telegram y un histórico público de aciertos y fallos.<br><br><a href="{NEXUS}" style="{btn}">Abrir Nexus Terminal</a></div>'))
+    a(uno(f'<div style="font-size:10px;color:#9ca3af">Webs de Community16 LLC. Contenido educativo e informativo, no es asesoramiento financiero ni garantiza resultados.</div>'))
+
     # Firma
-    a('<tr><td style="padding:20px 24px 8px;border-top:1px solid #e5e7eb;margin-top:12px">'
-      f'<div style="font-weight:bold;font-size:14px">Equity Intrinsic</div>'
-      '<div style="font-size:12px;color:#6b7280">Community16 LLC · New Mexico, EE. UU.</div>'
-      f'<div style="font-size:12px"><a href="{SITE}" style="color:#1a56db">equityintrinsic.com</a> · <a href="mailto:contacto@equityintrinsic.com" style="color:#1a56db">contacto@equityintrinsic.com</a></div></td></tr>')
-    a('<tr><td style="padding:8px 24px 20px;font-size:11px;color:#9ca3af;line-height:1.5">Información con fines educativos, no es asesoramiento financiero. Invertir conlleva riesgo de perder dinero. '
-      f'Recibes este correo porque te suscribiste en equityintrinsic.com. <a href="{{{{ unsubscribe }}}}" style="color:#9ca3af">Darte de baja</a> · <a href="{SITE}privacidad.html" style="color:#9ca3af">Privacidad</a></td></tr>')
+    a(f'<tr><td style="padding:18px 22px 10px;border-top:1px solid #e5e7eb"><div style="font-weight:bold;font-size:14px;color:#111827">Equity Intrinsic</div>'
+      f'<div style="font-size:12px;color:{SUAVE}">Community16 LLC · New Mexico, EE. UU.</div>'
+      f'<div style="font-size:12px"><a href="{SITE}" style="color:#1a56db">equityintrinsic.com</a> · <a href="mailto:contacto@equityintrinsic.com" style="color:#1a56db">contacto@equityintrinsic.com</a></div>'
+      f'<div style="font-size:11px;color:#9ca3af;margin-top:10px;line-height:16px">Información con fines educativos, no es asesoramiento financiero. Invertir conlleva riesgo de perder dinero. '
+      f'Recibes este correo porque te suscribiste en <a href="{SITE}" style="color:#9ca3af">equityintrinsic.com</a>. <a href="{{{{ unsubscribe }}}}" style="color:#9ca3af">Darte de baja</a> · <a href="{SITE}privacidad.html" style="color:#9ca3af">Privacidad</a></div></td></tr>')
     a('</table></td></tr></table></body></html>')
 
     T = [f"EQUITY INTRINSIC · Resumen diario {fecha(TODAY)}", ""]
-    if idx:
-        T.append("MERCADO HOY")
-        T += [f"  {n}: {num(c)} ({'+' if ch >= 0 else ''}{num(ch)} %)" for n, c, ch in idx]
-        T.append("")
-    T.append(f"OPORTUNIDADES DE COMPRA ({len(ops)})")
+    T.append("MERCADO")
+    T += [f"  {n}: {num(c)} ({ch:+.2f} %)" for n, c, ch in idx + mat]
+    T += ["", f"OPORTUNIDADES DE COMPRA ({len(ops)})"]
     T += [f"  {t}: precio ${num(c)} → valor ${num(iv)} · margen {mg:.0f} %" for _, mg, t, iv, c, it in top] or ["  Hoy no hay oportunidades con margen suficiente."]
     T += ["", f"Análisis completo: {SITE}", "", "Equity Intrinsic · Community16 LLC · contacto@equityintrinsic.com",
           "Información educativa, no asesoramiento financiero. Invertir conlleva riesgo."]
