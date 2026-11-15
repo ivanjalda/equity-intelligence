@@ -844,6 +844,13 @@ function fSug(q){
 }
 function fEnter(e){if(e.key==="Enter"){const L=fMatches(e.target.value);if(L.length)fichaIr(L[0])}}
 
+async function fAud(){
+  let n=document.getElementById("faud");
+  if(!n){const q=document.getElementById("fq");if(!q)return;n=document.createElement("p");n.id="faud";n.className="sm";n.style.margin="2px 0 0";q.parentNode.parentNode.appendChild(n)}
+  if(D.aud===undefined)D.aud=await j("data/auditoria.json")||null;
+  const a=D.aud;if(!a||!a.fecha){n.textContent="";return}
+  n.innerHTML=a.ok?`<span class="up">●</span> Revisión automática de datos y cálculos: ${esc(a.fecha)} · ${fN(a.comprobaciones,0)} comprobaciones superadas.`:`<span class="dn">●</span> Revisión automática del ${esc(a.fecha)}: se detectaron ${a.n_fallos} incidencias que estamos corrigiendo.`;
+}
 async function ficha(){
   const el=document.getElementById("vFicha");
   if(!el.querySelector("#fq")){
@@ -852,6 +859,7 @@ async function ficha(){
     document.addEventListener("click",e=>{const s=document.getElementById("fsug");if(s&&!e.target.closest("#fsug,#fq"))s.style.display="none"});
   }
   const sg=document.getElementById("fsug");if(sg)sg.style.display="none";
+  fAud();
   const body=document.getElementById("fbody");
   if(!FT){body.innerHTML=fLanding();return}
   const t=FT,v=D.v.items?.[t],p=D.m[t]?.c;
@@ -897,7 +905,7 @@ function fValor(t,v,c,p){
   const E=v.esc,nm=["Bajista","Base","Alcista"];
   const card=(i,x)=>{const m=(x-p)/x*100;return `<div class="m fsc${i===1?" base":""}"><small>Escenario ${nm[i].toLowerCase()}</small><strong>$${num(x)}</strong><div class="${m>=0?"up":"dn"}" style="font-size:12px">${m>=0?"Cotiza un "+num(m,0)+" % por debajo":"Cotiza un "+num(Math.abs(m),0)+" % por encima"}</div></div>`};
   const sc=E&&E.length===3?`<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:8px">${E.map((x,i)=>card(i,x)).join("")}</div>
-   <p class="sm" style="margin-top:8px">El <strong>bajista</strong> supone menos crecimiento y más exigencia; el <strong>alcista</strong>, lo contrario. El veredicto se basa en el escenario base. <a href="aprender.html#g-escenarios" target="_blank" rel="noopener">Cómo se calculan</a>.</p>`:"";
+   <p class="sm" style="margin-top:8px">El <strong>bajista</strong> supone menos crecimiento y más exigencia; el <strong>alcista</strong>, lo contrario${v.rec?" y, además, supone que la empresa recupera el beneficio y la caja que ganaba de media en los últimos 5 años (hoy están por debajo)":""}. El veredicto se basa en el escenario base. <a href="aprender.html#g-escenarios" target="_blank" rel="noopener">Cómo se calculan</a>.</p>`:"";
   const r=v.r?`<p class="sm" style="margin-top:6px">Tasa de descuento de esta empresa: <strong>${pc1(v.r)}</strong>${v.beta?` (bono del Tesoro a 10 años + beta ${num(v.beta,2)} × 5,5 %). Una beta mayor que 1 significa que se mueve más que el mercado.`:" (tasa estándar: aún no hay precios suficientes para medir su beta)."} <a href="aprender.html#g-tasa" target="_blank" rel="noopener">Qué es</a></p>`:"";
   const txt=c.verdict==="COMPRAR"?`El precio de hoy ya deja margen de seguridad suficiente.`:c.verdict==="REVISAR"?"Parece barata en números, pero hay datos dudosos que conviene revisar.":c.verdict==="ESPERAR"?"Está por debajo de su valor, pero sin margen suficiente: mejor esperar a un precio más bajo.":"Cotiza por encima de lo que estimamos que vale.";
   return `<div class="box"><h3>Valor intrínseco</h3><div class="note"><strong>${c.verdict==="COMPRAR"?"Zona de compra.":c.verdict==="REVISAR"?"Datos por revisar.":c.verdict==="ESPERAR"?"Mejor esperar.":"Cara ahora."}</strong> ${txt} Valor calculado con ${c.n} método${c.n>1?"s":""}.</div>${sc}${r}${fiabHTML(v)}</div>`;
