@@ -899,7 +899,7 @@ function fFavBox(){
   return `<div class="box"><h3>Tus favoritas</h3><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">${L.map(t=>{const v=D.v.items[t],c=calc(t),p=D.m[t].c,d=D.m[t].p?(p/D.m[t].p-1)*100:null;
     return `<div class="m" style="text-align:left"><div class="flex"><b>${esc(t)}</b>${c?`<span class="badge ${c.verdict}">${c.verdict}</span>`:'<span class="sm">Sin valorar</span>'}</div>
     <div class="sm">${esc((v.name||"").slice(0,30))}</div><div style="margin:4px 0"><strong>$${num(p)}</strong>${d==null?"":` <span class="${d>=0?"up":"dn"} sm">${d>=0?"+":""}${num(d,1)} %</span>`}</div>
-    <div class="${c&&c.mg>=0?"up":"dn"} sm">${c?(c.mg>=0?"Margen "+num(c.mg,0)+" %":"Cara: "+num(c.mg,0)+" %")+" · valor $"+num(c.iv):"—"}</div>
+    <div class="${c&&c.mg>=0?"up":"dn"} sm">${c?(c.mg>=0?"Margen "+num(c.mg,0)+" %":"Por encima de su valor: "+num(-c.mg,0)+" %")+" · valor $"+num(c.iv):"—"}</div>
     <div class="row" style="margin:6px 0 0"><button class="btn" onclick="fichaIr('${esc(t)}')">Ver ficha</button><button class="btn" onclick="fFavToggle('${esc(t)}')" title="Quitar de favoritas">★ Quitar</button></div></div>`}).join("")}</div></div>`;
 }
 function fLanding(){
@@ -932,7 +932,7 @@ function fValor(t,v,c,p){
    <p class="sm" style="margin-top:8px">El <strong>bajista</strong> supone menos crecimiento y más exigencia; el <strong>alcista</strong>, lo contrario${v.rec?" y, además, supone que la empresa recupera el beneficio y la caja que ganaba de media en los últimos 5 años (hoy están por debajo)":""}. El veredicto se basa en el escenario base. <a href="aprender.html#g-escenarios" target="_blank" rel="noopener">Cómo se calculan</a>.</p>`:"";
   const r=v.r?`<p class="sm" style="margin-top:6px">Tasa de descuento de esta empresa: <strong>${pc1(v.r)}</strong>${v.beta?` (bono del Tesoro a 10 años + beta ${num(v.beta,2)} × 5,5 %). Una beta mayor que 1 significa que se mueve más que el mercado.`:" (tasa estándar: aún no hay precios suficientes para medir su beta)."} <a href="aprender.html#g-tasa" target="_blank" rel="noopener">Qué es</a></p>`:"";
   const txt=c.verdict==="COMPRAR"?`El precio de hoy ya deja margen de seguridad suficiente.`:c.verdict==="REVISAR"?"Parece barata en números, pero hay datos dudosos que conviene revisar.":c.verdict==="ESPERAR"?"Está por debajo de su valor, pero sin margen suficiente: mejor esperar a un precio más bajo.":"Cotiza por encima de lo que estimamos que vale.";
-  return `<div class="box"><h3>Valor intrínseco</h3><div class="note"><strong>${c.verdict==="COMPRAR"?"Zona de compra.":c.verdict==="REVISAR"?"Datos por revisar.":c.verdict==="ESPERAR"?"Mejor esperar.":"Cara ahora."}</strong> ${txt} Valor calculado con ${c.n} método${c.n>1?"s":""}.</div>${sc}${r}${fiabHTML(v)}</div>`;
+  return `<div class="box"><h3>Valor intrínseco</h3><div class="note"><strong>${c.verdict==="COMPRAR"?"Zona de compra.":c.verdict==="REVISAR"?"Datos por revisar.":c.verdict==="ESPERAR"?"Mejor esperar.":"Por encima de su valor."}</strong> ${txt} Valor calculado con ${c.n} método${c.n>1?"s":""}.</div>${sc}${r}${fiabHTML(v)}</div>`;
 }
 function fBarata(h,p){
   if(!h||h.length<30)return"";
@@ -1165,7 +1165,7 @@ function fPeers(t,v){
   if(!L.length)return"";
   return `<div class="box"><h3>Empresas parecidas</h3><p class="sm">Del mismo sector oficial (${esc(sicName(v.sic)||"SEC")}), ordenadas de más a menos margen de seguridad. Ver una barata no significa que sea mejor: compara su salud y su fiabilidad.</p>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">${L.map(x=>{const c=calc(x);return `<div class="m" style="text-align:left"><div class="flex"><b>${esc(x)}</b><span class="badge ${c.verdict}">${c.verdict}</span></div><div class="sm">${esc(D.v.items[x].name||"")}</div>
-  <div class="${c.mg>=0?"up":"dn"}" style="margin:4px 0">${c.mg>=0?"Margen "+num(c.mg,0)+" %":"Cara: "+num(c.mg,0)+" %"}</div><div class="row" style="margin:0"><button class="btn" onclick="fichaIr('${esc(x)}')">Ver ficha</button><button class="btn" onclick="window._cmp=['${esc(t)}','${esc(x)}'];TOOL='comp';vista('tools')">Comparar</button></div></div>`}).join("")}</div></div>`;
+  <div class="${c.mg>=0?"up":"dn"}" style="margin:4px 0">${c.mg>=0?"Margen "+num(c.mg,0)+" %":"Por encima de su valor: "+num(-c.mg,0)+" %"}</div><div class="row" style="margin:0"><button class="btn" onclick="fichaIr('${esc(x)}')">Ver ficha</button><button class="btn" onclick="window._cmp=['${esc(t)}','${esc(x)}'];TOOL='comp';vista('tools')">Comparar</button></div></div>`}).join("")}</div></div>`;
 }
 function fDirect(t){
   if(!D.ins||!D.ins.items)return"";
