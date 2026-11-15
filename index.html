@@ -323,7 +323,9 @@ const adImgs=(a,n)=>`<div class="adimg">${[1,2,3,4].slice(0,n).map(i=>`<img src=
 const adValmont=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Valmont &amp; Co. · Academia de inversión</small>${adImgs("guia",3)}<strong>Guías y libros de inversión</strong><p class="sm">En español e inglés, con prólogos gratis para empezar. Contenido educativo.</p><div class="row"><a class="btn on" href="${VAL}collections/complete-guides" target="_blank" rel="noopener sponsored">Ver guías</a><a class="btn" href="${VAL}" target="_blank" rel="noopener sponsored">valmontco.com</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. Contenido educativo, no es asesoramiento financiero.</p></div>`;
 const adCursos=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Valmont &amp; Co. · Cursos</small>${adImgs("curso",3)}<strong>Cursos de inversión paso a paso</strong><p class="sm">Formación en español para aprender a invertir con método.</p><div class="row"><a class="btn on" href="${VAL}collections/courses" target="_blank" rel="noopener sponsored">Ver cursos</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. No garantiza resultados.</p></div>`;
 const NXV='<svg viewBox="0 0 300 96" class="adsvg" aria-hidden="true"><rect width="300" height="96" rx="6" fill="#10131b"/><g stroke="#2a2e39"><path d="M0 24H300M0 48H300M0 72H300"/></g><g stroke-width="2"><path d="M20 70V44M20 60V52" stroke="#089981"/><path d="M50 62V36" stroke="#089981"/><path d="M80 58V40" stroke="#f23645"/><path d="M110 66V46" stroke="#089981"/><path d="M140 50V30" stroke="#089981"/><path d="M170 54V32" stroke="#f23645"/><path d="M200 44V24" stroke="#089981"/><path d="M230 40V20" stroke="#089981"/><path d="M260 48V28" stroke="#f23645"/></g><g><rect x="16" y="48" width="8" height="14" fill="#089981"/><rect x="46" y="42" width="8" height="16" fill="#089981"/><rect x="76" y="44" width="8" height="10" fill="#f23645"/><rect x="106" y="50" width="8" height="12" fill="#089981"/><rect x="136" y="34" width="8" height="12" fill="#089981"/><rect x="166" y="36" width="8" height="12" fill="#f23645"/><rect x="196" y="28" width="8" height="12" fill="#089981"/><rect x="226" y="24" width="8" height="12" fill="#089981"/><rect x="256" y="32" width="8" height="12" fill="#f23645"/></g><path d="M10 66C60 56 100 58 150 42S230 28 290 24" fill="none" stroke="#d4af37" stroke-width="1.6" stroke-dasharray="4 3"/><text x="290" y="90" text-anchor="end" font-size="8" fill="#8a8d98" font-family="sans-serif">Ilustración, no son datos reales</text></svg>';
-const adNexus=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Nexus Terminal · Análisis técnico</small>${NXV}<strong>Nexus Terminal: análisis técnico para hacer trading</strong><p class="sm">Nuestra otra web. Un motor propio hace el análisis técnico de acciones, criptomonedas y divisas por sí solo y publica pronósticos de inversión y señales, con avisos en Telegram y un histórico público de aciertos y fallos.</p><div class="row"><a class="btn on" href="https://nexusterminalalerts.com/" target="_blank" rel="noopener sponsored">Abrir Nexus Terminal</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. Análisis técnico informativo, no es asesoramiento financiero.</p></div>`;const telegramCard=()=>`<div class="ad" style="border-style:solid"><small>Avisos gratuitos</small><strong>Canal de Telegram</strong><p class="sm">Te avisamos cuando aparezca una nueva oportunidad de compra, con enlace directo al análisis.</p>${TELEGRAM_URL?`<a class="btn on" href="${esc(TELEGRAM_URL)}" target="_blank" rel="noopener">Unirme al canal</a>`:'<span class="badge NA">Muy pronto</span>'}</div>`;
+const adNexus=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Nexus Terminal · Análisis técnico</small>${NXV}<strong>Nexus Terminal: análisis técnico para hacer trading</strong><p class="sm">Nuestra otra web. Un motor propio hace el análisis técnico de acciones, criptomonedas y divisas por sí solo y publica pronósticos de inversión y señales, con avisos en Telegram y un histórico público de aciertos y fallos.</p><div class="row"><a class="btn on" href="https://nexusterminalalerts.com/" target="_blank" rel="noopener sponsored">Abrir Nexus Terminal</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. Análisis técnico informativo, no es asesoramiento financiero.</p></div>`;const tgLogged=()=>typeof FBU!=="undefined"&&!!FBU;
+const tgBtn=()=>!TELEGRAM_URL?'<span class="badge NA">Muy pronto</span>':(tgLogged()?`<a class="btn on" href="${esc(TELEGRAM_URL)}" target="_blank" rel="noopener">Unirme al canal</a>`:`<button class="btn on" onclick="accModal('crear')">Crea tu cuenta gratis para unirte</button>`);
+const telegramCard=()=>`<div class="ad" style="border-style:solid"><small>Avisos gratuitos</small><strong>Canal de Telegram</strong><p class="sm">Te avisamos cuando aparezca una nueva oportunidad de compra, con enlace directo al análisis. Para entrar necesitas una cuenta gratuita.</p>${tgBtn()}${(typeof EMAIL_FORM!=="undefined"&&EMAIL_FORM&&!fStore("ei_em"))?`<hr style="border:0;border-top:1px solid var(--line,#333);margin:14px 0"><strong>Resumen diario por correo</strong><p class="sm">Cómo cierra el mercado, las oportunidades de compra y las noticias, cada día en tu correo.</p><div id="homeEm">${fEmailForm("homeEm",(tgLogged()&&FBU.email)||"")}</div>`:(typeof EMAIL_FORM!=="undefined"&&EMAIL_FORM?`<hr style="border:0;border-top:1px solid var(--line,#333);margin:14px 0"><strong>Resumen diario por correo</strong><p class="sm">✔ Suscripción solicitada. Si aún no lo has hecho, pulsa el enlace del correo que te enviamos para confirmarla (mira también en spam).</p>`:"")}</div>`;
 const TIPS=[
  ["Margen de seguridad","Es la diferencia entre lo que vale un negocio y lo que pagas por él. Cuanto más barato compras respecto a su valor, más colchón tienes si te equivocas en el cálculo. Es una idea de Benjamin Graham."],
  ["Valor intrínseco","Es lo que vale una empresa por el dinero que será capaz de generar, no por lo que marque el precio hoy. Por eso lo calculamos con tres métodos distintos y miramos si coinciden."],
@@ -1178,8 +1180,21 @@ function fDirect(t){
   <div style="overflow-x:auto"><table><tr><th>Fecha</th><th>Quién</th><th>Cargo</th><th>Operación</th><th>Acciones</th><th>Precio</th><th>Importe</th><th>Cambio en su posición</th></tr>${L.map(x=>`<tr><td>${esc(x.d)}</td><td>${esc(x.w)}</td><td class="sm">${esc(x.r)}</td><td class="${x.k==="P"?"up":"dn"}">${x.k==="P"?"Compra":"Venta"}${x.p?' <span class="sm">· programada</span>':""}</td><td>${fN(x.sh,0)}</td><td>$${num(x.px)}</td><td>${usd(x.v)}</td><td>${dPos(x)}</td></tr>`).join("")}</table></div></div>`;
 }
 /* --- correo electrónico --- */
+async function fEmailSend(f,id){
+  const b=document.getElementById(id),bt=f.querySelector("button[type=submit]");
+  if(bt){bt.disabled=true;bt.textContent="Enviando…"}
+  try{
+    await fetch(f.action,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(new FormData(f)).toString()});
+    fStore("ei_em","1");
+    if(b)b.innerHTML='<p><strong>¡Casi listo!</strong> Te hemos enviado un correo: pulsa el enlace que trae para confirmar tu suscripción. Si no lo ves, mira en la carpeta de spam.</p>';
+  }catch(e){
+    if(bt){bt.disabled=false;bt.textContent="Quiero el resumen diario"}
+    if(b&&!b.querySelector(".fe"))b.insertAdjacentHTML("beforeend",'<p class="sm dn fe">No se pudo enviar. Inténtalo de nuevo en un momento.</p>');
+  }
+  return false;
+}
 function fEmailForm(id,mail){
-  return `<form action="${esc(EMAIL_FORM)}" method="post" target="_blank" onsubmit="fStore('ei_em','1');setTimeout(()=>{const b=document.getElementById('${id}');if(b)b.innerHTML='<p><strong>¡Gracias!</strong> Revisa tu correo para confirmar la suscripción.</p>'},300)">
+  return `<form action="${esc(EMAIL_FORM)}" method="post" onsubmit="fEmailSend(this,'${id}');return false">
   <div class="row" style="flex-wrap:wrap;gap:8px"><input class="in" type="email" name="${esc(EMAIL_FIELD)}" required placeholder="tu@correo.com" value="${esc(mail||"")}" style="flex:1;min-width:220px"><button class="btn on" type="submit">Quiero el resumen diario</button></div><input type="hidden" name="locale" value="es"><input type="hidden" name="html_type" value="simple"><input type="text" name="email_address_check" value="" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
   <label class="sm" style="display:block;margin-top:6px"><input type="checkbox" required> Acepto recibir cada día por correo el resumen del mercado, las noticias y las oportunidades de Equity Intrinsic, junto con promociones de Valmont &amp; Co. y de Nexus Terminal (webs de Community16 LLC), y he leído la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. Puedo darme de baja cuando quiera.</label></form>`;
 }
@@ -1238,6 +1253,7 @@ function accPanel(){
   const abierto=fo?fo.open:true;
   p.innerHTML=`<div class="sm" style="word-break:break-all">${esc(FBU.email||"Sesión iniciada")}</div>
   <details id="accFav" ${abierto?"open":""}><summary>★ Mis favoritas (${F.length})</summary>${F.length?F.map(t=>`<div class="fv"><a onclick="accOpen=false;accPanel();fichaIr('${esc(t)}')"><b>${esc(t)}</b> <span class="sm">${esc((D.v.items[t].name||"").slice(0,24))}</span></a><button class="btn" title="Quitar" onclick="fFavToggle('${esc(t)}')">✕</button></div>`).join(""):'<p class="sm">Aún no tienes ninguna. En la ficha de una empresa pulsa «☆ Seguir».</p>'}</details>
+  <div class="sm" style="margin:8px 0"><b>Canal de Telegram:</b> ${TELEGRAM_URL?`<a href="${esc(TELEGRAM_URL)}" target="_blank" rel="noopener">Unirme al canal</a>`:"muy pronto"}</div>
   ${EMAIL_FORM&&!fStore("ei_em")?`<details><summary>Resumen diario por correo</summary><div id="accEm" style="margin-top:6px">${fEmailForm("accEm",FBU.email)}</div></details>`:""}
   <div class="row" style="margin:10px 0 0"><button class="btn" onclick="accSalir()">Cerrar sesión</button></div>
   <p class="sm" style="margin-top:8px">Para borrar tu cuenta y tus datos, escribe al contacto de la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>`;
@@ -1303,6 +1319,19 @@ function accOlvido(){
   FBA.sendPasswordResetEmail(e).then(()=>accMsg("Te hemos enviado un correo para cambiar la contraseña.",true)).catch(x=>accMsg(accErr(x)));
 }
 fbCargar();
+
+/* aviso tras confirmar la suscripción por correo (Brevo redirige aquí con ?suscrito=1) */
+(function(){try{
+  if(new URLSearchParams(location.search).get("suscrito")!=="1")return;
+  history.replaceState(null,"",location.pathname);
+  document.addEventListener("DOMContentLoaded",function(){
+    try{fStore("ei_em","1")}catch(e){}
+    const d=document.createElement("div");d.id="subOk";
+    d.style.cssText="position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--bg2,#111);border:1px solid var(--gold,#d4a72c);border-radius:10px;padding:12px 18px;max-width:92vw;box-shadow:0 6px 24px rgba(0,0,0,.4)";
+    d.innerHTML='<strong>¡Suscripción confirmada!</strong> A partir de ahora recibirás el resumen diario de Equity Intrinsic. <button class="btn" style="margin-left:10px" onclick="this.parentNode.remove()">Cerrar</button>';
+    document.body.appendChild(d);setTimeout(()=>{d.remove()},12000);
+  });
+}catch(e){}})();
 </script>
 </body>
 </html>
