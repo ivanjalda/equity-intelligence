@@ -282,6 +282,16 @@ def annual(facts, names, unit):
                 tmp[r["end"]] = (r["val"], r["filed"])
         for k, v in tmp.items():
             out.setdefault(k, v)
+    if len(out) < 3:   # pocos datos: segunda pasada que acepta cualquier informe anual con duración razonable
+        for n in names:
+            for r in facts.get("us-gaap", {}).get(n, {}).get("units", {}).get(unit, []):
+                if r.get("form") not in ANNUAL_FORMS or r["end"] in out:
+                    continue
+                if "start" in r and not 300 <= (date.fromisoformat(r["end"]) - date.fromisoformat(r["start"])).days <= 400:
+                    continue
+                if "start" not in r and unit != "shares":
+                    continue
+                out[r["end"]] = (r["val"], r.get("filed", ""))
     return {k: v[0] for k, v in sorted(out.items())}, last
 
 
@@ -397,7 +407,11 @@ def diag(t, facts, eps, cfo, ni):
         return
     g = facts.get("us-gaap", {})
     pick_ = lambda k: sorted(n for n in g if k in n)[:12]
-    print(f"DIAG {t}: beneficio {len(eps)} años, caja {len(cfo)}, neto {len(ni)}; etiquetas por acción: {pick_('PerShare')}; acciones: {pick_('WeightedAverage')}; caja: {pick_('OperatingActivities')[:6]}")
+    print(f"DIAG {t}: beneficio {len(eps)} años, caja {len(cfo)}, neto {len(ni)}; etiquetas por acción: {pick_('PerShare')}; acciones: {[n for n in g if n.startswith('WeightedAverageNumber')]}; neto: {[n for n in g if n.startswith('NetIncomeLoss')][:5]}")
+    for n in ("NetCashProvidedByUsedInOperatingActivities", "EarningsPerShareDiluted", "NetIncomeLoss"):
+        for u, rows in g.get(n, {}).get("units", {}).items():
+            muestra = [(r.get("start"), r["end"], r.get("form"), r.get("fp")) for r in rows[-3:]]
+            print(f"DIAG {t} {n} [{u}]: {len(rows)} filas; últimas: {muestra}")
 
 
 def value_stock(t, cyc, facts, hist, price):
@@ -516,6 +530,9 @@ HINTS = {"Ingresos": "Lo que vende al año.",
          "Patrimonio neto": "Lo que quedaría para los accionistas si pagara todas sus deudas."}
 
 
+ANNUAL_FORMS = ("10-K", "10-K/A", "10-KT", "20-F", "20-F/A", "40-F", "40-F/A")
+
+
 def hist_series(facts, names, flow, unit="USD"):
     out = {}
     for n in names:
@@ -524,7 +541,7 @@ def hist_series(facts, names, flow, unit="USD"):
             if flow:
                 if "start" not in r or not 340 <= (date.fromisoformat(r["end"]) - date.fromisoformat(r["start"])).days <= 380:
                     continue
-            elif "start" in r or r.get("fp") != "FY":
+            elif "start" in r or r.get("form") not in ANNUAL_FORMS:   # saldo de balance: solo el que viene en un informe anual
                 continue
             if r["end"] not in tmp or r["filed"] > tmp[r["end"]][1]:
                 tmp[r["end"]] = (r["val"], r["filed"])
@@ -658,10 +675,23 @@ def last_report(facts):
     for tag in ("Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "RevenueFromContractWithCustomerIncludingAssessedTax", "SalesRevenueNet", "Assets", "NetIncomeLoss"):
         for rows in facts.get("us-gaap", {}).get(tag, {}).get("units", {}).values():
             for r in rows:
-                if r.get("form") in ("10-K", "10-K/A", "20-F", "40-F") and r.get("fp") == "FY" and r.get("accn"):
+                if r.get("form") in ANNUAL_FORMS and r.get("accn") and (r.get("fp") == "FY" or "start" not in r):
                     k = (r.get("filed", ""), r.get("end", ""))   # el informe más reciente y, dentro de él, el ejercicio más reciente (trae también años anteriores)
                     if best is None or k > (best["filed"], best["end"]):
                         best = {"acc": r["accn"], "form": r["form"], "filed": r.get("filed", ""), "end": r.get("end", "")}
+    return best
+
+
+def report_for(facts, end):
+    """El informe anual (10-K, 20-F o 40-F) en el que se presentó el balance de ese cierre: el original, el primero."""
+    best = None
+    e = date.fromisoformat(end)
+    for rows in facts.get("us-gaap", {}).get("Assets", {}).get("units", {}).values():
+        for r in rows:
+            if r.get("form") in ANNUAL_FORMS and "start" not in r and r.get("accn") and abs((date.fromisoformat(r["end"]) - e).days) <= 10:
+                k = (r.get("filed", ""), r["end"])
+                if best is None or k < (best["filed"], best["end"]):
+                    best = {"acc": r["accn"], "form": r["form"], "filed": r.get("filed", ""), "end": end}
     return best
 
 
@@ -695,7 +725,7 @@ def statements(facts, cik=None):
     ends = cierres[-10:]
     out = {"y": [e[:4] for e in ends], "e": ends}
     try:
-        src = last_report(facts)
+        src = report_for(facts, ends[-1]) or last_report(facts)   # el enlace es siempre el informe del último año de la tabla
         if src and cik:
             out["src"], out["cik"] = src, int(cik)
     except Exception:

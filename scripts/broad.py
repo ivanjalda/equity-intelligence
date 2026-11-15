@@ -104,7 +104,11 @@ def bank_models(facts):
             **{a: round(c, 2) for a, c in m.items()}}
 
 
+MOTIVO = ["sin datos suficientes"]
+
+
 def basic_models(facts, t=None):
+    MOTIVO[0] = "sin datos suficientes"
     eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
     cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], "USD")
     cap, _ = annual(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], "USD")
@@ -113,9 +117,11 @@ def basic_models(facts, t=None):
     if len(eps) < 3:
         eps = {k: ni[k] / shs[k] for k in ni if shs.get(k)}
     if len(eps) < 3 or not cfo:
+        MOTIVO[0] = "menos de 3 años de beneficio o sin flujo de caja"
         return None
     ends = list(eps)
     if (date.today() - date.fromisoformat(ends[-1])).days > 800 or (date.today() - date.fromisoformat(list(cfo)[-1])).days > 800:
+        MOTIVO[0] = "datos con más de 2 años"
         return None   # datos con más de dos años: no se valora
     v = [eps[k] for k in ends]
     cyc = is_cyclical(v)
@@ -135,6 +141,7 @@ def basic_models(facts, t=None):
     while len(m) >= 2 and max(m.values()) > 3 * min(m.values()):
         m.pop(max(m, key=m.get))
     if len(m) < 2:
+        MOTIVO[0] = "beneficio o flujo de caja negativo (menos de 2 métodos válidos)"
         return None
     rev = date.fromisoformat(max(f1, f2) or TODAY) + timedelta(days=91)
     while rev <= date.today():
@@ -187,6 +194,7 @@ def weekly():
     print(f"Empresas a analizar: {len(cands)}")
     FUND.mkdir(exist_ok=True)
     items, ok, fails, seguidos = {}, 0, {}, 0
+    motivos = {}
     for i, (_, tk, cik, name) in enumerate(cands):
         facts, frenado = None, False
         for intento in range(3):  # la SEC pide ir despacio: si nos frena (403/429) esperamos y reintentamos
@@ -211,6 +219,7 @@ def weekly():
         try:
             sic = get_sic(cik)
             if sic is None:
+                motivos["sin sector confirmado"] = motivos.get("sin sector confirmado", 0) + 1
                 continue  # sin poder confirmar el sector, mejor no valorarla esta semana
             if is_investment_company(facts):
                 items[tk] = {"type": "ACCIONES", "name": name.title(), "kind": "financiera"}
@@ -222,6 +231,7 @@ def weekly():
                     ok += 1
                 else:
                     items[tk] = {"type": "ACCIONES", "name": name.title(), "kind": "financiera"}
+                    motivos["financiera sin método propio"] = motivos.get("financiera sin método propio", 0) + 1
                 continue
             facts = normalize_facts(facts)
             m = basic_models(facts, tk)
@@ -239,6 +249,8 @@ def weekly():
                     m["health"] = fd["health"]
                 items[tk] = {"type": "ACCIONES", "name": name.title(), "sic": sic, **m}
                 ok += 1
+            else:
+                motivos[MOTIVO[0]] = motivos.get(MOTIVO[0], 0) + 1
         except Exception as e:
             print(f"{tk}: error ({e})")
         if i % 200 == 0:
@@ -246,9 +258,16 @@ def weekly():
         time.sleep(0.12)
     prev = len(load(MODELS, {"items": {}})["items"])
     print(f"Incidencias de la SEC en total: {fails or 'ninguna'}")
+    print(f"Por qué no se valoran las demás: {motivos}")
     if len(items) < 500 or (prev >= 500 and len(items) < prev * 0.5):
         sys.exit(f"Resultado sospechosamente pequeño ({len(items)} empresas; la vez anterior {prev}). No se guarda para no perder las valoraciones buenas.")
     MODELS.write_text(json.dumps({"updated": TODAY, "items": items}, ensure_ascii=False), encoding="utf-8")
+    quitadas = 0
+    for f in FUND.glob("*.json"):   # cuentas de empresas que ya no se valoran: se retiran para que no queden datos viejos
+        if f.stem not in items and f.stem not in core:
+            f.unlink()
+            quitadas += 1
+    print(f"Cuentas antiguas retiradas: {quitadas}")
     print(f"Listo: {ok} empresas valoradas de {len(cands)}.")
 
 
