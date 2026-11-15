@@ -142,9 +142,9 @@ def build():
     a = H.append
     a(f'<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Equity Intrinsic · {fecha(TODAY)}</title>'
       '<style>@media only screen and (max-width:680px){td.col{display:block!important;width:100%!important;padding:0 0 10px 0!important}td.tile{display:inline-block!important;width:46%!important}}</style></head>')
-    a('<body style="margin:0;background:#eef0f3;font-family:Arial,Helvetica,sans-serif;color:#1f2937">')
-    a('<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:10px 6px">')
-    a('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:960px;width:100%;background:#f7f8fa;border-radius:10px;overflow:hidden">')
+    a('<body style="margin:0;padding:0;background:#f7f8fa;font-family:Arial,Helvetica,sans-serif;color:#1f2937">')
+    a('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%"><tr><td align="center" style="padding:0">')
+    a('<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#f7f8fa">')
 
     # Cabecera
     a(f'<tr><td style="background:#0b0f19;padding:16px 22px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
