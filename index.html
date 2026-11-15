@@ -1198,9 +1198,10 @@ function fEmailRepaint(){
   ["homeEm","accEm","fem","femt"].forEach(i=>{const e=document.getElementById(i);if(!e)return;
     const t=e.querySelector("form,.emst");if(t)t.outerHTML=fEmailForm(i,"",1)})}
 function fEmailReset(){try{localStorage.removeItem("ei_pend")}catch(e){}fEmailRepaint()}
+function fEmailOtro(){try{localStorage.removeItem("ei_sub");localStorage.removeItem("ei_pend")}catch(e){}fEmailRepaint()}
 function fEmailYa(){fStore("ei_sub","1");try{localStorage.removeItem("ei_pend")}catch(e){}fEmailRepaint()}
 function fEmailForm(id,mail,inner){
-  if(fStore("ei_sub")==="1")return `<div class="emst"><p><strong style="color:var(--up,#2ecc71)">✔ Suscrito al resumen diario.</strong> Lo recibirás cada día en tu correo. Puedes darte de baja desde el enlace que trae cada correo.</p></div>`;
+  if(fStore("ei_sub")==="1")return `<div class="emst"><p><strong style="color:var(--up,#2ecc71)">✔ Suscrito al resumen diario.</strong> Lo recibirás cada día en tu correo. Puedes darte de baja desde el enlace que trae cada correo.</p><div class="row"><button class="btn" type="button" onclick="fEmailOtro()">Apuntar otro correo</button></div></div>`;
   const pe=fStore("ei_pend");
   if(pe)return `<div class="emst"><p><strong>¡Casi listo!</strong> Te hemos enviado un correo${pe.indexOf("@")>0?" a <b>"+esc(pe)+"</b>":""}. Pulsa el enlace que trae para confirmar tu suscripción. Si no lo ves, mira en la carpeta de spam.</p><div class="row" style="gap:8px"><button class="btn" type="button" onclick="fEmailReset()">Usar otro correo / reenviar</button><button class="btn" type="button" onclick="fEmailYa()">Ya lo he confirmado</button></div></div>`;
   return `<form action="${esc(EMAIL_FORM)}" method="post" onsubmit="fEmailSend(this,'${id}');return false">
