@@ -65,7 +65,10 @@ def indices(market):
 def build():
     market = load("market-data.json", {})
     vals = load("valuations.json", {"items": {}})
-    news = (load("news.json", {}) or {}).get("items", [])[:5]
+    _todas = (load("news.json", {}) or {}).get("items", [])
+    news = [x for x in _todas if x.get("l") == "es" and x.get("t")][:5]
+    if len(news) < 3:
+        news = (news + [x for x in _todas if x.get("l") != "es" and x.get("t")])[:5]
     ins = (load("insiders.json", {}) or {}).get("items", [])
     ops = oportunidades(vals, market)
     idx = indices(market)
@@ -98,18 +101,22 @@ def build():
     if compras:
         a('<tr><td style="padding:14px 24px 4px"><div style="font-weight:bold;font-size:16px">Directivos que compran con su dinero</div></td></tr>')
         for x in compras:
-            a(f'<tr><td style="padding:3px 24px;font-size:13px">{e(x.get("t",""))} · {e(x.get("n",""))} ({e(x.get("r",""))}) · {fecha(x.get("d", TODAY))}</td></tr>')
+            quien = " · ".join(z for z in [(x.get("w") or "").strip(), (x.get("r") or "").strip()] if z)
+            a(f'<tr><td style="padding:3px 24px;font-size:13px"><b>{e(x.get("t",""))}</b> · {e(x.get("n",""))}{(" — " + e(quien)) if quien else ""} · {fecha(x.get("d", TODAY))}</td></tr>')
     if news:
         a('<tr><td style="padding:14px 24px 4px"><div style="font-weight:bold;font-size:16px">Noticias</div></td></tr>')
         for n in news:
-            a(f'<tr><td style="padding:3px 24px;font-size:13px"><a href="{e(n.get("u","#"))}" style="color:#1a56db;text-decoration:none">{e(n.get("l",""))}</a> <span style="color:#6b7280;font-size:11px">· {e(n.get("s",""))}</span></td></tr>')
+            a(f'<tr><td style="padding:3px 24px;font-size:13px"><a href="{e(n.get("u","#"))}" style="color:#1a56db;text-decoration:none">{e(n.get("t",""))}</a> <span style="color:#6b7280;font-size:11px">· {e(n.get("s",""))}</span></td></tr>')
     a(f'<tr><td align="center" style="padding:18px 24px"><a href="{SITE}" style="background:{oro};color:#fff;text-decoration:none;padding:12px 26px;border-radius:6px;font-weight:bold;font-size:14px;display:inline-block">Ver el análisis completo</a></td></tr>')
     # Publicidad propia
     a('<tr><td style="padding:6px 24px 0"><div style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px">Publicidad</div></td></tr>')
+    btn = 'display:inline-block;background:#d4a72c;color:#111111;text-decoration:none;font-weight:bold;font-size:12px;padding:7px 14px;border-radius:5px'
+    caja = 'border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;font-size:12px;line-height:18px;color:#374151'
     a('<tr><td style="padding:4px 24px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
-      '<td width="50%" valign="top" style="padding-right:6px"><a href="https://valmontco.com" style="text-decoration:none;color:inherit"><div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:12px"><b style="font-size:13px">Valmont &amp; Co.</b><br>Visita valmontco.com</div></a></td>'
-      f'<td width="50%" valign="top" style="padding-left:6px"><a href="{NEXUS}" style="text-decoration:none;color:inherit"><div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;font-size:12px"><b style="font-size:13px">Nexus Terminal</b><br>Descubre Nexus Terminal</div></a></td>'
+      f'<td width="50%" valign="top" style="padding-right:6px"><div style="{caja}"><b style="font-size:13px;color:#111111">Valmont &amp; Co. · Academia de inversión</b><br>Guías y libros de inversión en español e inglés, con prólogos gratis, y cursos paso a paso.<br><br><a href="https://valmontco.com" style="{btn}">Ver guías y cursos</a></div></td>'
+      f'<td width="50%" valign="top" style="padding-left:6px"><div style="{caja}"><b style="font-size:13px;color:#111111">Nexus Terminal · Análisis técnico</b><br>Nuestro motor analiza acciones, criptomonedas y divisas, y publica pronósticos y señales, con avisos en Telegram.<br><br><a href="{NEXUS}" style="{btn}">Abrir Nexus Terminal</a></div></td>'
       '</tr></table></td></tr>')
+    a('<tr><td style="padding:4px 24px 0;font-size:10px;color:#9ca3af">Webs de Community16 LLC. Contenido educativo e informativo, no es asesoramiento financiero ni garantiza resultados.</td></tr>')
     # Firma
     a('<tr><td style="padding:20px 24px 8px;border-top:1px solid #e5e7eb;margin-top:12px">'
       f'<div style="font-weight:bold;font-size:14px">Equity Intrinsic</div>'
