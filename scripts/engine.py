@@ -616,7 +616,8 @@ def last_report(facts):
         for rows in facts.get("us-gaap", {}).get(tag, {}).get("units", {}).values():
             for r in rows:
                 if r.get("form") in ("10-K", "10-K/A", "20-F", "40-F") and r.get("fp") == "FY" and r.get("accn"):
-                    if best is None or r.get("filed", "") > best["filed"]:
+                    k = (r.get("filed", ""), r.get("end", ""))   # el informe más reciente y, dentro de él, el ejercicio más reciente (trae también años anteriores)
+                    if best is None or k > (best["filed"], best["end"]):
                         best = {"acc": r["accn"], "form": r["form"], "filed": r.get("filed", ""), "end": r.get("end", "")}
     return best
 
