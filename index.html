@@ -115,12 +115,20 @@ a.gl{color:inherit;text-decoration:none;border-bottom:1px dotted var(--g)}a.gl:h
 #vFicha{padding:0 0 30px}#vFicha>.box,#vFicha #fbody>.box,#vFicha #fbody>.note{margin-bottom:12px}
 table.fs tr.tot td{font-weight:700;border-top:1px solid var(--line,#333)}
 label input[type=checkbox]{width:auto!important;display:inline-block;margin-right:6px;vertical-align:middle}
+
+.hdr-r{margin-left:auto;display:flex;gap:6px;align-items:center;position:relative}
+#accWrap{position:relative;display:inline-block}
+.accp{position:absolute;right:0;top:calc(100% + 6px);width:310px;max-width:92vw;z-index:9000;background:var(--p);border:1px solid var(--b);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:12px;text-align:left;max-height:80vh;overflow:auto}
+.accp details{margin:8px 0;border-top:1px solid var(--b);padding-top:8px}.accp summary{cursor:pointer;font-weight:700}
+.accp .fv{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--p2)}
+.accp .fv a{cursor:pointer;color:inherit}.accp .fv a:hover{color:var(--gold)}
+.acct{display:flex;gap:4px;margin:6px 0 10px}.acct button{flex:1}
 </style>
 </head>
 <body>
 <header>
   <div class="brand">Equity Intelligence<small id="upd">Cargando datos…</small></div>
-  <div class="row" style="margin:0">
+  <div class="row" style="margin:0;flex:1;justify-content:flex-start;align-items:center">
     <button class="btn on" id="tHome" onclick="vista('home')">Inicio</button>
     <button class="btn" id="tAn" onclick="vista('term')">Análisis de mercado</button>
     <button class="btn" id="tFicha" onclick="vista('ficha')">Ficha de empresa</button>
@@ -129,7 +137,7 @@ label input[type=checkbox]{width:auto!important;display:inline-block;margin-righ
     <button class="btn" id="tHist" onclick="vista('hist')">Historial</button>
     <a class="btn" href="aprender.html">Aprender</a>
     <a class="btn" href="como-funciona.html">Cómo funciona</a>
-    <button class="btn" type="button" data-tema-btn onclick="cambiarTema()" title="Cambiar entre modo claro y modo noche">☀ Modo claro</button>
+    <span class="hdr-r"><button class="btn" type="button" data-tema-btn onclick="cambiarTema()" title="Cambiar entre modo claro y modo noche">☀ Modo claro</button><span id="accWrap"></span></span>
   </div>
 </header>
 
@@ -1213,13 +1221,29 @@ function accLocked(tit){
   if(FBU===undefined)return `<div class="box"><p class="sm">Comprobando tu cuenta…</p></div>`;
   return `<div class="box" style="border-color:var(--gold)"><h3>🔒 ${esc(tit)}: gratis con tu cuenta</h3>
   <p class="sm">Crea una cuenta gratuita en unos segundos (con Google o con tu correo) y desbloqueas: los estados financieros completos de 10 años, las compras y ventas de directivos, el comparador de empresas, tus favoritas en cualquier dispositivo y el resumen diario por correo.</p>
-  <div class="row"><button class="btn on" onclick="accModal()">Crear cuenta gratis o entrar</button></div></div>`;
+  <div class="row"><button class="btn on" onclick="accModal('crear')">Crear cuenta gratis o entrar</button></div></div>`;
 }
+let accOpen=false;
 function accBtn(){
-  let b=document.getElementById("accBtn");
-  if(!b){const r=document.getElementById("tFicha");if(!r)return;b=document.createElement("button");b.id="accBtn";b.className="btn";r.parentNode.appendChild(b)}
-  b.textContent=FBU?"Mi cuenta":"Entrar";b.onclick=()=>accModal();
+  const w=document.getElementById("accWrap");if(!w)return;
+  if(!FBU){w.innerHTML='<button class="btn on" id="accBtn" onclick="accModal()">Entrar</button>';accOpen=false;return}
+  w.innerHTML='<button class="btn on" id="accBtn" onclick="accToggle(event)">👤 Mi cuenta ▾</button><div id="accPanel" class="accp" style="display:none"></div>';
+  accPanel();
 }
+function accToggle(e){if(e)e.stopPropagation();accOpen=!accOpen;accPanel()}
+function accPanel(){
+  const p=document.getElementById("accPanel");if(!p||!FBU)return;
+  p.style.display=accOpen?"block":"none";if(!accOpen)return;
+  const F=fFavs().filter(t=>D&&D.v&&D.v.items&&D.v.items[t]),fo=document.getElementById("accFav");
+  const abierto=fo?fo.open:true;
+  p.innerHTML=`<div class="sm" style="word-break:break-all">${esc(FBU.email||"Sesión iniciada")}</div>
+  <details id="accFav" ${abierto?"open":""}><summary>★ Mis favoritas (${F.length})</summary>${F.length?F.map(t=>`<div class="fv"><a onclick="accOpen=false;accPanel();fichaIr('${esc(t)}')"><b>${esc(t)}</b> <span class="sm">${esc((D.v.items[t].name||"").slice(0,24))}</span></a><button class="btn" title="Quitar" onclick="fFavToggle('${esc(t)}')">✕</button></div>`).join(""):'<p class="sm">Aún no tienes ninguna. En la ficha de una empresa pulsa «☆ Seguir».</p>'}</details>
+  ${EMAIL_FORM&&!fStore("ei_em")?`<details><summary>Resumen diario por correo</summary><div id="accEm" style="margin-top:6px">${fEmailForm("accEm",FBU.email)}</div></details>`:""}
+  <div class="row" style="margin:10px 0 0"><button class="btn" onclick="accSalir()">Cerrar sesión</button></div>
+  <p class="sm" style="margin-top:8px">Para borrar tu cuenta y tus datos, escribe al contacto de la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>`;
+}
+function accSalir(){accOpen=false;FBA.signOut()}
+document.addEventListener("click",e=>{if(accOpen&&!e.target.closest("#accWrap")){accOpen=false;accPanel()}});
 async function accAlEntrar(u){
   /* une los favoritos de este navegador con los de la cuenta */
   try{
@@ -1231,44 +1255,41 @@ async function accAlEntrar(u){
 }
 function fAccSync(a){
   if(!FBU||!FBD)return;
+  accPanel();
   FBD.collection("users").doc(FBU.uid).set({favs:a,actualizado:new Date().toISOString()},{merge:true}).catch(()=>{});
 }
 function accMsg(t,ok){const m=document.getElementById("accMsg");if(m){m.textContent=t;m.className="sm "+(ok?"up":"dn")}}
 function accErr(e){
   const c=(e&&e.code)||"";
-  return {"auth/invalid-email":"El correo no es válido.","auth/user-not-found":"No hay ninguna cuenta con ese correo.","auth/wrong-password":"La contraseña no es correcta.","auth/invalid-credential":"Correo o contraseña incorrectos.",
-  "auth/email-already-in-use":"Ya existe una cuenta con ese correo. Pulsa «Entrar».","auth/weak-password":"La contraseña es muy corta: usa al menos 6 caracteres.","auth/too-many-requests":"Demasiados intentos. Espera unos minutos.",
+  return {"auth/invalid-email":"El correo no es válido.","auth/user-not-found":"No hay ninguna cuenta con ese correo.","auth/wrong-password":"La contraseña no es correcta.","auth/invalid-credential":"Correo o contraseña incorrectos. Si aún no tienes cuenta, usa la pestaña «Crear cuenta».",
+  "auth/email-already-in-use":"Ya existe una cuenta con ese correo. Pulsa la pestaña «Entrar».","auth/weak-password":"La contraseña es muy corta: usa al menos 6 caracteres.","auth/too-many-requests":"Demasiados intentos. Espera unos minutos.",
   "auth/popup-closed-by-user":"Cerraste la ventana de Google.","auth/network-request-failed":"Sin conexión."}[c]||"No se pudo completar. Inténtalo de nuevo.";
 }
-function accModal(){
+let accModo="entrar";
+function accModal(modo){
+  if(modo)accModo=modo;
   let m=document.getElementById("accModal");if(m)m.remove();
   m=document.createElement("div");m.id="accModal";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px";
   m.onclick=e=>{if(e.target===m)m.remove()};
-  const caja=h=>`<div class="box" style="max-width:400px;width:100%;margin:0;max-height:92vh;overflow:auto">${h}</div>`;
-  if(FBU){
-    m.innerHTML=caja(`<h3>Mi cuenta</h3><p class="sm">${esc(FBU.email||"")}</p><p class="sm">Tus favoritas (${fFavs().length}) se guardan en tu cuenta y las verás en cualquier dispositivo.</p>${EMAIL_FORM&&!fStore("ei_em")?`<div id="accEm" style="margin:10px 0"><h4 style="margin:0 0 4px">Resumen diario por correo</h4>${fEmailForm("accEm",FBU.email)}</div>`:""}
-    <div class="row"><button class="btn" onclick="FBA.signOut().then(()=>document.getElementById('accModal').remove())">Salir</button><button class="btn" onclick="document.getElementById('accModal').remove()">Cerrar</button></div>
-    <p class="sm" style="margin-top:10px">Para borrar tu cuenta y tus datos escríbenos al correo de contacto de la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>`);
-  }else{
-    m.innerHTML=caja(`<h3>Entrar o crear cuenta</h3><p class="sm">Gratis. Guarda tus empresas favoritas y las verás en cualquier dispositivo.</p>
+  const nuevo=accModo==="crear";
+  m.innerHTML=`<div class="box" style="max-width:400px;width:100%;margin:0;max-height:92vh;overflow:auto">
+    <div class="acct"><button class="btn ${nuevo?"":"on"}" onclick="accModal('entrar')">Entrar</button><button class="btn ${nuevo?"on":""}" onclick="accModal('crear')">Crear cuenta</button></div>
+    <p class="sm">${nuevo?"Gratis. Desbloquea los estados financieros, las compras de directivos y el comparador, y guarda tus favoritas en cualquier dispositivo.":"Entra para ver tus favoritas y todo lo gratuito de tu cuenta."}</p>
     <button class="btn on" style="width:100%;margin:6px 0" onclick="accGoogle()">Continuar con Google</button>
     <p class="sm" style="text-align:center;margin:8px 0">— o con tu correo —</p>
     <input class="in" id="accMail" type="email" placeholder="tu@correo.com" autocomplete="email" style="width:100%;margin:4px 0;padding:9px">
-    <input class="in" id="accPass" type="password" placeholder="Contraseña (mínimo 6 caracteres)" autocomplete="current-password" style="width:100%;margin:4px 0;padding:9px">
-    <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="accOk"> Acepto la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a> (necesario para crear la cuenta).</label>
-    <div class="row"><button class="btn on" onclick="accMail(false)">Entrar</button><button class="btn" onclick="accMail(true)">Crear cuenta</button><button class="btn" onclick="accOlvido()">Olvidé mi contraseña</button></div>
-    <p id="accMsg" class="sm" style="margin-top:8px"></p>`);
-  }
+    <input class="in" id="accPass" type="password" placeholder="Contraseña${nuevo?" (mínimo 6 caracteres)":""}" autocomplete="${nuevo?"new-password":"current-password"}" style="width:100%;margin:4px 0;padding:9px" onkeydown="if(event.key==='Enter')accMail(${nuevo})">
+    <div class="row" style="margin-top:8px"><button class="btn on" onclick="accMail(${nuevo})">${nuevo?"Crear mi cuenta":"Entrar"}</button>${nuevo?"":'<button class="btn" onclick="accOlvido()">Olvidé mi contraseña</button>'}</div>
+    <p id="accMsg" class="sm" style="margin-top:8px"></p>
+    <p class="sm" style="margin-top:8px">Al continuar aceptas la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p></div>`;
   document.body.appendChild(m);
 }
 function accGoogle(){
-  if(!document.getElementById("accOk").checked){accMsg("Marca la casilla de la política de privacidad para continuar.");return}
   FBA.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(()=>{const m=document.getElementById("accModal");if(m)m.remove()}).catch(e=>accMsg(accErr(e)));
 }
 function accMail(crear){
   const e=document.getElementById("accMail").value.trim(),p=document.getElementById("accPass").value;
   if(!e||!p){accMsg("Escribe tu correo y tu contraseña.");return}
-  if(crear&&!document.getElementById("accOk").checked){accMsg("Marca la casilla de la política de privacidad para crear la cuenta.");return}
   (crear?FBA.createUserWithEmailAndPassword(e,p):FBA.signInWithEmailAndPassword(e,p)).then(()=>{const m=document.getElementById("accModal");if(m)m.remove()}).catch(x=>accMsg(accErr(x)));
 }
 function accOlvido(){
