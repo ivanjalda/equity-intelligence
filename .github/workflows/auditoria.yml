@@ -1,0 +1,38 @@
+name: Revisión automática de datos y cálculos
+
+on:
+  schedule:
+    - cron: "30 11 * * 2-6"     # martes a sábado, después de las actualizaciones
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: equity-data
+  cancel-in-progress: false
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Revisar datos y cálculos
+        run: python scripts/auditoria.py
+        continue-on-error: true
+        id: rev
+      - name: Guardar resultado
+        run: |
+          git config user.name "equity-bot"
+          git config user.email "equity-bot@users.noreply.github.com"
+          git add data/auditoria.json
+          git diff --cached --quiet || (git commit -m "Revisión $(date -u +%F)" && git pull --rebase origin main && git push)
+      - name: Avisar si hay fallos
+        if: steps.rev.outcome == 'failure'
+        run: |
+          echo "La revisión encontró fallos. Mira el paso 'Revisar datos y cálculos'."
+          exit 1
