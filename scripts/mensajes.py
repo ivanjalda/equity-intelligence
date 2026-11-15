@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Equity Intelligence: textos de los avisos de Telegram (formato HTML, con colores y enlace a la web).
+"""Equity Intrinsic: textos de los avisos de Telegram (formato HTML, con colores y enlace a la web).
 Solo se usan datos reales calculados por los motores; aquí no se inventa nada."""
 import html, os
 
-SITE_URL = os.environ.get("SITE_URL", "https://ivanjalda.github.io/equity-intelligence/")
+SITE_URL = os.environ.get("SITE_URL", "https://equityintrinsic.com/")
 AVISO = "⚠️ <i>Información, no asesoramiento financiero. Invertir conlleva riesgo de perder dinero.</i>"
 
 
@@ -66,7 +66,7 @@ def _linea_compra(mg, t, e, iv, precio, nuevo):
 
 def build_main(buys, new, market, sig, today):
     """buys: lista de (margen, ticker, item, valor_intrínseco) ya ordenada."""
-    L = [f"📊 <b>EQUITY INTELLIGENCE</b> · {fecha(today)}", "<i>Lista principal · precios al cierre de mercado</i>", ""]
+    L = [f"📊 <b>EQUITY INTRINSIC</b> · {fecha(today)}", "<i>Lista principal · precios al cierre de mercado</i>", ""]
     if buys:
         L.append(f"🟢 <b>OPORTUNIDADES DE COMPRA ({len(buys)})</b>")
         for mg, t, e, iv in buys[:8]:
