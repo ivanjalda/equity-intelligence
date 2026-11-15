@@ -114,6 +114,7 @@ table.fs tr.calc td{color:var(--g)}
 a.gl{color:inherit;text-decoration:none;border-bottom:1px dotted var(--g)}a.gl:hover{color:var(--gold)}
 #vFicha{padding:0 0 30px}#vFicha>.box,#vFicha #fbody>.box,#vFicha #fbody>.note{margin-bottom:12px}
 table.fs tr.tot td{font-weight:700;border-top:1px solid var(--line,#333)}
+label input[type=checkbox]{width:auto!important;display:inline-block;margin-right:6px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -1178,6 +1179,82 @@ function fEmailTop(n){
   if(!EMAIL_FORM||fStore("ei_em")||fStore("ei_hide")||n<3)return"";
   return `<div class="note" id="femt" style="border-color:var(--gold)"><div class="flex"><strong>¿Te está sirviendo? Recibe las alertas por correo</strong><button class="btn" onclick="fStore('ei_hide','1');document.getElementById('femt').remove()">Ahora no</button></div>${fEmailForm("femt")}</div>`;
 }
+
+/* --- cuentas de usuario (Firebase): entrar con Google o con correo y contraseña. Dormido si no hay configuración --- */
+const FB_CFG=null;
+let FBA=null,FBD=null,FBU=null;
+function fbCargar(){
+  if(!FB_CFG||!FB_CFG.apiKey)return;
+  const V="10.12.2",base="https://www.gstatic.com/firebasejs/"+V+"/";
+  const sc=s=>new Promise((ok,ko)=>{const e=document.createElement("script");e.src=base+s;e.onload=ok;e.onerror=ko;document.head.appendChild(e)});
+  sc("firebase-app-compat.js").then(()=>Promise.all([sc("firebase-auth-compat.js"),sc("firebase-firestore-compat.js")])).then(()=>{
+    firebase.initializeApp(FB_CFG);FBA=firebase.auth();FBD=firebase.firestore();
+    FBA.onAuthStateChanged(async u=>{FBU=u;accBtn();if(u)await accAlEntrar(u)});
+  }).catch(()=>{});
+}
+function accBtn(){
+  let b=document.getElementById("accBtn");
+  if(!b){const r=document.getElementById("tFicha");if(!r)return;b=document.createElement("button");b.id="accBtn";b.className="btn";r.parentNode.appendChild(b)}
+  b.textContent=FBU?"Mi cuenta":"Entrar";b.onclick=()=>accModal();
+}
+async function accAlEntrar(u){
+  /* une los favoritos de este navegador con los de la cuenta */
+  try{
+    const ref=FBD.collection("users").doc(u.uid),d=await ref.get(),nube=(d.exists&&Array.isArray(d.data().favs))?d.data().favs:[];
+    const mix=[...new Set([...fFavs(),...nube])].slice(0,100);
+    fStore("ei_fav",JSON.stringify(mix));
+    if(mix.length!==nube.length||!d.exists)await ref.set({favs:mix,email:u.email||null,actualizado:new Date().toISOString()},{merge:true});
+    if(document.getElementById("vFicha")&&document.getElementById("vFicha").style.display!=="none")ficha();
+  }catch(e){}
+}
+function fAccSync(a){
+  if(!FBU||!FBD)return;
+  FBD.collection("users").doc(FBU.uid).set({favs:a,actualizado:new Date().toISOString()},{merge:true}).catch(()=>{});
+}
+function accMsg(t,ok){const m=document.getElementById("accMsg");if(m){m.textContent=t;m.className="sm "+(ok?"up":"dn")}}
+function accErr(e){
+  const c=(e&&e.code)||"";
+  return {"auth/invalid-email":"El correo no es válido.","auth/user-not-found":"No hay ninguna cuenta con ese correo.","auth/wrong-password":"La contraseña no es correcta.","auth/invalid-credential":"Correo o contraseña incorrectos.",
+  "auth/email-already-in-use":"Ya existe una cuenta con ese correo. Pulsa «Entrar».","auth/weak-password":"La contraseña es muy corta: usa al menos 6 caracteres.","auth/too-many-requests":"Demasiados intentos. Espera unos minutos.",
+  "auth/popup-closed-by-user":"Cerraste la ventana de Google.","auth/network-request-failed":"Sin conexión."}[c]||"No se pudo completar. Inténtalo de nuevo.";
+}
+function accModal(){
+  let m=document.getElementById("accModal");if(m)m.remove();
+  m=document.createElement("div");m.id="accModal";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px";
+  m.onclick=e=>{if(e.target===m)m.remove()};
+  const caja=h=>`<div class="box" style="max-width:400px;width:100%;margin:0;max-height:92vh;overflow:auto">${h}</div>`;
+  if(FBU){
+    m.innerHTML=caja(`<h3>Mi cuenta</h3><p class="sm">${esc(FBU.email||"")}</p><p class="sm">Tus favoritas (${fFavs().length}) se guardan en tu cuenta y las verás en cualquier dispositivo.</p>
+    <div class="row"><button class="btn" onclick="FBA.signOut().then(()=>document.getElementById('accModal').remove())">Salir</button><button class="btn" onclick="document.getElementById('accModal').remove()">Cerrar</button></div>
+    <p class="sm" style="margin-top:10px">Para borrar tu cuenta y tus datos escríbenos al correo de contacto de la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p>`);
+  }else{
+    m.innerHTML=caja(`<h3>Entrar o crear cuenta</h3><p class="sm">Gratis. Guarda tus empresas favoritas y las verás en cualquier dispositivo.</p>
+    <button class="btn on" style="width:100%;margin:6px 0" onclick="accGoogle()">Continuar con Google</button>
+    <p class="sm" style="text-align:center;margin:8px 0">— o con tu correo —</p>
+    <input class="in" id="accMail" type="email" placeholder="tu@correo.com" autocomplete="email" style="width:100%;margin:4px 0;padding:9px">
+    <input class="in" id="accPass" type="password" placeholder="Contraseña (mínimo 6 caracteres)" autocomplete="current-password" style="width:100%;margin:4px 0;padding:9px">
+    <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="accOk"> Acepto la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a> (necesario para crear la cuenta).</label>
+    <div class="row"><button class="btn on" onclick="accMail(false)">Entrar</button><button class="btn" onclick="accMail(true)">Crear cuenta</button><button class="btn" onclick="accOlvido()">Olvidé mi contraseña</button></div>
+    <p id="accMsg" class="sm" style="margin-top:8px"></p>`);
+  }
+  document.body.appendChild(m);
+}
+function accGoogle(){
+  if(!document.getElementById("accOk").checked){accMsg("Marca la casilla de la política de privacidad para continuar.");return}
+  FBA.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(()=>{const m=document.getElementById("accModal");if(m)m.remove()}).catch(e=>accMsg(accErr(e)));
+}
+function accMail(crear){
+  const e=document.getElementById("accMail").value.trim(),p=document.getElementById("accPass").value;
+  if(!e||!p){accMsg("Escribe tu correo y tu contraseña.");return}
+  if(crear&&!document.getElementById("accOk").checked){accMsg("Marca la casilla de la política de privacidad para crear la cuenta.");return}
+  (crear?FBA.createUserWithEmailAndPassword(e,p):FBA.signInWithEmailAndPassword(e,p)).then(()=>{const m=document.getElementById("accModal");if(m)m.remove()}).catch(x=>accMsg(accErr(x)));
+}
+function accOlvido(){
+  const e=document.getElementById("accMail").value.trim();
+  if(!e){accMsg("Escribe tu correo arriba y vuelve a pulsar.");return}
+  FBA.sendPasswordResetEmail(e).then(()=>accMsg("Te hemos enviado un correo para cambiar la contraseña.",true)).catch(x=>accMsg(accErr(x)));
+}
+fbCargar();
 </script>
 </body>
 </html>
