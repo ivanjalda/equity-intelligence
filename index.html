@@ -1279,18 +1279,23 @@ function accModal(modo){
     <p class="sm" style="text-align:center;margin:8px 0">— o con tu correo —</p>
     <input class="in" id="accMail" type="email" placeholder="tu@correo.com" autocomplete="email" style="width:100%;margin:4px 0;padding:9px">
     <input class="in" id="accPass" type="password" placeholder="Contraseña${nuevo?" (mínimo 6 caracteres)":""}" autocomplete="${nuevo?"new-password":"current-password"}" style="width:100%;margin:4px 0;padding:9px" onkeydown="if(event.key==='Enter')accMail(${nuevo})">
+    <label class="sm" style="display:block;margin:6px 0"><input type="checkbox" id="accRec" checked> Mantener la sesión iniciada en este dispositivo</label>
     <div class="row" style="margin-top:8px"><button class="btn on" onclick="accMail(${nuevo})">${nuevo?"Crear mi cuenta":"Entrar"}</button>${nuevo?"":'<button class="btn" onclick="accOlvido()">Olvidé mi contraseña</button>'}</div>
     <p id="accMsg" class="sm" style="margin-top:8px"></p>
     <p class="sm" style="margin-top:8px">Al continuar aceptas la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>.</p></div>`;
   document.body.appendChild(m);
 }
+function accPers(){
+  const r=document.getElementById("accRec"),t=(r&&!r.checked)?"SESSION":"LOCAL";
+  try{return FBA.setPersistence(firebase.auth.Auth.Persistence[t]).catch(()=>{})}catch(e){return Promise.resolve()}
+}
 function accGoogle(){
-  FBA.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(()=>{const m=document.getElementById("accModal");if(m)m.remove()}).catch(e=>accMsg(accErr(e)));
+  accPers();FBA.signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(()=>{const m=document.getElementById("accModal");if(m)m.remove()}).catch(e=>accMsg(accErr(e)));
 }
 function accMail(crear){
   const e=document.getElementById("accMail").value.trim(),p=document.getElementById("accPass").value;
   if(!e||!p){accMsg("Escribe tu correo y tu contraseña.");return}
-  (crear?FBA.createUserWithEmailAndPassword(e,p):FBA.signInWithEmailAndPassword(e,p)).then(()=>{const m=document.getElementById("accModal");if(m)m.remove()}).catch(x=>accMsg(accErr(x)));
+  accPers().then(()=>crear?FBA.createUserWithEmailAndPassword(e,p):FBA.signInWithEmailAndPassword(e,p)).then(()=>{const m=document.getElementById("accModal");if(m)m.remove()}).catch(x=>accMsg(accErr(x)));
 }
 function accOlvido(){
   const e=document.getElementById("accMail").value.trim();
