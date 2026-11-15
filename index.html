@@ -409,7 +409,7 @@ function homeRender(){
    <a class="sc" href="aprender.html"><strong>Aprender</strong><span class="sm">Cómo leer cada pantalla y qué significa cada término.</span></a>
    <a class="sc" href="como-funciona.html"><strong>Cómo funciona</strong><span class="sm">Métodos, fuentes de datos y límites, sin letra pequeña.</span></a>
   </div>
-  <div class="two" style="margin-top:14px">${telegramCard()}<div class="ad"><span class="adl">Publicidad</span><small>Valmont &amp; Co. · Academia de inversión</small><strong>Aprende a invertir con guías, libros y cursos</strong><p class="sm">Guías y libros en español e inglés, con prólogos gratis. Cursos en español. Contenido educativo creado por el equipo de Community16 LLC.</p><div class="row"><a class="btn on" href="${VAL}collections/complete-guides" target="_blank" rel="noopener sponsored">Ver guías</a><a class="btn" href="${VAL}collections/courses" target="_blank" rel="noopener sponsored">Ver cursos</a><a class="btn" href="${VAL}" target="_blank" rel="noopener sponsored">Ir a valmontco.com</a></div></div></div>
+  <div class="two" style="margin-top:14px">${telegramCard()}<div class="ad"><span class="adl">Publicidad</span><small>Valmont &amp; Co. · Academia de inversión</small><strong>Aprende a invertir con guías, libros y cursos</strong><p class="sm">Guías y libros en español e inglés, con prólogos gratis. Cursos en español. Contenido educativo creado por el equipo de Community16 LLC.</p><div class="row"><a class="btn on" href="${VAL}collections/complete-guides" target="_blank" rel="noopener sponsored">Ver guías</a><a class="btn" href="${VAL}collections/courses" target="_blank" rel="noopener sponsored">Ver cursos</a><a class="btn" href="${VAL}" target="_blank" rel="noopener sponsored">Ir a valmontco.com</a></div><hr style="border:0;border-top:1px solid var(--line,#333);margin:14px 0"><small>Nexus Terminal · Análisis técnico</small><strong style="display:block">Trading con análisis técnico automático</strong><p class="sm">Nuestra otra web: un motor propio analiza acciones, criptomonedas y divisas, publica pronósticos y señales con avisos en Telegram y un histórico público de aciertos y fallos.</p><div class="row"><a class="btn on" href="https://nexusterminalalerts.com/" target="_blank" rel="noopener sponsored">Abrir Nexus Terminal</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. Contenido informativo, no es asesoramiento financiero.</p></div></div>
   <p class="sm" style="margin-top:6px">Equity Intrinsic, Nexus Terminal y Valmont &amp; Co. pertenecen a Community16 LLC. Los anuncios son propios; la formación no es asesoramiento financiero ni garantiza resultados.</p>`;
   const tb=(a)=>a&&a.length?a.map(x=>`<div class="fila" ${x.ticker&&D.m[x.ticker]?`onclick="abrir('${esc(x.ticker)}')"`:""}><span><strong>${esc(x.ticker||"")}</strong> <span class="sm">${esc(x.name||"")}</span></span><span class="sm">${esc(x.funds)} de ${esc(f.total)} fondos</span></div>`).join(""):"";
   document.getElementById("hR").innerHTML=`<h3>Mercados de EE. UU. <span class="sm">(titulares en inglés)</span></h3>${noticias("en",10,[adCursos(),adNexus()])}
@@ -1185,14 +1185,24 @@ async function fEmailSend(f,id){
   if(bt){bt.disabled=true;bt.textContent="Enviando…"}
   try{
     await fetch(f.action,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(new FormData(f)).toString()});
-    if(b)b.innerHTML='<p><strong>¡Casi listo!</strong> Te hemos enviado un correo: pulsa el enlace que trae para confirmar tu suscripción. Si no lo ves, mira en la carpeta de spam.</p>';
+    const mail=(f.querySelector("input[type=email]")||{}).value||"";
+    fStore("ei_pend",mail||"1");
+    fEmailRepaint();
   }catch(e){
     if(bt){bt.disabled=false;bt.textContent="Quiero el resumen diario"}
     if(b&&!b.querySelector(".fe"))b.insertAdjacentHTML("beforeend",'<p class="sm dn fe">No se pudo enviar. Inténtalo de nuevo en un momento.</p>');
   }
   return false;
 }
-function fEmailForm(id,mail){
+function fEmailRepaint(){
+  ["homeEm","accEm","fem","femt"].forEach(i=>{const e=document.getElementById(i);if(!e)return;
+    const t=e.querySelector("form,.emst");if(t)t.outerHTML=fEmailForm(i,"",1)})}
+function fEmailReset(){try{localStorage.removeItem("ei_pend")}catch(e){}fEmailRepaint()}
+function fEmailYa(){fStore("ei_sub","1");try{localStorage.removeItem("ei_pend")}catch(e){}fEmailRepaint()}
+function fEmailForm(id,mail,inner){
+  if(fStore("ei_sub")==="1")return `<div class="emst"><p><strong style="color:var(--up,#2ecc71)">✔ Suscrito al resumen diario.</strong> Lo recibirás cada día en tu correo. Puedes darte de baja desde el enlace que trae cada correo.</p></div>`;
+  const pe=fStore("ei_pend");
+  if(pe)return `<div class="emst"><p><strong>¡Casi listo!</strong> Te hemos enviado un correo${pe.indexOf("@")>0?" a <b>"+esc(pe)+"</b>":""}. Pulsa el enlace que trae para confirmar tu suscripción. Si no lo ves, mira en la carpeta de spam.</p><div class="row" style="gap:8px"><button class="btn" type="button" onclick="fEmailReset()">Usar otro correo / reenviar</button><button class="btn" type="button" onclick="fEmailYa()">Ya lo he confirmado</button></div></div>`;
   return `<form action="${esc(EMAIL_FORM)}" method="post" onsubmit="fEmailSend(this,'${id}');return false">
   <div class="row" style="flex-wrap:wrap;gap:8px"><input class="in" type="email" name="${esc(EMAIL_FIELD)}" required placeholder="tu@correo.com" value="${esc(mail||"")}" style="flex:1;min-width:220px"><button class="btn on" type="submit">Quiero el resumen diario</button></div><input type="hidden" name="locale" value="es"><input type="hidden" name="html_type" value="simple"><input type="text" name="email_address_check" value="" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
   <label class="sm" style="display:block;margin-top:6px"><input type="checkbox" required> Acepto recibir cada día por correo el resumen del mercado, las noticias y las oportunidades de Equity Intrinsic, junto con promociones de Valmont &amp; Co. y de Nexus Terminal (webs de Community16 LLC), y he leído la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>. Puedo darme de baja cuando quiera.</label></form>`;
@@ -1322,6 +1332,7 @@ fbCargar();
 /* aviso tras confirmar la suscripción por correo (Brevo redirige aquí con ?suscrito=1) */
 (function(){try{
   if(new URLSearchParams(location.search).get("suscrito")!=="1")return;
+  try{localStorage.setItem("ei_sub","1");localStorage.removeItem("ei_pend")}catch(e){}
   history.replaceState(null,"",location.pathname);
   document.addEventListener("DOMContentLoaded",function(){
     const d=document.createElement("div");d.id="subOk";
