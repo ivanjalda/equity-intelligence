@@ -338,20 +338,37 @@ def rate_for(t):
         return DISCOUNT, None
 
 
-def scenarios(e_use, g, fcfps, r, mult_q=None, use=("graham", "dcf", "multiples")):
+def recovery(eps_list, fcf_list, shares, e_use, fcfps):
+    """Recuperación hacia lo normal: beneficio y caja libre medios de los últimos 5 años, solo si hoy están claramente por
+    debajo (empresa en mal momento). Se limita al doble de lo actual. Solo la usa el escenario alcista. Devuelve (e, f) o None."""
+    try:
+        e = mean(eps_list[-5:]) if len(eps_list) >= 4 else None
+        f = (mean(fcf_list[-5:]) / shares) if (shares and shares > 0 and len(fcf_list) >= 4) else None
+    except Exception:
+        return None
+    e2 = min(e, 2 * e_use) if (e and e_use and e_use > 0 and e > e_use * 1.05) else None
+    f2 = min(f, 2 * fcfps) if (f and fcfps and fcfps > 0 and f > fcfps * 1.05) else None
+    return (e2, f2) if (e2 or f2) else None
+
+
+def scenarios(e_use, g, fcfps, r, mult_q=None, use=("graham", "dcf", "multiples"), rec=None):
     """Rango bajista / base / alcista del valor por acción.
     Bajista: crecimiento 2 puntos menor y tasa 1 punto mayor. Alcista: al revés. Los múltiplos usan el PER histórico
     del cuartil bajo / mediano / alto de la propia empresa. Devuelve [bajista, base, alcista] o None."""
     out = []
     for i, (dg, dr) in enumerate(((-0.02, 0.01), (0, 0), (0.02, -0.01))):
         g2 = clamp(g + dg, 0.0, 0.15) if g > 0 or dg > 0 else 0.0
+        e_i, f_i = e_use, fcfps
+        if i == 2 and rec:   # alcista: la empresa vuelve a su beneficio y caja medios de los últimos 5 años
+            e_i = rec[0] or e_use
+            f_i = rec[1] or fcfps
         vals = []
-        if "graham" in use and e_use > 0:
-            vals.append(e_use * (8.5 + 2 * g2 * 100) * 4.4 / YIELD_AAA)
-        if "dcf" in use and fcfps and fcfps > 0:
-            vals.append(dcf(fcfps, g2, r + dr))
-        if "multiples" in use and mult_q and e_use > 0:
-            vals.append(clamp(mult_q[i], 8, 30) * e_use)
+        if "graham" in use and e_i > 0:
+            vals.append(e_i * (8.5 + 2 * g2 * 100) * 4.4 / YIELD_AAA)
+        if "dcf" in use and f_i and f_i > 0:
+            vals.append(dcf(f_i, g2, r + dr))
+        if "multiples" in use and mult_q and e_i > 0:
+            vals.append(clamp(mult_q[i], 8, 30) * e_i)
         vals = [v for v in vals if v > 0]
         if not vals:
             return None
@@ -446,9 +463,13 @@ def value_stock(t, cyc, facts, hist, price):
     item["r"] = rate
     if beta is not None:
         item["beta"] = beta
-    esc = scenarios(e_use, g, fcfps, rate, mq, tuple(models))
+    fcf5 = [cfo[x] - abs(cap.get(x, 0)) for x in list(cfo)[-5:]]
+    rec = recovery([eps[x] for x in ends], fcf5, shares, e_use, fcfps)
+    esc = scenarios(e_use, g, fcfps, rate, mq, tuple(models), rec)
     if esc:
         item["esc"] = esc
+        if rec:
+            item["rec"] = 1
     item["chk"] = [{"t": a, "x": b} for a, b in chk]
     return item, iv, mg
 

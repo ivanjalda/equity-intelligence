@@ -6,7 +6,7 @@ import json, os, re, sys, time, urllib.error
 from datetime import date, timedelta
 from statistics import mean, median, pstdev
 from mensajes import build_broad
-from engine import (get, annual, dcf, rate_for, scenarios, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, eps_growth, is_finance_sic, is_investment_company, normalize_facts, hist_series, pick, TERMINAL, DISCOUNT, telegram, prices_polygon, downsample,
+from engine import (get, annual, dcf, rate_for, scenarios, recovery, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, eps_growth, is_finance_sic, is_investment_company, normalize_facts, hist_series, pick, TERMINAL, DISCOUNT, telegram, prices_polygon, downsample,
                     DATA, FUND, HIST, TODAY, POLY, SEC_UA, YIELD_AAA, read_universe)
 
 MODELS = DATA / "models.json"
@@ -153,9 +153,14 @@ def basic_models(facts, t=None):
     res["r"] = rate
     if beta is not None:
         res["beta"] = beta
-    esc = scenarios(e_use, g, (mean(fcf) / shares) if (shares and shares > 0 and fcf) else None, rate, None, tuple(m))
+    fps = (mean(fcf) / shares) if (shares and shares > 0 and fcf) else None
+    fcf5 = [cfo[x] - abs(cap.get(x, 0)) for x in list(cfo)[-5:]]
+    rec = recovery(v, fcf5, shares, e_use, fps)
+    esc = scenarios(e_use, g, fps, rate, None, tuple(m), rec)
     if esc:
         res["esc"] = esc
+        if rec:
+            res["rec"] = 1
     return res
 
 
