@@ -879,12 +879,24 @@ async function ficha(){
   fGrafico(t,D.h[t],c,v);
   if(fd&&fd.st){FY=fd.st.y.length-1;fTabs();fVis()}
 }
+/* --- favoritas (se guardan en este navegador; con cuenta se sincronizarán) --- */
+function fFavs(){try{const a=JSON.parse(fStore("ei_fav")||"[]");return Array.isArray(a)?a.filter(x=>typeof x==="string").slice(0,100):[]}catch(e){return[]}}
+function fFavToggle(t){const a=fFavs(),i=a.indexOf(t);if(i>=0)a.splice(i,1);else a.unshift(t);fStore("ei_fav",JSON.stringify(a));if(typeof fAccSync==="function")fAccSync(a);ficha()}
+function fFavBox(){
+  const L=fFavs().filter(t=>D.v.items?.[t]&&D.m[t]);
+  if(!L.length)return `<div class="box"><h3>Tus favoritas</h3><p class="sm">Aún no has guardado ninguna. Abre la ficha de una empresa y pulsa «☆ Seguir» para tenerla aquí con su precio y su veredicto al día.</p></div>`;
+  return `<div class="box"><h3>Tus favoritas</h3><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">${L.map(t=>{const v=D.v.items[t],c=calc(t),p=D.m[t].c,d=D.m[t].p?(p/D.m[t].p-1)*100:null;
+    return `<div class="m" style="text-align:left"><div class="flex"><b>${esc(t)}</b>${c?`<span class="badge ${c.verdict}">${c.verdict}</span>`:'<span class="sm">Sin valorar</span>'}</div>
+    <div class="sm">${esc((v.name||"").slice(0,30))}</div><div style="margin:4px 0"><strong>$${num(p)}</strong>${d==null?"":` <span class="${d>=0?"up":"dn"} sm">${d>=0?"+":""}${num(d,1)} %</span>`}</div>
+    <div class="${c&&c.mg>=0?"up":"dn"} sm">${c?(c.mg>=0?"Margen "+num(c.mg,0)+" %":"Cara: "+num(c.mg,0)+" %")+" · valor $"+num(c.iv):"—"}</div>
+    <div class="row" style="margin:6px 0 0"><button class="btn" onclick="fichaIr('${esc(t)}')">Ver ficha</button><button class="btn" onclick="fFavToggle('${esc(t)}')" title="Quitar de favoritas">★ Quitar</button></div></div>`}).join("")}</div></div>`;
+}
 function fLanding(){
   const val=tickers().map(t=>[t,calc(t)]).filter(x=>x[1]&&x[1].v&&(x[1].v.type||"ACCIONES")==="ACCIONES"&&D.v.items[x[0]].name);
   const best=val.filter(x=>x[1].verdict==="COMPRAR").sort((a,b)=>rkOf(b[1])-rkOf(a[1])).slice(0,8);
   const big=val.filter(x=>x[1].v.sh).sort((a,b)=>b[1].p*b[1].v.sh-a[1].p*a[1].v.sh).slice(0,8);
   const chips=L=>`<div class="row" style="flex-wrap:wrap;gap:8px">${L.map(x=>`<button class="btn" onclick="fichaIr('${esc(x[0])}')">${esc(x[0])} <span class="sm">${esc((D.v.items[x[0]].name||"").slice(0,22))}</span></button>`).join("")}</div>`;
-  return `<div class="box"><h3>Mejores oportunidades ahora</h3>${chips(best)}<h3 style="margin-top:14px">Las más grandes</h3>${chips(big)}</div>`;
+  return fFavBox()+`<div class="box"><h3>Mejores oportunidades ahora</h3>${chips(best)}<h3 style="margin-top:14px">Las más grandes</h3>${chips(big)}</div>`;
 }
 function fHead(t,v,c,p){
   const mc=v.sh?p*v.sh:null,sec=sicName(v.sic);
@@ -892,6 +904,7 @@ function fHead(t,v,c,p){
   return `<div class="box"><div class="flex"><div><h2 style="margin:0">${esc(v.name||t)} <span class="sm">${esc(t)}</span></h2>
   <div class="sm">${[sec,mcs?"Capitalización "+mcs:null,v.horizon?"Plazo ideal: "+v.horizon:null].filter(Boolean).map(esc).join(" · ")}</div></div>
   <div class="row" style="margin:0"><span class="badge ${c?c.verdict:"NA"}" style="font-size:13px;padding:5px 12px">${c?c.verdict:"Sin valorar"}</span>
+  <button class="btn${fFavs().includes(t)?" on":""}" onclick="fFavToggle('${esc(t)}')">${fFavs().includes(t)?"★ Siguiendo":"☆ Seguir"}</button>
   <button class="btn" onclick="vista('term');detalle('${esc(t)}')">Análisis completo</button>
   <button class="btn" onclick="window._cmp=['${esc(t)}'];TOOL='comp';vista('tools')">Comparar</button></div></div>
   <div class="grid" style="margin-top:10px"><div class="m"><small>Precio (cierre)</small><strong>$${num(p)}</strong></div>
