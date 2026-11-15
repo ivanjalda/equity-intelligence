@@ -6,7 +6,7 @@ import json, os, re, sys, time, urllib.error
 from datetime import date, timedelta
 from statistics import mean, median, pstdev
 from mensajes import build_broad
-from engine import (get, annual, dcf, rate_for, scenarios, recovery, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, eps_growth, is_finance_sic, is_investment_company, normalize_facts, hist_series, pick, TERMINAL, DISCOUNT, telegram, prices_polygon, downsample,
+from engine import (NI_TAGS, SH_TAGS, get, annual, dcf, rate_for, scenarios, recovery, clamp, fundamentals, verdict, rank, spread, finalize, base_checks, get_sic, eps_growth, is_finance_sic, is_investment_company, normalize_facts, hist_series, pick, TERMINAL, DISCOUNT, telegram, prices_polygon, downsample,
                     DATA, FUND, HIST, TODAY, POLY, SEC_UA, YIELD_AAA, read_universe)
 
 MODELS = DATA / "models.json"
@@ -63,8 +63,8 @@ def bank_sic(sic):
 def bank_models(facts):
     """Bancos y aseguradoras: valor contable justificado por su rentabilidad (ROE) y número de Graham."""
     eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
-    ni, _ = annual(facts, ["NetIncomeLoss"], "USD")
-    shs, _ = annual(facts, ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"], "shares")
+    ni, _ = annual(facts, NI_TAGS, "USD")
+    shs, _ = annual(facts, SH_TAGS, "shares")
     eq = hist_series(facts, ["StockholdersEquity"], False)
     pref = hist_series(facts, ["PreferredStockValue"], False)
     if len(eps) < 3 or not eq:
@@ -108,13 +108,15 @@ def basic_models(facts, t=None):
     eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
     cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], "USD")
     cap, _ = annual(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], "USD")
-    ni, _ = annual(facts, ["NetIncomeLoss"], "USD")
-    shs, _ = annual(facts, ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"], "shares")
+    ni, _ = annual(facts, NI_TAGS, "USD")
+    shs, _ = annual(facts, SH_TAGS, "shares")
     if len(eps) < 3:
         eps = {k: ni[k] / shs[k] for k in ni if shs.get(k)}
     if len(eps) < 3 or not cfo:
         return None
     ends = list(eps)
+    if (date.today() - date.fromisoformat(ends[-1])).days > 800 or (date.today() - date.fromisoformat(list(cfo)[-1])).days > 800:
+        return None   # datos con más de dos años: no se valora
     v = [eps[k] for k in ends]
     cyc = is_cyclical(v)
     e_use = mean(v[-7:]) if cyc else v[-1]
@@ -147,6 +149,7 @@ def basic_models(facts, t=None):
         res["sh"] = round(shares)
     res["chk"] = [{"t": a, "x": c} for a, c in chk]
     res["eps"] = round(v[-1], 2)
+    res["ult"] = ends[-1]
     if "dcf" in m and shares and shares > 0:
         res["fcfps"] = round(mean(fcf) / shares, 2)
         res["g"] = round(g, 4)
@@ -223,6 +226,13 @@ def weekly():
             facts = normalize_facts(facts)
             m = basic_models(facts, tk)
             if m:
+                px = bars[tk]["c"]
+                vv = [m[k] for k in ("graham", "dcf", "multiples") if k in m]
+                if vv and px > 0:
+                    iv = mean(vv)
+                    if iv / px > 20 or px / iv > 20:   # valor y precio incoherentes: casi seguro un dato mal leído; no se publica
+                        fails["incoherente"] = fails.get("incoherente", 0) + 1
+                        continue
                 fd = fundamentals(facts, cik)
                 if fd:
                     (FUND / f"{tk}.json").write_text(json.dumps(fd, ensure_ascii=False), encoding="utf-8")

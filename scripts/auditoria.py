@@ -160,10 +160,15 @@ def main():
                 check(0 <= g <= 0.15, f"{t}: crecimiento fuera de rango ({g})")
             if b is not None:
                 check(0.5 <= b <= 1.8, f"{t}: beta fuera de rango ({b})")
+            if it.get("ult"):
+                check((date.today() - date.fromisoformat(it["ult"])).days <= 800, f"{t}: valorada con datos del ejercicio {it['ult']}, demasiado viejos")
             if it.get("dcf") and it.get("fcfps") and g is not None and r:
-                check(close(dcf(it["fcfps"], g, r), it["dcf"], 0.01), f"{t}: el DCF publicado no coincide con el recalculado ({it['dcf']} frente a {dcf(it['fcfps'], g, r):.2f})")
+                # los datos publicados van redondeados (flujo por acción a 2 decimales, g y r a 3-4): se admite ese margen
+                cand = [dcf(max(it["fcfps"] + df, 1e-9), g + dg, r + dr) for df in (-0.005, 0, 0.005) for dg in (-0.0005, 0, 0.0005) for dr in (-0.0005, 0, 0.0005)]
+                check(min(cand) * 0.995 <= it["dcf"] <= max(cand) * 1.005, f"{t}: el DCF publicado no coincide con el recalculado ({it['dcf']} frente a {dcf(it['fcfps'], g, r):.2f})")
             if not it.get("cyclical") and it.get("graham") and it.get("eps") and g is not None and it["eps"] > 0:
-                check(close(it["eps"] * (8.5 + 2 * g * 100) * 4.4 / YIELD_AAA, it["graham"], 0.01), f"{t}: Graham publicado no coincide con el recalculado")
+                gc = [(it["eps"] + de) * (8.5 + 2 * (g + dg) * 100) * 4.4 / YIELD_AAA for de in (-0.005, 0, 0.005) for dg in (-0.0005, 0, 0.0005)]
+                check(min(gc) * 0.995 <= it["graham"] <= max(gc) * 1.005, f"{t}: Graham publicado no coincide con el recalculado")
             e = it.get("esc")
             if e:
                 check(len(e) == 3 and e[0] <= e[1] + 0.01 <= e[2] + 0.02, f"{t}: escenarios desordenados {e}")

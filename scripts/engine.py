@@ -266,8 +266,11 @@ def downsample(rows):
 
 # ---------- SEC ----------
 def annual(facts, names, unit):
+    """Serie anual de una partida. Si la empresa cambió de etiqueta contable con los años, se unen todas
+    (la primera de la lista manda en cada ejercicio)."""
     out, last = {}, ""
     for n in names:
+        tmp = {}
         for r in facts.get("us-gaap", {}).get(n, {}).get("units", {}).get(unit, []):
             last = max(last, r.get("filed", ""))
             if "start" not in r:
@@ -275,10 +278,10 @@ def annual(facts, names, unit):
             days = (date.fromisoformat(r["end"]) - date.fromisoformat(r["start"])).days
             if not 340 <= days <= 380:
                 continue
-            if r["end"] not in out or r["filed"] > out[r["end"]][1]:
-                out[r["end"]] = (r["val"], r["filed"])
-        if out:
-            break
+            if r["end"] not in tmp or r["filed"] > tmp[r["end"]][1]:
+                tmp[r["end"]] = (r["val"], r["filed"])
+        for k, v in tmp.items():
+            out.setdefault(k, v)
     return {k: v[0] for k, v in sorted(out.items())}, last
 
 
@@ -384,18 +387,34 @@ def dcf(fcfps, g, r=DISCOUNT):
     return v + f * (1 + TERMINAL) / (r - TERMINAL) / (1 + r) ** 10
 
 
+NI_TAGS = ["NetIncomeLoss", "ProfitLoss", "NetIncomeLossAvailableToCommonStockholdersBasic"]
+SH_TAGS = ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfShareOutstandingBasicAndDiluted", "WeightedAverageNumberOfSharesOutstandingBasic"]
+
+
+def diag(t, facts, eps, cfo, ni):
+    """Para las empresas grandes que no se valoran: escribe en el registro qué etiquetas contables tienen, para corregirlo."""
+    if t not in ("V", "XOM", "BRK.B", "BRK-B", "MA", "JPM"):
+        return
+    g = facts.get("us-gaap", {})
+    pick_ = lambda k: sorted(n for n in g if k in n)[:12]
+    print(f"DIAG {t}: beneficio {len(eps)} años, caja {len(cfo)}, neto {len(ni)}; etiquetas por acción: {pick_('PerShare')}; acciones: {pick_('WeightedAverage')}; caja: {pick_('OperatingActivities')[:6]}")
+
+
 def value_stock(t, cyc, facts, hist, price):
     rate, beta = rate_for(t)
     eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
     cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], "USD")
     cap, _ = annual(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], "USD")
-    ni, _ = annual(facts, ["NetIncomeLoss"], "USD")
+    ni, _ = annual(facts, NI_TAGS, "USD")
     if len(eps) < 3:  # algunas empresas (p. ej. Visa) no publican el beneficio por acción total
-        shs, _ = annual(facts, ["WeightedAverageNumberOfDilutedSharesOutstanding"], "shares")
+        shs, _ = annual(facts, SH_TAGS, "shares")
         eps = {k: ni[k] / shs[k] for k in ni if shs.get(k)}
     if len(eps) < 3 or not cfo:
+        diag(t, facts, eps, cfo, ni)
         return f"pocos datos oficiales (beneficio {len(eps)} años, flujo de caja {len(cfo)} años)"
     ends = list(eps)
+    if (date.today() - date.fromisoformat(ends[-1])).days > 800 or (date.today() - date.fromisoformat(list(cfo)[-1])).days > 800:
+        return f"datos desactualizados (último ejercicio {ends[-1]}): no se valora"
     e_last = eps[ends[-1]]
     n_norm = 7 if cyc else 3
     e_use = mean(eps[k] for k in ends[-n_norm:]) if cyc else e_last
@@ -408,7 +427,7 @@ def value_stock(t, cyc, facts, hist, price):
         models["graham"] = e_use * (8.5 + 2 * g * 100) * 4.4 / YIELD_AAA
     # DCF (flujo de caja libre por acción, media de varios años)
     k = ends[-1]
-    sh, _ = annual(facts, ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"], "shares")
+    sh, _ = annual(facts, SH_TAGS, "shares")
     shares = sh.get(k) or (ni[k] / eps[k] if k in ni and eps[k] > 0 else None)
     chk = base_checks(eps, ni, sh)
     fcf = [cfo[x] - abs(cap.get(x, 0)) for x in list(cfo)[-(7 if cyc else 3):]]
@@ -436,6 +455,8 @@ def value_stock(t, cyc, facts, hist, price):
         return "los métodos discrepan demasiado entre sí"
     vals = list(models.values())
     iv = mean(vals)
+    if price > 0 and (iv / price > 20 or price / iv > 20):  # un valor 20 veces distinto del precio casi siempre es un dato mal leído (división de acciones, otra moneda...)
+        return f"valor y precio incoherentes ({iv:.2f} frente a {price:.2f}): se revisa el dato"
     mg = (iv - price) / iv * 100
     # plazo (mezcla interna de fundamental y técnico)
     stable = all(eps[x] > 0 for x in ends[-5:]) and cagr >= 0.05
@@ -457,6 +478,7 @@ def value_stock(t, cyc, facts, hist, price):
     if shares and shares > 0:
         item["sh"] = round(shares)
     item["eps"] = round(e_last, 2)
+    item["ult"] = ends[-1]   # cierre del último ejercicio usado: la revisión comprueba que no sea viejo
     if fcfps:
         item["fcfps"] = round(fcfps, 2)
     item["g"] = round(g, 4)
@@ -480,7 +502,7 @@ BAL = {"Activos totales": ["Assets"], "Activo corriente": ["AssetsCurrent"], "Pa
        "Pasivo corriente": ["LiabilitiesCurrent"],
        "Patrimonio neto": ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"],
        "Caja": ["CashAndCashEquivalentsAtCarryingValue"], "Deuda a largo plazo": ["LongTermDebtNoncurrent", "LongTermDebt"]}
-FLOW = {"Ingresos": ["Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "SalesRevenueNet"],
+FLOW = {"Ingresos": ["Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "RevenueFromContractWithCustomerIncludingAssessedTax", "SalesRevenueNet", "RevenuesNetOfInterestExpense", "SalesAndOtherOperatingRevenueIncludingSalesBasedTaxes", "RegulatedAndUnregulatedOperatingRevenue"],
         "Beneficio neto": ["NetIncomeLoss"]}
 HINTS = {"Ingresos": "Lo que vende al año.",
          "Beneficio neto": "Lo que gana al año después de pagar todos sus gastos.",
@@ -633,7 +655,7 @@ ST_CF = [("Flujo de caja operativo", ["NetCashProvidedByUsedInOperatingActivitie
 def last_report(facts):
     """Último informe anual presentado a la SEC (10-K; 20-F o 40-F en empresas extranjeras)."""
     best = None
-    for tag in ("Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "SalesRevenueNet", "Assets", "NetIncomeLoss"):
+    for tag in ("Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "RevenueFromContractWithCustomerIncludingAssessedTax", "SalesRevenueNet", "Assets", "NetIncomeLoss"):
         for rows in facts.get("us-gaap", {}).get(tag, {}).get("units", {}).values():
             for r in rows:
                 if r.get("form") in ("10-K", "10-K/A", "20-F", "40-F") and r.get("fp") == "FY" and r.get("accn"):
@@ -657,11 +679,20 @@ def statements(facts, cik=None):
         for row in grp:
             nm, d = ser(row)
             all_rows[nm] = d
-    base = all_rows["Ingresos"] or all_rows["Activos totales"]
+    # un año = un cierre de ejercicio. Se toman los cierres del balance (todas las empresas lo publican y siempre llega
+    # hasta el último informe); si hay pocos, los de ingresos. Se alinean los datos que cierran a menos de 10 días.
+    base = all_rows.get("Activos totales") or {}
+    if len(base) < 3:
+        base = all_rows["Ingresos"] or {}
     if len(base) < 3:
         return None
-    # un año = un cierre de ejercicio; se alinean los datos que cierran a menos de 10 días de ese cierre
-    ends = list(base)[-10:]
+    cierres = []
+    for e in base:
+        if cierres and (date.fromisoformat(e) - date.fromisoformat(cierres[-1])).days <= 10:
+            cierres[-1] = e
+        else:
+            cierres.append(e)
+    ends = cierres[-10:]
     out = {"y": [e[:4] for e in ends], "e": ends}
     try:
         src = last_report(facts)
