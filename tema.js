@@ -1,12 +1,12 @@
 /* Equity Intrinsic · modo noche / modo claro. Solo guarda tu elección en tu propio navegador. */
 (function(){
-  var K="ei-tema",R=document.documentElement;
+  var K="ei-tema",R=document.documentElement,EN=(R.lang||"").indexOf("en")===0;
   function leer(){try{return localStorage.getItem(K)}catch(e){return null}}
   function guardar(v){try{localStorage.setItem(K,v)}catch(e){}}
   function aplicar(t){
     if(t==="light")R.setAttribute("data-theme","light");else R.removeAttribute("data-theme");
     var b=document.querySelectorAll("[data-tema-btn]");
-    for(var i=0;i<b.length;i++)b[i].textContent=t==="light"?"🌙 Modo noche":"☀ Modo claro";
+    for(var i=0;i<b.length;i++)b[i].textContent=EN?(t==="light"?"🌙 Night mode":"☀ Light mode"):(t==="light"?"🌙 Modo noche":"☀ Modo claro");
   }
   window.temaActual=function(){return R.getAttribute("data-theme")==="light"?"light":"dark"};
   window.cambiarTema=function(){

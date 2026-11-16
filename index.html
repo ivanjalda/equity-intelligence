@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Equity Intrinsic | Valor intrínseco y plazos de inversión</title>
+<meta name="description" content="Análisis gratuito del valor intrínseco de acciones de EE. UU.: tres métodos de valoración, margen de seguridad, salud financiera, grandes fondos e historial público de aciertos.">
+<link rel="canonical" href="https://equityintrinsic.com/">
+<link rel="alternate" hreflang="es" href="https://equityintrinsic.com/">
+<link rel="alternate" hreflang="en" href="https://equityintrinsic.com/en/">
+<link rel="alternate" hreflang="x-default" href="https://equityintrinsic.com/">
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 <script>window.LightweightCharts||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/lightweight-charts/4.1.3/lightweight-charts.standalone.production.js"><\/script>')</script>
 <link rel="icon" type="image/png" href="favicon-32.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="estilo.css">
@@ -123,9 +128,11 @@ label input[type=checkbox]{width:auto!important;display:inline-block;margin-righ
 .accp .fv{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--p2)}
 .accp .fv a{cursor:pointer;color:inherit}.accp .fv a:hover{color:var(--gold)}
 .acct{display:flex;gap:4px;margin:6px 0 10px}.acct button{flex:1}
-</style>
+.lang{font-size:12px;margin-right:10px;color:var(--m);white-space:nowrap}.lang a{color:var(--gold);text-decoration:none;font-weight:700}.lang b{color:var(--t)}</style>
 </head>
 <body>
+<div id="langBar" style="display:none;background:var(--p2);border-bottom:1px solid var(--b);padding:7px 14px;font-size:13px;text-align:center" translate="no">This site is available in English. <a href="/en/" style="color:var(--gold);font-weight:700" onclick="try{localStorage.setItem('ei_lang','en')}catch(e){}">Switch to English</a> · <a href="#" style="color:var(--m)" onclick="langBarOff();return false">Stay in Spanish</a></div>
+<script>(function(){try{var l=(navigator.language||"").toLowerCase(),s=localStorage.getItem("ei_lang");if(l.indexOf("en")===0&&!s)document.getElementById("langBar").style.display="block"}catch(e){}})();function langBarOff(){try{localStorage.setItem("ei_lang","es")}catch(e){}document.getElementById("langBar").style.display="none"}</script>
 <header>
   <div class="brand"><img src="icono-48.png" alt="" width="32" height="32" style="vertical-align:middle;margin-right:9px;border-radius:7px;float:left">Equity Intrinsic<small id="upd">Cargando datos…</small></div>
   <div class="row" style="margin:0;flex:1;justify-content:flex-start;align-items:center">
@@ -137,7 +144,7 @@ label input[type=checkbox]{width:auto!important;display:inline-block;margin-righ
     <button class="btn" id="tHist" onclick="vista('hist')">Historial</button>
     <a class="btn" href="aprender.html">Aprender</a>
     <a class="btn" href="como-funciona.html">Cómo funciona</a>
-    <span class="hdr-r"><button class="btn" type="button" data-tema-btn onclick="cambiarTema()" title="Cambiar entre modo claro y modo noche">☀ Modo claro</button><span id="accWrap"></span></span>
+    <span class="hdr-r"><span class="lang" translate="no"><b>ES</b> | <a href="/en/" hreflang="en" onclick="try{localStorage.setItem('ei_lang','en')}catch(e){}">EN</a></span><button class="btn" type="button" data-tema-btn onclick="cambiarTema()" title="Cambiar entre modo claro y modo noche">☀ Modo claro</button><span id="accWrap"></span></span>
   </div>
 </header>
 
