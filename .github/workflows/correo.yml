@@ -26,4 +26,5 @@ jobs:
           SITE_URL: "https://equityintrinsic.com/"
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           BREVO_LIST_ID: ${{ secrets.BREVO_LIST_ID }}
+          BREVO_LIST_ID_EN: ${{ secrets.BREVO_LIST_ID_EN }}
         run: python -u scripts/correo.py
