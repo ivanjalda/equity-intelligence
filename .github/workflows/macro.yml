@@ -1,7 +1,7 @@
 name: Bonos, índices y materias primas (solo)
 
 on:
-  workflow_dispatch:            # solo se ejecuta a mano: sirve para probar rápido
+  workflow_dispatch:           # solo se ejecuta a mano: sirve para probar rápido
 
 permissions:
   contents: write
@@ -25,6 +25,7 @@ jobs:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CHAT_ID_EN: ${{ secrets.TELEGRAM_CHAT_ID_EN }}
         run: python scripts/macro.py
       - name: Guardar resultados
         run: |
