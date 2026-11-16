@@ -35,3 +35,32 @@ body.texto *{box-sizing:border-box}
 :root[data-theme="light"] .btn.on{color:#fff}
 
 .cab a.marca{display:inline-flex;align-items:center;gap:9px}.cab a.marca img{border-radius:7px}
+
+/* Páginas anchas con índice lateral y temas en secciones (Aprender, Cómo funciona) */
+.pag.ancha{max-width:none;width:100%;display:grid;grid-template-columns:270px minmax(0,1fr);gap:40px;padding:28px 40px 56px}
+.toc{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow:auto;border-right:1px solid var(--b);padding-right:16px}
+.toc b{display:block;color:var(--m);font-size:12px;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.toc a{display:block;padding:4px 0;color:var(--t);text-decoration:none;font-size:13.5px;line-height:1.35}
+.toc a:hover{color:var(--gold)}
+.toc a.tg{color:var(--gold);font-weight:700;font-size:14.5px;margin-top:16px}
+.toc a.ts{padding-left:12px;color:var(--m)}
+.toc a.ts:hover{color:var(--gold)}
+.cont{min-width:0;font-size:16px}
+.cont .tarjetas{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:18px 0 8px}
+.cont .tarjetas div{background:var(--p);border:1px solid var(--b);border-radius:10px;padding:14px;font-size:15px;line-height:1.45}
+.cont .tarjetas b{display:block;color:var(--gold);font-size:16px;margin-bottom:4px}
+.grupo{margin:38px 0 0;scroll-margin-top:16px}
+.grupo>h2{margin:0;font-size:25px;padding-bottom:8px;border-bottom:2px solid var(--gold);scroll-margin-top:16px}
+.grupo>.sub{color:var(--m);margin:8px 0 18px}
+.grupo>p{max-width:900px}
+.rejilla{align-items:start;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,470px),1fr));gap:18px;margin-top:16px}
+.rejilla.una{grid-template-columns:minmax(0,1fr)}
+.tema{background:var(--p);border:1px solid var(--b);border-radius:12px;padding:18px 20px;min-width:0;scroll-margin-top:16px}
+.tema>h3{margin:0 0 10px;color:var(--gold);font-size:18px;line-height:1.3}
+.tema h4{color:var(--w);font-size:15px;margin:16px 0 4px}
+.tema>:last-child{margin-bottom:0}
+.tema figure{margin:8px 0 14px}
+.tema svg{max-width:100%;height:auto}
+.tema table{margin:8px 0}
+.tema th{white-space:nowrap}
+@media(max-width:900px){.pag.ancha{grid-template-columns:1fr;gap:6px;padding:18px 14px 36px}.toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--b);padding:0 0 12px;display:flex;flex-wrap:wrap;gap:2px 16px}.toc b{width:100%}.toc a.ts{display:none}.toc a.tg{margin-top:4px}.rejilla{grid-template-columns:minmax(0,1fr)}}
