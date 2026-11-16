@@ -2,8 +2,8 @@ name: Motor Equity Intelligence
 
 on:
   schedule:
-    - cron: "30 6 * * 2-6"    # martes a sábado de madrugada (el plan gratuito da el cierre del día anterior)
-  workflow_dispatch:           # permite ejecutarlo a mano
+    - cron: "30 6 * * 2-6"   # martes a sábado de madrugada (el plan gratuito da el cierre del día anterior)
+  workflow_dispatch:          # permite ejecutarlo a mano
 
 permissions:
   contents: write
@@ -27,6 +27,7 @@ jobs:
           POLYGON_KEY: ${{ secrets.POLYGON_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CHAT_ID_EN: ${{ secrets.TELEGRAM_CHAT_ID_EN }}
         run: python scripts/engine.py
       - name: Mercado amplio (miles de acciones)
         continue-on-error: true
@@ -35,6 +36,7 @@ jobs:
           POLYGON_KEY: ${{ secrets.POLYGON_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CHAT_ID_EN: ${{ secrets.TELEGRAM_CHAT_ID_EN }}
         run: python scripts/broad.py daily
       - name: Bonos, índices y materias primas
         continue-on-error: true
@@ -43,6 +45,7 @@ jobs:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CHAT_ID_EN: ${{ secrets.TELEGRAM_CHAT_ID_EN }}
         run: python scripts/macro.py
       - name: Guardar resultados
         run: |
