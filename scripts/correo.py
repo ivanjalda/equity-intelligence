@@ -260,7 +260,7 @@ def build():
     if f13.get("buys") or f13.get("sells"):
         fb = [(fondo(x), f'{x.get("funds","")} {tr("fondos","funds")}') for x in (f13.get("buys") or [])[:6]]
         fs = [(fondo(x), f'{x.get("funds","")} {tr("fondos","funds")}') for x in (f13.get("sells") or [])[:6]]
-        nota = (f"Informes 13F de {e(f13.get('quarter',''))} (presentados hasta 45 días después del trimestre). Sirven para ver tendencias, no para copiar operaciones." if LG == "es" else f"13F reports for {e(f13.get('quarter',''))} (filed up to 45 days after quarter-end). They help you see trends, not copy trades.")
+        nota = (f"Informes 13F de {e(f13.get('quarter',''))} (presentados hasta 45 días después del trimestre). Sirven para ver tendencias, no para copiar operaciones." if LG == "es" else f"13F reports for {e(str(f13.get('quarter','')).replace('-T', '-Q'))} (filed up to 45 days after quarter-end). They help you see trends, not copy trades.")
         a(dos(caja(tr("Grandes fondos: lo que más compran", "Large funds: what they buy most"), filas(fb, tr("Sin datos.", "No data.")), nota), caja(tr("Grandes fondos: lo que más venden", "Large funds: what they sell most"), filas(fs, tr("Sin datos.", "No data.")), nota)))
 
     # Noticias
