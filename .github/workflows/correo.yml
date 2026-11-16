@@ -2,8 +2,8 @@ name: Resumen diario por correo
 
 on:
   schedule:
-    - cron: "30 21 * * 1-5"    # lunes a viernes, tras el cierre del mercado y los motores
-  workflow_dispatch:            # permite ejecutarlo a mano
+    - cron: "30 8 * * 2-6"    # martes a sábado por la mañana, justo después del motor
+  workflow_dispatch:           # permite ejecutarlo a mano
 
 permissions:
   contents: write
