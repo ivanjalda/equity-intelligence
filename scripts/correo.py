@@ -174,8 +174,8 @@ def build():
     a(dos(caja("Más suben hoy", filas(g(sub), "Sin datos hoy."), "Entre las acciones de nuestra lista principal."),
           caja("Más bajan hoy", filas(g(baj), "Hoy no hay caídas destacadas."), "Entre las acciones de nuestra lista principal.")))
     a(dos(caja("Bonos y deuda", filas(f(bon), "Sin datos hoy."), "Fondos que replican cada tipo de bono. Si suben los tipos de interés, su precio baja."),
-          caja("Concepto del día · " + TIPS[date.today().toordinal() % len(TIPS)][0], f'<div style="font-size:13px;line-height:19px;color:{TXT}">{e(TIPS[date.today().toordinal() % len(TIPS)][1])}</div>'
-               f'<div style="margin-top:8px"><a href="{SITE}" style="color:{ORO};font-size:12px;font-weight:bold;text-decoration:none">Cómo funciona todo →</a></div>')))
+          caja("Conceptos del día", "".join(f'<div style="margin-bottom:10px"><b style="font-size:13px;color:#111111">{e(TIPS[(date.today().toordinal() + k) % len(TIPS)][0])}</b><div style="font-size:13px;line-height:19px;color:{TXT}">{e(TIPS[(date.today().toordinal() + k) % len(TIPS)][1])}</div></div>' for k in (0, 1))
+               + f'<div><a href="{SITE}" style="color:{ORO};font-size:12px;font-weight:bold;text-decoration:none">Cómo funciona todo →</a></div>')))
 
     # Oportunidades
     a(uno(f'<div style="font-weight:bold;font-size:17px;color:#111827;padding:6px 0 0">Oportunidades de compra ({len(ops)})</div>'
