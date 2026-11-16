@@ -198,10 +198,11 @@ def build():
     # Señales nuevas + directivos
     recientes = []
     if isinstance(sig, list) and sig:
-        ult = max(str(s.get("date", "")) for s in sig)
-        recientes = [s for s in sig if str(s.get("date", "")) == ult and s.get("verdict") == "COMPRAR"][:6]
-    sf = [(f'<b>{e(s.get("ticker",""))}</b> <span style="color:{SUAVE};font-size:11px">{e((items.get(s.get("ticker","")) or {}).get("name","")[:24])}</span>', f'${num(s["price"])}' if isinstance(s.get("price"), (int, float)) else "") for s in recientes]
-    titulo_sig = f"Señales más recientes · {fecha(max(str(s.get('date','')) for s in sig))}" if isinstance(sig, list) and sig else "Señales más recientes"
+        comp = [s for s in sig if s.get("verdict") == "COMPRAR"]
+        comp.sort(key=lambda s: str(s.get("date", "")), reverse=True)
+        recientes = comp[:5]
+    sf = [(f'<b>{e(s.get("ticker",""))}</b> <span style="color:{SUAVE};font-size:11px">{e((items.get(s.get("ticker","")) or {}).get("name","")[:24])}</span><br><span style="font-size:11px;color:{SUAVE}">Señal de compra · {fecha(s.get("date", TODAY))}</span>', f'${num(s["price"])}' if isinstance(s.get("price"), (int, float)) else "") for s in recientes]
+    titulo_sig = "Señales de compra más recientes"
     compras = [x for x in ins if str(x.get("k", "")).upper().startswith(("P", "C", "BUY", "COMPRA"))][:5]
     cf = []
     for x in compras:
