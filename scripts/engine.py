@@ -106,7 +106,7 @@ def eps_growth(v):
 
 def spread(item):
     """Cuántas veces difiere el método más alto del más bajo (1 = coinciden)."""
-    v = [item[k] for k in ("dcf", "graham", "multiples", "pb", "gnum") if isinstance(item.get(k), (int, float)) and item[k] > 0]
+    v = [item[k] for k in ("dcf", "graham", "multiples", "pb", "gnum", "ps") if isinstance(item.get(k), (int, float)) and item[k] > 0]
     return max(v) / min(v) if len(v) > 1 else 1.0
 
 
@@ -398,12 +398,18 @@ def dcf(fcfps, g, r=DISCOUNT):
 
 
 NI_TAGS = ["NetIncomeLoss", "ProfitLoss", "NetIncomeLossAvailableToCommonStockholdersBasic"]
+EPS_TAGS = ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic",
+            "IncomeLossFromContinuingOperationsPerDilutedShare", "IncomeLossFromContinuingOperationsPerBasicShare"]
 SH_TAGS = ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfShareOutstandingBasicAndDiluted", "WeightedAverageNumberOfSharesOutstandingBasic"]
+
+
+DIAG_N = [0]
 
 
 def diag(t, facts, eps, cfo, ni):
     """Para las empresas grandes que no se valoran: escribe en el registro qué etiquetas contables tienen, para corregirlo."""
-    if t not in ("V", "XOM", "BRK.B", "BRK-B", "MA", "JPM"):
+    DIAG_N[0] += 1
+    if DIAG_N[0] > 12:
         return
     g = facts.get("us-gaap", {})
     pick_ = lambda k: sorted(n for n in g if k in n)[:12]
@@ -416,13 +422,23 @@ def diag(t, facts, eps, cfo, ni):
 
 def value_stock(t, cyc, facts, hist, price):
     rate, beta = rate_for(t)
-    eps, f1 = annual(facts, ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic"], "USD/shares")
+    eps, f1 = annual(facts, EPS_TAGS, "USD/shares")
     cfo, f2 = annual(facts, ["NetCashProvidedByUsedInOperatingActivities", "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"], "USD")
     cap, _ = annual(facts, ["PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"], "USD")
     ni, _ = annual(facts, NI_TAGS, "USD")
+    est = False
+    shs, _ = annual(facts, SH_TAGS, "shares")
     if len(eps) < 3:  # algunas empresas (p. ej. Visa) no publican el beneficio por acción total
-        shs, _ = annual(facts, SH_TAGS, "shares")
+        if not shs and ni:   # varias clases de acciones: el total no está en la SEC; se toma el dato de Polygon (acciones equivalentes)
+            sp = poly_shares(t)
+            if sp:
+                shs, est = {k: sp for k in ni}, True
         eps = {k: ni[k] / shs[k] for k in ni if shs.get(k)}
+    elif ni and shs and eps:   # si la empresa cambió de etiqueta y faltan los últimos años, se completan con beneficio neto ÷ acciones
+        last_eps = list(eps)[-1]
+        extra = {k: ni[k] / shs[k] for k in ni if k > last_eps and shs.get(k)}
+        if extra:
+            eps = dict(sorted({**eps, **extra}.items()))
     if len(eps) < 3 or not cfo:
         diag(t, facts, eps, cfo, ni)
         return f"pocos datos oficiales (beneficio {len(eps)} años, flujo de caja {len(cfo)} años)"
@@ -462,6 +478,9 @@ def value_stock(t, cyc, facts, hist, price):
         mq = [ps[len(ps) // 4], median(pes), ps[(3 * len(ps)) // 4]]
     models = {m: v for m, v in models.items() if v > 0}
     if len(models) < 2:
+        am = asset_models(facts, hist, price)   # empresas con pérdidas: valor por activos y por ventas
+        if am:
+            return am
         return f"menos de 2 métodos válidos (hay: {', '.join(models) or 'ninguno'})"
     while len(models) >= 2 and max(models.values()) > 3 * min(models.values()):
         models.pop(max(models, key=models.get))  # descartamos el más optimista
@@ -506,6 +525,8 @@ def value_stock(t, cyc, facts, hist, price):
         item["esc"] = esc
         if rec:
             item["rec"] = 1
+    if est:
+        chk = chk + [("warn", "Número de acciones estimado con datos de Polygon (la empresa tiene varias clases de acciones).")]
     item["chk"] = [{"t": a, "x": b} for a, b in chk]
     return item, iv, mg
 
@@ -556,6 +577,173 @@ def pick(dic, end):
         if abs((date.fromisoformat(k) - e).days) <= 10:
             return dic[k]
     return None
+
+
+# ---------- CASOS ESPECIALES ----------
+PREDECESSOR = {"XOM": 34088}   # ExxonMobil se mudó a Texas el 1-jul-2026: la SEC la registra como empresa nueva y el historial está en el registro antiguo
+
+
+def merge_predecessor(t, n, facts):
+    old = PREDECESSOR.get(t.upper())
+    if not old or int(old) == int(n):
+        return facts
+    try:
+        f2 = json.loads(get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{int(old):010d}.json", {"User-Agent": SEC_UA}, 60))["facts"]
+    except Exception as e:
+        print(f"{t}: no se pudo leer el historial del registro antiguo ({e})")
+        return facts
+    out = {}
+    for tax in set(facts) | set(f2):
+        a, b = facts.get(tax, {}), f2.get(tax, {})
+        m = {}
+        for tag in set(a) | set(b):
+            ua, ub = a.get(tag, {}).get("units", {}), b.get(tag, {}).get("units", {})
+            units = {}
+            for u in set(ua) | set(ub):
+                seen, rows = set(), []
+                for r in ub.get(u, []) + ua.get(u, []):   # primero el registro antiguo, después el nuevo
+                    key = (r.get("start"), r.get("end"), r.get("val"), r.get("accn"), r.get("fp"), r.get("form"))
+                    if key not in seen:
+                        seen.add(key)
+                        rows.append(r)
+                units[u] = rows
+            m[tag] = {**(a.get(tag) or b.get(tag)), "units": units}
+        out[tax] = m
+    print(f"{t}: historial unido con el registro antiguo (CIK {int(old)}).")
+    return out
+
+
+def poly_shares(t):
+    """Acciones totales (todas las clases convertidas a una) según Polygon. Solo se usa cuando la SEC no las da en total."""
+    if not POLY:
+        return None
+    try:
+        d = json.loads(get(f"https://api.polygon.io/v3/reference/tickers/{t}?apiKey={POLY}", timeout=30)).get("results") or {}
+        s = d.get("weighted_shares_outstanding") or d.get("share_class_shares_outstanding")
+        time.sleep(12.5)
+        return float(s) if s and float(s) > 1e6 else None
+    except Exception as e:
+        print(f"{t}: sin número de acciones de Polygon ({e})")
+        return None
+
+
+def bank_sic(sic):
+    return sic is not None and (6000 <= sic <= 6199 or 6300 <= sic <= 6411)
+
+
+def bank_models(facts, t=None):
+    """Bancos y aseguradoras: valor contable justificado por su rentabilidad (ROE) y número de Graham."""
+    eps, f1 = annual(facts, EPS_TAGS, "USD/shares")
+    ni, _ = annual(facts, NI_TAGS, "USD")
+    shs, _ = annual(facts, SH_TAGS, "shares")
+    est = False
+    if len(eps) < 3 and t and not shs and ni:
+        sp = poly_shares(t)
+        if sp:
+            shs, est = {k: sp for k in ni}, True
+            eps = {k: ni[k] / sp for k in ni}
+    eq = hist_series(facts, ["StockholdersEquity"], False)
+    pref = hist_series(facts, ["PreferredStockValue"], False)
+    if len(eps) < 3 or not eq:
+        return None
+    ends = list(eps)
+    if (date.today() - date.fromisoformat(ends[-1])).days > 800:
+        return None
+    roes = []
+    for e in ends[-5:]:
+        q = pick(eq, e)
+        if q is not None and e in ni and q - (pick(pref, e) or 0) > 0:
+            roes.append(ni[e] / (q - (pick(pref, e) or 0)))
+    if len(roes) < 3:
+        return None
+    roe = clamp(median(roes), 0.0, 0.25)
+    k = ends[-1]
+    q, s = pick(eq, k), shs.get(k)
+    if q is None or not s:
+        return None
+    bvps = (q - (pick(pref, k) or 0)) / s
+    if bvps <= 0 or roe <= TERMINAL:
+        return None
+    m = {"pb": bvps * (roe - TERMINAL) / (DISCOUNT - TERMINAL)}
+    eps_use = mean(eps[x] for x in ends[-3:])
+    if eps_use > 0:
+        m["gnum"] = (22.5 * eps_use * bvps) ** 0.5
+    while len(m) >= 2 and max(m.values()) > 3 * min(m.values()):
+        m.pop(max(m, key=m.get))
+    if len(m) < 2:
+        return None
+    rev = date.fromisoformat(f1 or TODAY) + timedelta(days=91)
+    while rev <= date.today():
+        rev += timedelta(days=91)
+    chk = base_checks(eps, ni, shs)
+    if est:
+        chk = chk + [("warn", "Número de acciones estimado con datos de Polygon (la empresa tiene varias clases de acciones).")]
+    return {"kind": "banco", "cyclical": False, "horizon": "largo", "review": rev.isoformat(),
+            "review_reason": "próximos resultados trimestrales (fecha estimada)",
+            "ratios": {"ROE medio (5 años)": f"{roe * 100:.1f} %", "Valor contable por acción": f"${bvps:.2f}"},
+            "eps": round(eps[k], 2), "sh": round(s),
+            "chk": [{"t": a, "x": c} for a, c in chk],
+            **{a: round(c, 2) for a, c in m.items()}}
+
+
+def asset_models(facts, hist, price):
+    """Empresas con pérdidas o sin flujo de caja positivo (p. ej. Intel): no hay beneficio que descontar.
+    Se valoran por sus activos (valor contable por acción x su P/B histórico) y por sus ventas (ventas por acción x su P/S histórico)."""
+    shs, _ = annual(facts, SH_TAGS, "shares")
+    eq = hist_series(facts, ["StockholdersEquity"], False)
+    rev = hist_series(facts, FLOW["Ingresos"], True)
+    if not shs:
+        return None
+    ends = list(shs)
+    last = ends[-1]
+    if (date.today() - date.fromisoformat(last)).days > 800:
+        return None
+    dates = [h[0] for h in hist]
+
+    def px(e):
+        i = bisect.bisect_right(dates, e) - 1
+        return hist[i][4] if i >= 0 else None
+    pbs, pss = [], []
+    for e in ends[-8:]:
+        s, p = shs[e], px(e)
+        if not s or not p:
+            continue
+        q, r = pick(eq, e), rev.get(e)
+        if q is not None and q > 0:
+            pbs.append(p / (q / s))
+        if r and r > 0:
+            pss.append(p / (r / s))
+    s = shs[last]
+    q, r = pick(eq, last), rev.get(last)
+    models, ratios = {}, {}
+    if len(pbs) >= 4 and q is not None and q > 0:
+        models["pb"] = clamp(median(pbs), 0.5, 4.0) * q / s
+        ratios["Valor contable por acción"] = f"${q / s:.2f}"
+    if len(pss) >= 4 and r and r > 0:
+        models["ps"] = clamp(median(pss), 0.3, 8.0) * r / s
+        ratios["Ventas por acción"] = f"${r / s:.2f}"
+    models = {k: v for k, v in models.items() if v > 0}
+    if len(models) < 2 or max(models.values()) > 3 * min(models.values()):
+        return None
+    iv = mean(models.values())
+    if price > 0 and (iv / price > 20 or price / iv > 20):
+        return None
+    mg = (iv - price) / iv * 100
+    ni, f1 = annual(facts, NI_TAGS, "USD")
+    eps, f1 = annual(facts, EPS_TAGS, "USD/shares")
+    rev_d = date.fromisoformat(f1 or TODAY) + timedelta(days=91)
+    while rev_d <= date.today():
+        rev_d += timedelta(days=91)
+    item = {"kind": "activos", "cyclical": False, "horizon": "medio", "review": rev_d.isoformat(),
+            "review_reason": "próximos resultados trimestrales (fecha estimada)", "ratios": ratios,
+            "sh": round(s), "ult": last, **{k: round(v, 2) for k, v in models.items()}}
+    if eps:
+        item["eps"] = round(eps[list(eps)[-1]], 2)
+        item["chk"] = [{"t": a, "x": b} for a, b in base_checks(eps, ni, shs)]
+    else:
+        item["chk"] = []
+    item["chk"].append({"t": "warn", "x": "Sin beneficios ni flujo de caja positivos que descontar: se valora solo por sus activos y sus ventas."})
+    return item, iv, mg
 
 
 def judge(s):
@@ -828,6 +1016,7 @@ def main():
             try:
                 n = cik[t.replace(".", "-")][0]
                 facts = json.loads(get(f"https://data.sec.gov/api/xbrl/companyfacts/CIK{int(n):010d}.json", {"User-Agent": SEC_UA}, 60))["facts"]
+                facts = merge_predecessor(t, n, facts)
                 sic = get_sic(n)
                 if sic is None:
                     print(f"{t}: sin valorar (no se pudo confirmar su sector)")
@@ -835,7 +1024,20 @@ def main():
                 entry["sic"] = sic
                 if is_finance_sic(sic) or is_investment_company(facts):
                     entry["kind"] = "financiera"
-                    print(f"{t}: sin valorar (banco, aseguradora, fondo o inmobiliaria: necesitan otro método)")
+                    bm = None
+                    if bank_sic(sic) and not is_investment_company(facts):
+                        try:
+                            bm = bank_models(normalize_facts(facts), t)
+                        except Exception as e:
+                            print(f"{t}: error en la valoración de banco/aseguradora ({e})")
+                    if bm:
+                        nums = [bm[k] for k in ("pb", "gnum") if k in bm]
+                        iv = sum(nums) / len(nums)
+                        entry.update(bm)
+                        entry["_iv"], entry["_mg"] = iv, (iv - last[4]) / iv * 100
+                        print(f"{t}: valorada como banco/aseguradora.")
+                    else:
+                        print(f"{t}: sin valorar (banco, aseguradora, fondo o inmobiliaria: necesitan otro método)")
                     continue
                 facts = normalize_facts(facts)
                 try:
