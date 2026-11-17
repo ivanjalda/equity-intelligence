@@ -212,7 +212,7 @@ function calc(t){
   const v=D.v.items?.[t],p=D.m[t]?.c;
   if(v&&v.assess&&p)return{verdict:v.assess.verdict,mg:null,iv:null,n:0,p,v,assess:v.assess,spr:1,weak:false,odd:false};
   if(!v||!p)return null;
-  const ms=[v.dcf,v.graham,v.multiples,v.pb,v.gnum].filter(x=>typeof x==="number"&&x>0);
+  const ms=[v.dcf,v.graham,v.multiples,v.pb,v.gnum,v.ps].filter(x=>typeof x==="number"&&x>0);
   if(!ms.length)return null;
   const iv=ms.reduce((a,b)=>a+b,0)/ms.length,mg=(iv-p)/iv*100;
   const weak=mg>=25&&v.health==="Frágil",odd=false;
@@ -244,7 +244,7 @@ function lista(keep){
   rows.slice(0,LIM).forEach(({t,v,c})=>{
     const d=document.createElement("div");d.className="card";
     d.innerHTML=`<div class="flex"><strong>${esc(t)}</strong><span>${D.m[t]?"$"+num(D.m[t].c):"—"}</span></div>
-    <div class="flex sm"><span>${esc(v.name||"")}${v.kind==="banco"?" · banco/seguros":v.cyclical?" · cíclica":""}${v.health?" · salud "+esc(v.health.toLowerCase()):""}</span><span class="badge ${c?c.verdict:"NA"}">${c?c.verdict:"Sin valorar"}</span></div>`;
+    <div class="flex sm"><span>${esc(v.name||"")}${v.kind==="banco"?" · banco/seguros":v.kind==="activos"?" · valor por activos":v.cyclical?" · cíclica":""}${v.health?" · salud "+esc(v.health.toLowerCase()):""}</span><span class="badge ${c?c.verdict:"NA"}">${c?c.verdict:"Sin valorar"}</span></div>`;
     d.onclick=()=>detalle(t);el.appendChild(d);
   });
   if(rows.length>LIM){const b=document.createElement("button");b.className="btn";b.style.width="100%";b.textContent=`Mostrar más (${rows.length-LIM} restantes)`;b.onclick=()=>{LIM+=40;lista(true)};el.appendChild(b)}
@@ -506,7 +506,7 @@ function detalle(t){
   const c=calc(t),v=D.v.items?.[t]||{},p=D.m[t]?.c,main=document.getElementById("main");
   if(c&&c.assess){detalleAssess(t,c);return}
   let h=`<div class="box"><div class="flex"><div><h2>${esc(t)} <span class="sm">${esc(v.name||"")}</span></h2>
-  <div class="sm">${v.kind==="banco"?"Banco o aseguradora · se valora por su valor contable y su rentabilidad (ROE)":v.cyclical?"Empresa cíclica · se valora con beneficios medios de varios años":"Empresa no cíclica"}${v.horizon?" · plazo ideal: "+esc(v.horizon):""}</div></div>
+  <div class="sm">${v.kind==="banco"?"Banco o aseguradora · se valora por su valor contable y su rentabilidad (ROE)":v.kind==="activos"?"Empresa sin beneficios ahora · se valora por sus activos y sus ventas":v.cyclical?"Empresa cíclica · se valora con beneficios medios de varios años":"Empresa no cíclica"}${v.horizon?" · plazo ideal: "+esc(v.horizon):""}</div></div>
   <span class="badge ${c?c.verdict:"NA"}" style="font-size:13px;padding:5px 12px">${c?c.verdict:"Sin valorar"}</span></div>
   <div class="grid"><div class="m"><small>Precio</small><strong>${p?"$"+num(p):"—"}</strong></div>
   <div class="m"><small>Valor intrínseco</small><strong style="color:var(--gold)">${c?"$"+num(c.iv):"—"}</strong></div>
@@ -588,6 +588,9 @@ async function fundamentos(t){
 }
 function methodsHTML(v){
   const $=x=>x?"$"+num(x):"—";
+  if(v.kind==="activos")return `<h3>Dos formas de calcular el valor intrínseco (empresa sin beneficios ahora)</h3><table>
+  <tr><td>Valor por activos</td><td class="sm">Lo que valen sus recursos propios por acción, multiplicado por lo que el mercado ha pagado habitualmente por ellos.</td><td>${$(v.pb)}</td></tr>
+  <tr><td>Valor por ventas</td><td class="sm">Sus ventas por acción, multiplicadas por lo que el mercado ha pagado habitualmente por cada dólar vendido.</td><td>${$(v.ps)}</td></tr></table>`;
   if(v.kind==="banco")return `<h3>Dos formas de calcular el valor intrínseco (banco o aseguradora)</h3><table>
   <tr><th>Método</th><th>Qué hace</th><th>Valor</th></tr>
   <tr><td>Valor contable justificado</td><td class="sm">Cuánto valen sus recursos propios según lo que rentan (ROE) frente a lo que exige un inversor.</td><td>${$(v.pb)}</td></tr>
