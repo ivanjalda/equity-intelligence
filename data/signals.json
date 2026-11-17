@@ -488,5 +488,12 @@
   "verdict": "COMPRAR",
   "price": 10.56,
   "spy": 754.37
+ },
+ {
+  "date": "2026-11-17",
+  "ticker": "BFAM",
+  "verdict": "COMPRAR",
+  "price": 52.52,
+  "spy": 739.95
  }
 ]
