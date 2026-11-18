@@ -495,5 +495,19 @@
   "verdict": "COMPRAR",
   "price": 52.52,
   "spy": 739.95
+ },
+ {
+  "date": "2026-11-18",
+  "ticker": "SHV",
+  "verdict": "COMPRAR",
+  "price": 110.2,
+  "spy": 732.44
+ },
+ {
+  "date": "2026-11-18",
+  "ticker": "BIL",
+  "verdict": "COMPRAR",
+  "price": 91.55,
+  "spy": 732.44
  }
 ]
