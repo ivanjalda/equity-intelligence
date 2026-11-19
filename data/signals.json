@@ -509,5 +509,12 @@
   "verdict": "COMPRAR",
   "price": 91.55,
   "spy": 732.44
+ },
+ {
+  "date": "2026-11-19",
+  "ticker": "MRK",
+  "verdict": "COMPRAR",
+  "price": 137.78,
+  "spy": 730.2
  }
 ]
