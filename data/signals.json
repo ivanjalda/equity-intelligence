@@ -516,5 +516,12 @@
   "verdict": "COMPRAR",
   "price": 137.78,
   "spy": 730.2
+ },
+ {
+  "date": "2026-11-20",
+  "ticker": "ZM",
+  "verdict": "COMPRAR",
+  "price": 83.82,
+  "spy": 715.87
  }
 ]
