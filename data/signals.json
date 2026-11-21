@@ -523,5 +523,26 @@
   "verdict": "COMPRAR",
   "price": 83.82,
   "spy": 715.87
+ },
+ {
+  "date": "2026-11-21",
+  "ticker": "ORCL",
+  "verdict": "COMPRAR",
+  "price": 101.19,
+  "spy": 689.81
+ },
+ {
+  "date": "2026-11-21",
+  "ticker": "CLB",
+  "verdict": "COMPRAR",
+  "price": 7.76,
+  "spy": 689.81
+ },
+ {
+  "date": "2026-11-21",
+  "ticker": "INTU",
+  "verdict": "COMPRAR",
+  "price": 270.44,
+  "spy": 689.81
  }
 ]
