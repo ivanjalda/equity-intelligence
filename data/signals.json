@@ -544,5 +544,12 @@
   "verdict": "COMPRAR",
   "price": 270.44,
   "spy": 689.81
+ },
+ {
+  "date": "2026-11-24",
+  "ticker": "EMB",
+  "verdict": "COMPRAR",
+  "price": 90.7,
+  "spy": 722.29
  }
 ]
