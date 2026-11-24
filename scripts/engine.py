@@ -398,6 +398,7 @@ def dcf(fcfps, g, r=DISCOUNT):
 
 
 NI_TAGS = ["NetIncomeLoss", "ProfitLoss", "NetIncomeLossAvailableToCommonStockholdersBasic"]
+EQ_TAGS = ["StockholdersEquity", "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"]   # UNH y otras publican solo la segunda desde 2015
 EPS_TAGS = ["EarningsPerShareDiluted", "EarningsPerShareBasicAndDiluted", "EarningsPerShareBasic",
             "IncomeLossFromContinuingOperationsPerDilutedShare", "IncomeLossFromContinuingOperationsPerBasicShare"]
 SH_TAGS = ["WeightedAverageNumberOfDilutedSharesOutstanding", "WeightedAverageNumberOfShareOutstandingBasicAndDiluted", "WeightedAverageNumberOfSharesOutstandingBasic"]
@@ -429,7 +430,7 @@ def value_stock(t, cyc, facts, hist, price):
     est = False
     shs, _ = annual(facts, SH_TAGS, "shares")
     if len(eps) < 3:  # algunas empresas (p. ej. Visa) no publican el beneficio por acción total
-        if not shs and ni:   # varias clases de acciones: el total no está en la SEC; se toma el dato de Polygon (acciones equivalentes)
+        if shares_stale(shs, ni):   # varias clases de acciones: el total no está en la SEC; se toma el dato de Polygon (acciones equivalentes)
             sp = poly_shares(t)
             if sp:
                 shs, est = {k: sp for k in ni}, True
@@ -613,6 +614,13 @@ def merge_predecessor(t, n, facts):
     return out
 
 
+def shares_stale(shs, ni):
+    """True si no hay número de acciones o su último dato es mucho más antiguo que el último beneficio (p. ej. Berkshire)."""
+    if not shs or not ni:
+        return not shs
+    return (date.fromisoformat(list(ni)[-1]) - date.fromisoformat(list(shs)[-1])).days > 400
+
+
 def poly_shares(t):
     """Acciones totales (todas las clases convertidas a una) según Polygon. Solo se usa cuando la SEC no las da en total."""
     if not POLY:
@@ -637,14 +645,15 @@ def bank_models(facts, t=None):
     ni, _ = annual(facts, NI_TAGS, "USD")
     shs, _ = annual(facts, SH_TAGS, "shares")
     est = False
-    if len(eps) < 3 and t and not shs and ni:
+    if len(eps) < 3 and t and shares_stale(shs, ni):
         sp = poly_shares(t)
         if sp:
             shs, est = {k: sp for k in ni}, True
             eps = {k: ni[k] / sp for k in ni}
-    eq = hist_series(facts, ["StockholdersEquity"], False)
+    eq = hist_series(facts, EQ_TAGS, False)
     pref = hist_series(facts, ["PreferredStockValue"], False)
     if len(eps) < 3 or not eq:
+        print(f"{t}: banco/aseguradora sin datos suficientes (años de beneficio por acción: {len(eps)}, años de patrimonio: {len(eq)})")
         return None
     ends = list(eps)
     if (date.today() - date.fromisoformat(ends[-1])).days > 800:
@@ -690,7 +699,7 @@ def asset_models(facts, hist, price):
     """Empresas con pérdidas o sin flujo de caja positivo (p. ej. Intel): no hay beneficio que descontar.
     Se valoran por sus activos (valor contable por acción x su P/B histórico) y por sus ventas (ventas por acción x su P/S histórico)."""
     shs, _ = annual(facts, SH_TAGS, "shares")
-    eq = hist_series(facts, ["StockholdersEquity"], False)
+    eq = hist_series(facts, EQ_TAGS, False)
     rev = hist_series(facts, FLOW["Ingresos"], True)
     if not shs:
         return None
