@@ -147,7 +147,7 @@ label input[type=checkbox]{width:auto!important;display:inline-block;margin-righ
     <button class="btn" id="tHist" onclick="vista('hist')">Historial</button>
     <a class="btn" href="aprender.html">Aprender</a>
     <a class="btn" href="como-funciona.html">Cómo funciona</a>
-    <span class="hdr-r"><span class="lang" translate="no"><b>ES</b> | <a href="/en/" hreflang="en" onclick="try{localStorage.setItem('ei_lang','en')}catch(e){}">EN</a></span><button class="btn" type="button" data-tema-btn onclick="cambiarTema()" title="Cambiar entre modo claro y modo noche">☀ Modo claro</button><span id="accWrap"></span></span>
+    <span class="hdr-r"><span class="lang" translate="no"><b>ES</b> | <a href="/en/" hreflang="en" onclick="try{localStorage.setItem('ei_lang','en')}catch(e){}">EN</a></span><button class="btn" type="button" data-tema-btn onclick="cambiarTema()" title="Cambiar entre modo claro y modo noche">☀ Modo claro</button><button class="btn" type="button" onclick="planesModal()">Planes</button><span id="accWrap"></span></span>
   </div>
 </header>
 
@@ -331,6 +331,7 @@ const TELEGRAM_URL="on";const TG_LANG="es"; // Cuando exista el canal público d
 
 /* El enlace del canal de Telegram NO está en la página: se lee de Firebase (config/telegram) y solo con sesión iniciada. */
 function tgJoin(){
+  if(typeof FBD!=="undefined"&&FBD&&FBU&&typeof esPremium==="function"&&!esPremium()){planesModal();return}
   const w=window.open("","_blank");try{if(w)w.opener=null}catch(e){}
   const fallo=()=>{if(w)w.close();alert(TG_LANG==="en"?"The channel link is not available right now. Please try again later.":"El enlace del canal no está disponible ahora. Inténtalo más tarde.")};
   if(typeof FBD==="undefined"||!FBD||!FBU){if(w)w.close();accModal("entrar");return}
@@ -343,7 +344,7 @@ const adCursos=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Va
 const NXV='<svg viewBox="0 0 300 96" class="adsvg" aria-hidden="true"><rect width="300" height="96" rx="6" fill="#10131b"/><g stroke="#2a2e39"><path d="M0 24H300M0 48H300M0 72H300"/></g><g stroke-width="2"><path d="M20 70V44M20 60V52" stroke="#089981"/><path d="M50 62V36" stroke="#089981"/><path d="M80 58V40" stroke="#f23645"/><path d="M110 66V46" stroke="#089981"/><path d="M140 50V30" stroke="#089981"/><path d="M170 54V32" stroke="#f23645"/><path d="M200 44V24" stroke="#089981"/><path d="M230 40V20" stroke="#089981"/><path d="M260 48V28" stroke="#f23645"/></g><g><rect x="16" y="48" width="8" height="14" fill="#089981"/><rect x="46" y="42" width="8" height="16" fill="#089981"/><rect x="76" y="44" width="8" height="10" fill="#f23645"/><rect x="106" y="50" width="8" height="12" fill="#089981"/><rect x="136" y="34" width="8" height="12" fill="#089981"/><rect x="166" y="36" width="8" height="12" fill="#f23645"/><rect x="196" y="28" width="8" height="12" fill="#089981"/><rect x="226" y="24" width="8" height="12" fill="#089981"/><rect x="256" y="32" width="8" height="12" fill="#f23645"/></g><path d="M10 66C60 56 100 58 150 42S230 28 290 24" fill="none" stroke="#d4af37" stroke-width="1.6" stroke-dasharray="4 3"/><text x="290" y="90" text-anchor="end" font-size="8" fill="#8a8d98" font-family="sans-serif">Ilustración, no son datos reales</text></svg>';
 const adNexus=()=>`<div class="ad"><span class="adl">Publicidad</span><small>Nexus Terminal · Análisis técnico</small>${NXV}<strong>Nexus Terminal: análisis técnico para hacer trading</strong><p class="sm">Nuestra otra web. Un motor propio hace el análisis técnico de acciones, criptomonedas y divisas por sí solo y publica pronósticos de inversión y señales, con avisos en Telegram y un histórico público de aciertos y fallos.</p><div class="row"><a class="btn on" href="https://nexusterminalalerts.com/" target="_blank" rel="noopener sponsored">Abrir Nexus Terminal</a></div><p class="sm" style="font-size:11px;margin:6px 0 0">Community16 LLC. Análisis técnico informativo, no es asesoramiento financiero.</p></div>`;const tgLogged=()=>typeof FBU!=="undefined"&&!!FBU;
 const tgBtn=()=>!TELEGRAM_URL?'<span class="badge NA">Muy pronto</span>':(tgLogged()?`<button class="btn on" type="button" onclick="tgJoin()">Unirme al canal</button>`:`<button class="btn on" onclick="accModal('crear')">Crea tu cuenta gratis para unirte</button>`);
-const telegramCard=()=>`<div class="ad" id="tgCard" style="border-style:solid"><small>Avisos gratuitos</small><strong>Canal de Telegram</strong><p class="sm">Te avisamos cuando aparezca una nueva oportunidad de compra, con enlace directo al análisis. Para entrar necesitas una cuenta gratuita.</p>${tgBtn()}${(typeof EMAIL_FORM!=="undefined"&&EMAIL_FORM)?`<hr style="border:0;border-top:1px solid var(--line,#333);margin:14px 0"><strong>Resumen diario por correo</strong><p class="sm">Cómo cierra el mercado, las oportunidades de compra y las noticias, cada día en tu correo.</p><div id="homeEm">${fEmailForm("homeEm",(tgLogged()&&FBU.email)||"")}</div>`:""}</div>`;
+const telegramCard=()=>`<div class="ad" id="tgCard" style="border-style:solid"><small>Avisos Premium</small><strong>Canal de Telegram</strong><p class="sm">Te avisamos cuando aparezca una nueva oportunidad de compra, con enlace directo al análisis. Es parte del plan Premium.</p>${tgBtn()}${(typeof EMAIL_FORM!=="undefined"&&EMAIL_FORM)?`<hr style="border:0;border-top:1px solid var(--line,#333);margin:14px 0"><strong>Resumen diario por correo</strong><p class="sm">Cómo cierra el mercado, las oportunidades de compra y las noticias, cada día en tu correo.</p><div id="homeEm">${fEmailForm("homeEm",(tgLogged()&&FBU.email)||"")}</div>`:""}</div>`;
 const TIPS=[
  ["Margen de seguridad","Es la diferencia entre lo que vale un negocio y lo que pagas por él. Cuanto más barato compras respecto a su valor, más colchón tienes si te equivocas en el cálculo. Es una idea de Benjamin Graham."],
  ["Valor intrínseco","Es lo que vale una empresa por el dinero que será capaz de generar, no por lo que marque el precio hoy. Por eso lo calculamos con tres métodos distintos y miramos si coinciden."],
@@ -1226,6 +1227,8 @@ function fEmailForm(id,mail,inner){
   if(conCuenta){
     if(FBU===undefined)return `<div class="emst"><p class="sm">Comprobando tu cuenta…</p></div>`;
     if(!FBU)return `<div class="emst"><p class="sm">Para recibir el resumen diario necesitas una cuenta gratuita: así sabemos a qué correo enviártelo y puedes darte de baja cuando quieras.</p><div class="row" style="gap:8px"><button class="btn on" type="button" onclick="accModal('crear')">Crea tu cuenta gratis</button><button class="btn" type="button" onclick="accModal('entrar')">Ya tengo cuenta · Entrar</button></div></div>`;
+    if(PLAN===null)return `<div class="emst"><p class="sm">Comprobando tu cuenta…</p></div>`;
+    if(!esPremium())return planAviso();
     mail=FBU.email||"";
   }
   let sub=fStore("ei_sub");
@@ -1239,7 +1242,7 @@ function fEmailForm(id,mail,inner){
 }
 function fEmail(){
   if(!EMAIL_FORM)return"";
-  return `<div class="box" id="fem"><h3>Recibe el resumen diario por correo</h3><p class="sm">Cada día: cómo cierra el mercado, las oportunidades de compra, las noticias y lo que hacen directivos y grandes fondos. Gratis. Incluye promociones de nuestras propias webs (Valmont &amp; Co. y Nexus Terminal) y nunca compartimos tu correo.</p>${fEmailForm("fem")}</div>`;
+  return `<div class="box" id="fem"><h3>Recibe el resumen diario por correo</h3><p class="sm">Cada día: cómo cierra el mercado, las oportunidades de compra, las noticias y lo que hacen directivos y grandes fondos. Incluye promociones de nuestras propias webs (Valmont &amp; Co. y Nexus Terminal) y nunca compartimos tu correo.</p>${fEmailForm("fem")}</div>`;
 }
 function fEmailTop(n){
   if(!EMAIL_FORM||fStore("ei_hide")||n<3)return"";
@@ -1262,8 +1265,47 @@ function fbCargar(){
   const sc=s=>new Promise((ok,ko)=>{const e=document.createElement("script");e.src=base+s;e.onload=ok;e.onerror=ko;document.head.appendChild(e)});
   sc("firebase-app-compat.js").then(()=>Promise.all([sc("firebase-auth-compat.js"),sc("firebase-firestore-compat.js")])).then(()=>{
     firebase.initializeApp(FB_CFG);FBA=firebase.auth();FBD=firebase.firestore();
-    FBA.onAuthStateChanged(async u=>{FBU=u;accBtn();if(u)await accAlEntrar(u);accRefresh();if(typeof fHomeRepaint==="function")fHomeRepaint()});
+    FBA.onAuthStateChanged(async u=>{FBU=u;accBtn();if(u){await accAlEntrar(u);await planLoad(u)}else PLAN="free";accRefresh();if(typeof fHomeRepaint==="function")fHomeRepaint()});
   }).catch(()=>{});
+}
+/* ---------- PLANES: Gratis y Premium ---------- */
+let PLAN=null;
+async function planLoad(u){
+  PLAN=null;
+  try{const d=await FBD.collection("planes").doc(u.uid).get();PLAN=(d.exists&&d.data().activo===true)?"premium":"free"}catch(e){PLAN="free"}
+}
+const esPremium=()=>PLAN==="premium";
+function planAviso(){
+  return `<div class="emst"><p class="sm">Esto es parte del plan Premium.</p><div class="row" style="gap:8px"><button class="btn on" type="button" onclick="planesModal()">Ver planes</button></div></div>`;
+}
+async function planEspera(){
+  const m=document.getElementById("planMsg");
+  if(!FBU||!FBD){accModal("crear");return}
+  try{
+    await FBD.collection("espera").doc(FBU.uid).set({email:FBU.email||null,plan:"premium",creado:new Date().toISOString()},{merge:true});
+    if(m){m.textContent="¡Apuntado! Te avisaremos antes de abrir Premium.";m.className="sm up"}
+    const b=document.getElementById("planBtn");if(b){b.disabled=true;b.textContent="Ya estás en la lista de espera"}
+  }catch(e){if(m){m.textContent="No hemos podido apuntarte ahora. Inténtalo de nuevo en unos minutos.";m.className="sm dn"}}
+}
+function planesModal(){
+  let m=document.getElementById("planModal");if(m)m.remove();
+  m=document.createElement("div");m.id="planModal";m.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px";
+  m.onclick=e=>{if(e.target===m)m.remove()};
+  const prem=esPremium();
+  const btnGratis=!FBU?`<button class="btn on" type="button" onclick="document.getElementById('planModal').remove();accModal('crear')">Crear cuenta gratis</button>`:`<button class="btn" type="button" disabled>${prem?"Incluido en Premium":"Tu plan actual"}</button>`;
+  const btnPrem=prem?`<button class="btn" type="button" disabled>Tu plan actual: Premium</button>`:`<button class="btn on" id="planBtn" type="button" onclick="planEspera()">Apuntarme a la lista de espera</button>`;
+  m.innerHTML=`<div class="box" style="max-width:720px;width:100%;margin:0;max-height:92vh;overflow:auto">
+  <h3 style="margin-top:0">Planes de Equity Intrinsic</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+    <div class="box" style="margin:0"><h3 style="margin-top:0">Gratis</h3><p><b style="font-size:22px">0 €</b></p>
+      <ul class="sm" style="padding-left:18px;margin:8px 0 12px"><li>La valoración de cada empresa con tres métodos</li><li>Estados financieros de 10 años y compras de directivos</li><li>Comparador de empresas y favoritas en todos tus dispositivos</li><li>Historial público de aciertos</li></ul>${btnGratis}</div>
+    <div class="box" style="margin:0;border-color:var(--gold)"><h3 style="margin-top:0">Premium</h3><p><b style="font-size:22px">5 €</b> <span class="sm">al mes</span></p>
+      <ul class="sm" style="padding-left:18px;margin:8px 0 12px"><li>Todo lo del plan Gratis</li><li>Resumen diario por correo, en tu idioma</li><li>Canal de Telegram con avisos de nuevas oportunidades</li></ul>${btnPrem}</div>
+  </div>
+  <p class="sm" style="margin-top:12px">Premium abre muy pronto. Apúntate a la lista de espera: ahora no se cobra nada y te avisamos antes de abrir.</p>
+  <p id="planMsg" class="sm"></p>
+  <div class="row"><button class="btn" type="button" onclick="document.getElementById('planModal').remove()">Cerrar</button></div></div>`;
+  document.body.appendChild(m);
 }
 function accRefresh(){
   const vis=id=>{const e=document.getElementById(id);return e&&e.style.display!=="none"};
@@ -1274,7 +1316,7 @@ function accLocked(tit){
   if(!FB_CFG||!FB_CFG.apiKey||FBU)return"";
   if(FBU===undefined)return `<div class="box"><p class="sm">Comprobando tu cuenta…</p></div>`;
   return `<div class="box" style="border-color:var(--gold)"><h3>🔒 ${esc(tit)}: gratis con tu cuenta</h3>
-  <p class="sm">Crea una cuenta gratuita en unos segundos (con Google o con tu correo) y desbloqueas: los estados financieros completos de 10 años, las compras y ventas de directivos, el comparador de empresas, tus favoritas en cualquier dispositivo y el resumen diario por correo.</p>
+  <p class="sm">Crea una cuenta gratuita en unos segundos (con Google o con tu correo) y desbloqueas: los estados financieros completos de 10 años, las compras y ventas de directivos, el comparador de empresas y tus favoritas en cualquier dispositivo.</p>
   <div class="row"><button class="btn on" onclick="accModal('crear')">Crear cuenta gratis o entrar</button></div></div>`;
 }
 let accOpen=false;
@@ -1292,6 +1334,7 @@ function accPanel(){
   const abierto=fo?fo.open:true;
   p.innerHTML=`<div class="sm" style="word-break:break-all">${esc(FBU.email||"Sesión iniciada")}</div>
   <details id="accFav" ${abierto?"open":""}><summary>★ Mis favoritas (${F.length})</summary>${F.length?F.map(t=>`<div class="fv"><a onclick="accOpen=false;accPanel();fichaIr('${esc(t)}')"><b>${esc(t)}</b> <span class="sm">${esc((D.v.items[t].name||"").slice(0,24))}</span></a><button class="btn" title="Quitar" onclick="fFavToggle('${esc(t)}')">✕</button></div>`).join(""):'<p class="sm">Aún no tienes ninguna. En la ficha de una empresa pulsa «☆ Seguir».</p>'}</details>
+  <div class="sm" style="margin:8px 0"><b>Mi plan:</b> ${esPremium()?"Premium":"Gratis"} · <a href="#" onclick="accOpen=false;accPanel();planesModal();return false">Ver planes</a></div>
   <div class="sm" style="margin:8px 0"><b>Canal de Telegram:</b> ${TELEGRAM_URL?`<a href="#" onclick="tgJoin();return false">Unirme al canal</a>`:"muy pronto"}</div>
   ${EMAIL_FORM?`<details><summary>Resumen diario por correo</summary><div id="accEm" style="margin-top:6px">${fEmailForm("accEm",FBU.email)}</div></details>`:""}
   <div class="row" style="margin:10px 0 0"><button class="btn" onclick="accSalir()">Cerrar sesión</button></div>
