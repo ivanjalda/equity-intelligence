@@ -551,5 +551,12 @@
   "verdict": "COMPRAR",
   "price": 90.7,
   "spy": 722.29
+ },
+ {
+  "date": "2026-11-26",
+  "ticker": "TRAK",
+  "verdict": "COMPRAR",
+  "price": 5.85,
+  "spy": 716.7
  }
 ]
