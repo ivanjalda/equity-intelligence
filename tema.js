@@ -17,3 +17,5 @@
   aplicar(leer()==="light"?"light":"dark");
   document.addEventListener("DOMContentLoaded",function(){aplicar(window.temaActual())});
 })();
+
+/* Enlace directo a los planes: equityintrinsic.com/#planes o ?planes abre la ventana de planes */ window.addEventListener('load', function () { if (/#planes|[?&]planes/.test(location.href)) setTimeout(function () { if (typeof planesModal === 'function') planesModal(); }, 700); });
